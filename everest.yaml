@@ -1,0 +1,6 @@
+- Name: SantasGifts24
+  Version: 0.1.0
+  DLL: bin/SantasGifts24.dll
+  Dependencies:
+    - Name: Everest
+      Version: 1.3471.0
