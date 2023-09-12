@@ -1,9 +1,9 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.SantasGifts24;
 
 public class SantasGifts24Module : EverestModule {
+
 	public static SantasGifts24Module Instance { get; private set; }
 
 	public override Type SettingsType => typeof(SantasGifts24ModuleSettings);
@@ -18,8 +18,8 @@ public class SantasGifts24Module : EverestModule {
 		// debug builds use verbose logging
 		Logger.SetLogLevel(nameof(SantasGifts24Module), LogLevel.Verbose);
 #else
-            // release builds use info logging to reduce spam in log files
-            Logger.SetLogLevel(nameof(SantasGifts24Module), LogLevel.Info);
+        // release builds use info logging to reduce spam in log files
+        Logger.SetLogLevel(nameof(SantasGifts24Module), LogLevel.Info);
 #endif
 	}
 
