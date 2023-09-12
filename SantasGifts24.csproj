@@ -43,6 +43,7 @@
         </Reference>
     </ItemGroup>
 
+
     <Choose>
         <When Condition="'$(CelesteType)' == 'FNA'">
             <ItemGroup>

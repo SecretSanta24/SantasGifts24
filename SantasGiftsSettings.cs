@@ -1,6 +1,9 @@
+using Microsoft.Xna.Framework.Input;
+
 namespace Celeste.Mod.SantasGifts24;
 
 public class SantasGiftsSettings : EverestModuleSettings{
 
-	public ButtonBinding FlagpoleJournalBind;
+	[DefaultButtonBinding(0, Keys.J)]
+	public ButtonBinding FlagpoleJournalBind { get; set; }
 }
