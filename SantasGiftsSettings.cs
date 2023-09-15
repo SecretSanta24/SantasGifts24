@@ -1,5 +1,7 @@
-namespace Celeste.Mod.SantasGifts24;
+namespace Celeste.Mod.SantasGifts24
+{
+    public class SantasGiftsSettings : EverestModuleSettings
+    {
 
-public class SantasGiftsSettings : EverestModuleSettings {
-
+    }
 }
