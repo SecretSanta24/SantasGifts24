@@ -1,5 +1,7 @@
-﻿namespace Celeste.Mod.SantasGifts24;
+﻿namespace Celeste.Mod.SantasGifts24
+{
+    public class SantasGiftsSaveData : EverestModuleSaveData
+    {
 
-public class SantasGiftsSaveData : EverestModuleSaveData {
-	
+    }
 }
