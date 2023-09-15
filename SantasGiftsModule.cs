@@ -17,20 +17,13 @@ public class SantasGiftsModule : EverestModule {
 
 	public SantasGiftsModule() {
 		Instance = this;
-#if DEBUG
-		// debug builds use verbose logging
-		Logger.SetLogLevel(nameof(SantasGiftsModule), LogLevel.Verbose);
-#else
-        // release builds use info logging to reduce spam in log files
-        Logger.SetLogLevel(nameof(SantasGifts24Module), LogLevel.Info);
-#endif
 	}
 
 	public override void Load() {
-            
+		AuroraAquir.Load();  
 	}
 
 	public override void Unload() {
-            
-	}
+        AuroraAquir.Unload();
+    }
 }
