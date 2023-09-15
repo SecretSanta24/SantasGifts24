@@ -1,0 +1,6 @@
+﻿# Mod Name
+mods.SantasGifts24.name=SantasGifts24
+
+# Disable Death Sound Trigger
+triggers.SantasGifts24/DisableDeathSoundTrigger.placements.name.trigger=Disable Death Sound
+triggers.SantasGifts24/DisableDeathSoundTrigger.attributes.description.disable=If checked, disables sounds emitted on death and respawn.

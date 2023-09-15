@@ -31,12 +31,12 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
-			//DisableDeathSoundTrigger.Load();
+			DisableDeathSoundTrigger.Load();
 		}
 
 		public override void Unload()
 		{
-			//DisableDeathSoundTrigger.Unload();
+			DisableDeathSoundTrigger.Unload();
 		}
 	}
 }
