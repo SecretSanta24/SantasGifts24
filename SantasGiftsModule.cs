@@ -1,10 +1,11 @@
 ﻿using System;
+using Celeste.Mod.SantasGifts24.Code.Entities.Lyra;
 using Celeste.Mod.SantasGifts24.Entities;
 using Celeste.Mod.SantasGifts24.Triggers;
 
 namespace Celeste.Mod.SantasGifts24
 {
-	public class SantasGiftsModule : EverestModule
+    public class SantasGiftsModule : EverestModule
 	{
 
 		public static SantasGiftsModule Instance { get; private set; }
@@ -26,12 +27,14 @@ namespace Celeste.Mod.SantasGifts24
 		{
 			RandomizeStartRoomController.Load();
 			DisableDeathSoundTrigger.Load();
+			CursedRefill.Load();
 		}
 
 		public override void Unload()
         {
             RandomizeStartRoomController.Unload();
             DisableDeathSoundTrigger.Unload();
-		}
+            CursedRefill.Unload();
+        }
 	}
 }
