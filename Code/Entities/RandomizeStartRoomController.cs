@@ -53,7 +53,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
             });
 
             string rooms = entityData?.Attr("RoomNames", "");
-            Console.WriteLine(rooms);
             if (rooms != null && rooms != "" && rooms.Contains(","))
             {
                 string[] roomNames = rooms.Split(',');

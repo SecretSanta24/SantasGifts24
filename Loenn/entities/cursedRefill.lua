@@ -1,4 +1,4 @@
-jlocal refill = {}
+local refill = {}
 
 refill.name = "SS2024/CursedRefill"
 refill.depth = -100
