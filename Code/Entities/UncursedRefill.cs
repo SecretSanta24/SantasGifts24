@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
 
 

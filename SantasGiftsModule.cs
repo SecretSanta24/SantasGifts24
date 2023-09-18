@@ -1,5 +1,5 @@
 ﻿using System;
-using Celeste.Mod.SantasGifts24.Code.Entities.Lyra;
+using Celeste.Mod.SantasGifts24.Code.Entities;
 using Celeste.Mod.SantasGifts24.Entities;
 using Celeste.Mod.SantasGifts24.Triggers;
 
