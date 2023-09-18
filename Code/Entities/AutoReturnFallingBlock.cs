@@ -192,11 +192,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     StopShaking();
                     break;
                 }
-                float impactTimer = 0.4f;
+                float impactTimer = restartDelay;
 
                 Vector2 crashPosition = Position;
 
-                while (impactTimer > 0f && PlayerWaitCheck())
+                while (impactTimer > 0f)
                 {
                     yield return null;
                     impactTimer -= Engine.DeltaTime;
@@ -210,9 +210,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
 
                     yield return 0.2f;
-                    float timer = restartDelay;
+                    float timer = 0.4f;
 
-                    while (timer > 0f && PlayerWaitCheck())
+                    while (timer > 0f)
                     {
                         yield return null;
                         timer -= Engine.DeltaTime;
