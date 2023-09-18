@@ -48,4 +48,4 @@ function smwDoor.rotate(room, entity, direction)
 end
 
 
-return smwDoor
+return nil
