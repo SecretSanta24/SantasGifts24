@@ -49,4 +49,4 @@ function fallingBlock.depth(room, entity)
     return entity.behind and 5000 or 0
 end
 
-return fallingBlock
+return nil

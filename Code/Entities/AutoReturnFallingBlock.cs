@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     [CustomEntity("SS2024/AutoReturnFallingBlock")]
     public class AutoReturnFallingBlock : FallingBlock
@@ -81,15 +81,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
             Add(new Coroutine(NewSequence()));
         }
 
-        private enum Orientation { Up, Down, Left, Right}
+        private enum Orientation { Up, Down, Left, Right }
 
         private IEnumerator NewSequence()
         {
             while (true)
             {
-                while (!Triggered && (!PlayerFallCheck()))
+                while (!Triggered && !PlayerFallCheck())
                 {
-                    if (flagTrigger != "" && (SceneAs<Level>().Session.GetFlag(flagTrigger) ^ invertTriggerFlag))
+                    if (flagTrigger != "" && SceneAs<Level>().Session.GetFlag(flagTrigger) ^ invertTriggerFlag)
                     {
                         Triggered = true;
                     }
@@ -119,18 +119,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                     }
 
                     StopShaking();
-                    for (int i = 2; (float)i < Width; i += 4)
+                    for (int i = 2; i < Width; i += 4)
                     {
                         if (Scene.CollideCheck<Solid>(TopLeft + new Vector2(i, -2f)))
                         {
-                            SceneAs<Level>().Particles.Emit(P_FallDustA, 2, new Vector2(X + (float)i, Y), Vector2.One * 4f, (float)Math.PI / 2f);
+                            SceneAs<Level>().Particles.Emit(P_FallDustA, 2, new Vector2(X + i, Y), Vector2.One * 4f, (float)Math.PI / 2f);
                         }
 
-                        SceneAs<Level>().Particles.Emit(P_FallDustB, 2, new Vector2(X + (float)i, Y), Vector2.One * 4f);
+                        SceneAs<Level>().Particles.Emit(P_FallDustB, 2, new Vector2(X + i, Y), Vector2.One * 4f);
                     }
 
                     float speed = 0f;
-                    float maxSpeed = (this.maxSpeed);
+                    float maxSpeed = this.maxSpeed;
                     while (true)
                     {
                         Level level = SceneAs<Level>();
@@ -153,9 +153,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                                 break;
                         }
                         if (impact) break;
-                        if (Top > (float)(level.Bounds.Bottom + 16) || (Top > (float)(level.Bounds.Bottom - 1) && CollideCheck<Solid>(Position + new Vector2(0f, 1f))))
+                        if (Top > level.Bounds.Bottom + 16 || Top > level.Bounds.Bottom - 1 && CollideCheck<Solid>(Position + new Vector2(0f, 1f)))
                         {
-                            Collidable = (Visible = false);
+                            Collidable = Visible = false;
                             yield return 0.2f;
                             if (level.Session.MapData.CanTransitionTo(level, new Vector2(Center.X, Bottom + 12f)))
                             {
@@ -219,18 +219,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                     }
 
                     StopShaking();
-                    for (int i = 2; (float)i < Width; i += 4)
+                    for (int i = 2; i < Width; i += 4)
                     {
                         if (Scene.CollideCheck<Solid>(TopLeft + new Vector2(i, -2f)))
                         {
-                            SceneAs<Level>().Particles.Emit(P_FallDustA, 2, new Vector2(X + (float)i, Y), Vector2.One * 4f, (float)Math.PI / 2f);
+                            SceneAs<Level>().Particles.Emit(P_FallDustA, 2, new Vector2(X + i, Y), Vector2.One * 4f, (float)Math.PI / 2f);
                         }
 
-                        SceneAs<Level>().Particles.Emit(P_FallDustB, 2, new Vector2(X + (float)i, Y), Vector2.One * 4f);
+                        SceneAs<Level>().Particles.Emit(P_FallDustB, 2, new Vector2(X + i, Y), Vector2.One * 4f);
                     }
 
                     float speed = 0f;
-                    float maxSpeed = (this.maxSpeed);
+                    float maxSpeed = this.maxSpeed;
                     while (true)
                     {
                         Level level = SceneAs<Level>();
@@ -317,9 +317,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                             break;
                         }
 
-                        if (Top > (float)(level.Bounds.Bottom + 16) || (Top > (float)(level.Bounds.Bottom - 1) && CollideCheck<Solid>(Position + new Vector2(0f, 1f))))
+                        if (Top > level.Bounds.Bottom + 16 || Top > level.Bounds.Bottom - 1 && CollideCheck<Solid>(Position + new Vector2(0f, 1f)))
                         {
-                            Collidable = (Visible = false);
+                            Collidable = Visible = false;
                             yield return 0.2f;
                             if (level.Session.MapData.CanTransitionTo(level, new Vector2(Center.X, Bottom + 12f)))
                             {
@@ -362,30 +362,30 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
 
         private bool CheckFlag(string flag, bool invert)
         {
-            return flag != "" && (SceneAs<Level>().Session.GetFlag(flag) ^ invert);
+            return flag != "" && SceneAs<Level>().Session.GetFlag(flag) ^ invert;
         }
 
         private void ShakeSfx()
         {
             if (shakeSound != "")
             {
-                Audio.Play(shakeSound, base.Center);
+                Audio.Play(shakeSound, Center);
             }
             else if (TileType == '3')
             {
-                Audio.Play("event:/game/01_forsaken_city/fallblock_ice_shake", base.Center);
+                Audio.Play("event:/game/01_forsaken_city/fallblock_ice_shake", Center);
             }
             else if (TileType == '9')
             {
-                Audio.Play("event:/game/03_resort/fallblock_wood_shake", base.Center);
+                Audio.Play("event:/game/03_resort/fallblock_wood_shake", Center);
             }
             else if (TileType == 'g')
             {
-                Audio.Play("event:/game/06_reflection/fallblock_boss_shake", base.Center);
+                Audio.Play("event:/game/06_reflection/fallblock_boss_shake", Center);
             }
             else
             {
-                Audio.Play("event:/game/general/fallblock_shake", base.Center);
+                Audio.Play("event:/game/general/fallblock_shake", Center);
             }
         }
         //TODO: Add custom sounds, add slowdown, add return speed / acceleration
@@ -395,17 +395,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
             switch (orientation)
             {
                 case Orientation.Left:
-                    soundPos = base.CenterLeft;
+                    soundPos = CenterLeft;
                     break;
                 case Orientation.Right:
-                    soundPos = base.CenterRight; 
+                    soundPos = CenterRight;
                     break;
                 case Orientation.Up:
-                    soundPos = base.TopCenter;
+                    soundPos = TopCenter;
                     break;
                 case Orientation.Down:
                 default:
-                    soundPos = base.BottomCenter;
+                    soundPos = BottomCenter;
                     break;
 
             }
@@ -435,7 +435,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
         {
             if (impactSound != "")
             {
-                Audio.Play(impactSound, base.BottomCenter);
+                Audio.Play(impactSound, BottomCenter);
             }
         }
 
@@ -483,29 +483,29 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
             {
                 case Orientation.Left:
                 case Orientation.Right:
-                    pos1 = orientation == Orientation.Left ? base.TopLeft : base.TopRight;
-                    pos2 = orientation == Orientation.Left ? base.Left : base.Right;
-                    for (int i = 2; (float)i <= base.Height; i += 4)
+                    pos1 = orientation == Orientation.Left ? TopLeft : TopRight;
+                    pos2 = orientation == Orientation.Left ? Left : Right;
+                    for (int i = 2; i <= Height; i += 4)
                     {
-                        if (base.Scene.CollideCheck<Solid>(pos1 + new Vector2(3f, i)))
+                        if (Scene.CollideCheck<Solid>(pos1 + new Vector2(3f, i)))
                         {
-                            SceneAs<Level>().ParticlesFG.Emit(P_FallDustA, 1, new Vector2(pos2, base.Y + (float)i), Vector2.One * 4f, -(float)Math.PI / 2f);
-                            float direction = ((!((float)i < base.Height / 2f)) ? 0f : ((float)Math.PI));
-                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(pos2, base.Y + (float)i), Vector2.One * 4f, direction + (float) Math.PI / 2);
+                            SceneAs<Level>().ParticlesFG.Emit(P_FallDustA, 1, new Vector2(pos2, Y + i), Vector2.One * 4f, -(float)Math.PI / 2f);
+                            float direction = !(i < Height / 2f) ? 0f : (float)Math.PI;
+                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(pos2, Y + i), Vector2.One * 4f, direction + (float)Math.PI / 2);
                         }
                     }
                     break;
-                case Orientation.Up: 
+                case Orientation.Up:
                 case Orientation.Down:
-                    pos1 = orientation == Orientation.Down ? base.BottomLeft : base.TopLeft;
-                    pos2 = orientation == Orientation.Down ? base.Bottom : base.Top;
-                    for (int i = 2; (float)i <= base.Width; i += 4)
+                    pos1 = orientation == Orientation.Down ? BottomLeft : TopLeft;
+                    pos2 = orientation == Orientation.Down ? Bottom : Top;
+                    for (int i = 2; i <= Width; i += 4)
                     {
-                        if (base.Scene.CollideCheck<Solid>(pos1 + new Vector2(i, 3f)))
+                        if (Scene.CollideCheck<Solid>(pos1 + new Vector2(i, 3f)))
                         {
-                            SceneAs<Level>().ParticlesFG.Emit(P_FallDustA, 1, new Vector2(base.X + (float)i, pos2), Vector2.One * 4f, -(float)Math.PI / 2f);
-                            float direction = ((!((float)i < base.Width / 2f)) ? 0f : ((float)Math.PI));
-                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(base.X + (float)i, pos2), Vector2.One * 4f, direction);
+                            SceneAs<Level>().ParticlesFG.Emit(P_FallDustA, 1, new Vector2(X + i, pos2), Vector2.One * 4f, -(float)Math.PI / 2f);
+                            float direction = !(i < Width / 2f) ? 0f : (float)Math.PI;
+                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(X + i, pos2), Vector2.One * 4f, direction);
                         }
                     }
                     break;
