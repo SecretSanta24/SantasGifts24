@@ -404,6 +404,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                     soundPos = base.TopCenter;
                     break;
                 case Orientation.Down:
+                default:
                     soundPos = base.BottomCenter;
                     break;
 
@@ -483,14 +484,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.Lyra
                 case Orientation.Left:
                 case Orientation.Right:
                     pos1 = orientation == Orientation.Left ? base.TopLeft : base.TopRight;
-                    pos2 = orientation == Orientation.Left ? base.Right : base.Left;
+                    pos2 = orientation == Orientation.Left ? base.Left : base.Right;
                     for (int i = 2; (float)i <= base.Height; i += 4)
                     {
-                        if (base.Scene.CollideCheck<Solid>(pos1 + new Vector2(i, 3f)))
+                        if (base.Scene.CollideCheck<Solid>(pos1 + new Vector2(3f, i)))
                         {
                             SceneAs<Level>().ParticlesFG.Emit(P_FallDustA, 1, new Vector2(pos2, base.Y + (float)i), Vector2.One * 4f, -(float)Math.PI / 2f);
                             float direction = ((!((float)i < base.Height / 2f)) ? 0f : ((float)Math.PI));
-                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(pos2, base.Y + (float)i), Vector2.One * 4f, direction);
+                            SceneAs<Level>().ParticlesFG.Emit(P_LandDust, 1, new Vector2(pos2, base.Y + (float)i), Vector2.One * 4f, direction + (float) Math.PI / 2);
                         }
                     }
                     break;
