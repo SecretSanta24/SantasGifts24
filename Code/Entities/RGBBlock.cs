@@ -13,6 +13,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
     public class RGBBlock : Solid
     {
 		private static MTexture[,] nineSliceTexture;
+        private static MTexture[,] nineSliceTextureInverse;
         private Color ActiveColor;
 		private Color DisabledColor;
 
@@ -22,8 +23,12 @@ namespace Celeste.Mod.SantasGifts24.Entities
         private string[] textureName = { "red", "green", "blue", "yellow", "magenta", "cyan", "white", "black" };
 		private Image onTexture;
 		private Image offTexture;
+        private bool inverse = false;
+
+        private bool lastCollideState = false;
         public RGBBlock(EntityData data, Vector2 offset) : base(data.Position + offset, (float) data.Width, (float) data.Height, false)
         {
+            inverse = data.Bool("Inverse", false);
             colorIndex = data.Int("ActiveColor", 0);
 			ActiveColor = colors[colorIndex];
             Color color = Calc.HexToColor("667da5");
@@ -45,15 +50,64 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     }
                 }
             }
+            if (nineSliceTextureInverse == null)
+            {
+                MTexture mtexture = GFX.Game["objects/ss2024/rgbblock/block_inverse"];
+                nineSliceTextureInverse = new MTexture[3, 3];
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        nineSliceTextureInverse[i, j] = mtexture.GetSubtexture(new Rectangle(i * 8, j * 8, 8, 8));
+                    }
+                }
+            }
 
-			base.Add(onTexture = new(GFX.Game[$"objects/ss2024/rgbblock/{textureName[colorIndex]}_on"]));
+            base.Add(onTexture = new(GFX.Game[$"objects/ss2024/rgbblock/{textureName[colorIndex]}_on"]));
             onTexture.Position += new Vector2(data.Width, data.Height)/2;
             onTexture.CenterOrigin();
             base.Add(offTexture = new(GFX.Game[$"objects/ss2024/rgbblock/{textureName[colorIndex]}_off"]));
             offTexture.Position += new Vector2(data.Width, data.Height)/2;
-            offTexture.CenterOrigin();
+			offTexture.CenterOrigin();
+            offTexture.Color = new Color(100, 100, 100);
+
+            if(inverse)
+            {
+                onTexture.FlipX = true;
+                onTexture.FlipY = true;
+                offTexture.FlipX = true;
+                offTexture.FlipY = true;
+            }
+
+            this.Depth = 1;
         }
 
+        public override void Awake(Scene scene)
+        {
+            base.Awake(scene);
+            foreach (StaticMover staticMover in this.staticMovers)
+            {
+                Spikes spikes = staticMover.Entity as Spikes;
+                if (spikes != null)
+                {
+                    spikes.EnabledColor = ActiveColor;
+                    spikes.DisabledColor = DisabledColor;
+                    spikes.VisibleWhenDisabled = true;
+                    spikes.SetSpikeColor(ActiveColor);
+                }
+                Spring spring = staticMover.Entity as Spring;
+                if (spring != null)
+                {
+                    spring.DisabledColor = DisabledColor;
+                    spring.VisibleWhenDisabled = true;
+                }
+            }
+            DisableStaticMovers();
+            foreach (StaticMover staticMover in this.staticMovers)
+            {
+                staticMover.Entity.Depth = 2;
+            }
+        }
         public override void Update()
         {
 			base.Update();
@@ -66,17 +120,33 @@ namespace Celeste.Mod.SantasGifts24.Entities
             flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_green") ? 1 : 0);
             flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_blue") ? 1 : 0);
 
-			this.Collidable = (flagByte & flags[colorIndex]) == flags[colorIndex] || (colorIndex == 7 && flagByte == 0);
-			if (player.CollideCheck(this)) this.Collidable = false;
-			if(this.Collidable)
-			{
-				this.Depth = -1;
-			} else
-			{
-				this.Depth = 1;
-			}
+            this.Collidable = (flagByte & flags[colorIndex]) == flags[colorIndex] || (colorIndex == 7 && flagByte == 0);
+            if (inverse) this.Collidable = !this.Collidable;
+            if (player.CollideCheck(this)) this.Collidable = false;
+            if (lastCollideState != this.Collidable)
+            {
+                if (this.Collidable)
+                {
+                    this.EnableStaticMovers();
+                    this.Depth = -2;
+                    foreach (StaticMover staticMover in this.staticMovers)
+                    {
+                        staticMover.Entity.Depth = -1;
+                    }
+                }
+                else
+                {
+                    this.DisableStaticMovers();
+                    this.Depth = 1;
+                    foreach (StaticMover staticMover in this.staticMovers)
+                    {
+                        staticMover.Entity.Depth = 2;
+                    }
+                }
+            }
 			offTexture.Visible = !this.Collidable;
             onTexture.Visible = this.Collidable;
+            lastCollideState = this.Collidable;
         }
 
         public override void Render()
@@ -87,7 +157,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
 			Color color = ActiveColor;
 			if (!this.Collidable) color = DisabledColor;
 
-			MTexture[,] nineSliceTexture = RGBBlock.nineSliceTexture;
+			MTexture[,] nineSliceTexture = (inverse ? RGBBlock.nineSliceTextureInverse : RGBBlock.nineSliceTexture);
 
             int num = (int)(width / 8f);
 			int num2 = (int)(height / 8f);

@@ -11,7 +11,8 @@ entity.placements = {
     data = {
         ActiveColor = 0,
         width = 16,
-        height = 16
+        height = 16,
+        Inverse = false
     }
 }
 
