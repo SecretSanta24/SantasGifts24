@@ -54,6 +54,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         private bool bufferGrab;
         private bool ultraBufferGrab;
         private bool grabOnDashEnd;
+        private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -115,7 +116,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
-            Collider = Hold.PickupCollider;
+            Collider = doorCollider;
             List<Entity> doors = CollideAll<SMWDoor>();
             if (doors.Count > 0)
             {
@@ -568,6 +569,13 @@ namespace Celeste.Mod.SantasGifts24.Entities
         {
             SceneAs<Level>().Remove(this);
         }
-
+        public override void DebugRender(Camera camera)
+        {
+            base.DebugRender(camera);
+            Collider tempHold = Collider;
+            Collider = doorCollider;
+            Draw.HollowRect(Collider, Color.IndianRed);
+            Collider = tempHold;
+        }
     }
 }

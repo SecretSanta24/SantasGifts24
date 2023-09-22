@@ -5,16 +5,36 @@ local atlases = require("atlases")
 local utils = require("utils")
 local drawing = require("utils.drawing")
 
-local smwDoor = {}
+local doors = {}
 
-smwDoor.name = "SS2024/SMWDoor"
-smwDoor.depth = 0
-smwDoor.minimumSize = {8, 8}
-smwDoor.placements = {}
-smwDoor.canResize = {false, true}
+local smwDoorVert = {}
 
-table.insert(smwDoor.placements, {
-	name = "SMW Door",
+smwDoorVert.name = "SS2024/SMWDoor"
+smwDoorVert.depth = 0
+smwDoorVert.minimumSize = {8, 8}
+smwDoorVert.placements = {}
+smwDoorVert.canResize = {false, true}
+
+
+local smwDoorHoriz = {}
+
+smwDoorHoriz.name = "SS2024/SMWDoorHorizontal"
+smwDoorHoriz.depth = 0
+smwDoorHoriz.minimumSize = {8, 8}
+smwDoorHoriz.placements = {}
+smwDoorHoriz.canResize = {true, false}
+
+
+table.insert(smwDoorHoriz.placements, {
+	name = "SMW Door (Horizontal)",
+    data = {
+		width = 24,
+        height = 8
+    }
+})
+
+table.insert(smwDoorVert.placements, {
+	name = "SMW Door (Vertical)",
     data = {
 		width = 8,
         height = 24
@@ -22,20 +42,22 @@ table.insert(smwDoor.placements, {
 })
 
 
-local scissorsTexture = "objects/ss2024/smwDoor/smwDoor"
+
+
+local texture = "objects/ss2024/smwDoor/smwDoor"
 
 local ninePatchOptions = {
     mode = "fill",
     borderMode = "repeat"
 }
 
-function smwDoor.sprite(room, entity)
+function smwDoorVert.sprite(room, entity)
 	local sprites = {}
 	local height = entity.height
 	local x = entity.x
 	local y = entity.y
 	for i=0,height/8 - 1,1 do
-		local sprite = drawableSprite.fromTexture(scissorsTexture, {x = x, y = y + i * 8, atlas = atlas})
+		local sprite = drawableSprite.fromTexture(texture, {x = x, y = y + i * 8, atlas = atlas})
 		sprite:setJustification(0.0, 0.0)
 		table.insert(sprites, sprite)
 	end
@@ -43,9 +65,23 @@ function smwDoor.sprite(room, entity)
 	return sprites
 end
 
-function smwDoor.rotate(room, entity, direction)
+function smwDoorHoriz.sprite(room, entity)
+	local sprites = {}
+	local width = entity.width
+	local x = entity.x
+	local y = entity.y
+	for i=0,width/8 - 1,1 do
+		local sprite = drawableSprite.fromTexture(texture, {x = x + i * 8, y = y, atlas = atlas})
+		sprite:setJustification(0.0, 0.0)
+		table.insert(sprites, sprite)
+	end
+
+	return sprites
+end
+
+function smwDoorVert.rotate(room, entity, direction)
     return true
 end
 
 
-return smwDoor
+return {smwDoorVert, smwDoorHoriz}

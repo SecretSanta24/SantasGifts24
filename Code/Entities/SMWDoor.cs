@@ -11,10 +11,19 @@ using System.Threading.Tasks;
 namespace Celeste.Mod.SantasGifts24.Entities
 {
     [Tracked]
-    [CustomEntity("SS2024/SMWDoor")]
+    [CustomEntity(new string[] { 
+        "SS2024/SMWDoor = LoadVertical", 
+        "SS2024/SMWDoorVertical = LoadVertical", 
+        "SS2024/SMWDoorHorizontal = LoadHorizontal" })]
     public class SMWDoor : Solid
     {
         private MTexture doorTexture;
+        private Orientations orientation;
+
+        public static Entity LoadVertical(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Vertical);
+        public static Entity LoadHorizontal(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Horizontal);
+
+        public enum Orientations { Vertical,  Horizontal };
 
         public SMWDoor(Vector2 position, float width, float height, bool safe) :
             base(position, width, height, safe)
@@ -22,18 +31,27 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         }
 
-
-        public SMWDoor(EntityData data, Vector2 offset) : base(data.Position + offset, 8, data.Height, false)
+        public SMWDoor(EntityData data, Vector2 offset, Orientations ori) : 
+            base(
+                data.Position + offset, 
+                ori == Orientations.Vertical ? 8 : data.Width, 
+                ori == Orientations.Vertical ? data.Height : 8, 
+                false)
         {
             doorTexture = GFX.Game["objects/ss2024/smwDoor/smwDoor"];
+            orientation = ori;
+        }
+
+        public SMWDoor(EntityData data, Vector2 offset) : this(data, offset, Orientations.Vertical)
+        {
         }
 
         public override void Render()
         {
             base.Render();
-            for (int i = 0; i< (int) Height / 8; i++)
+            for (int i = 0; i< (int) (orientation == Orientations.Vertical ? Height : Width) / 8; i++)
             {
-                doorTexture.Draw(Position + new Vector2(0, i * 8));
+                doorTexture.Draw(Position + new Vector2(orientation == Orientations.Horizontal ? i * 8 : 0, orientation == Orientations.Vertical ? i * 8 : 0));
             }
         }
     }
