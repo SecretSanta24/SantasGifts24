@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
+using System.Data;
+using System.Linq;
 
 namespace Celeste.Mod.SantasGifts24.Entities
 {
@@ -19,11 +21,16 @@ namespace Celeste.Mod.SantasGifts24.Entities
 		string flag; 
         private Image onTexture;
         private Image offTexture;
+        private bool ResetOnDeath;
+        private static bool[] FlagStates = { false, false, false};
+        private static string flagStateLevel;
         public RGBBlockSwitch(EntityData data, Vector2 offset) : base(data.Position + offset, (float) data.Width, (float) data.Height, false)
         {
             colorIndex = data.Int("ActiveColor", 0);
+            ResetOnDeath = data.Bool("ResetColorsOnDeath", true);
 			ActiveColor = colors[colorIndex];
 			flag = (colorIndex == 0 ? "_rgbblock_red" : (colorIndex == 1 ? "_rgbblock_green" : "_rgbblock_blue"));
+
             Color color = Calc.HexToColor("667da5");
             DisabledColor = new Color((float)color.R / 255f * ((float)ActiveColor.R / 255f), (float)color.G / 255f * ((float)ActiveColor.G / 255f), (float)color.B / 255f * ((float)ActiveColor.B / 255f), 1f);
 			if (nineSliceTexture == null)
@@ -46,8 +53,56 @@ namespace Celeste.Mod.SantasGifts24.Entities
             offTexture.Position += new Vector2(data.Width, data.Height-3) / 2;
             offTexture.CenterOrigin();
             this.OnDashCollide = new DashCollision(this.OnDashed);
+
+            
+            if (ResetOnDeath)
+            {
+                //curtesy of frosthelper
+                Level lvl = Engine.Scene switch
+                {
+                    Level level => level,
+                    LevelLoader loader => loader.Level,
+                    AssetReloadHelper => (Level)AssetReloadHelper.ReturnToScene,
+                    _ => throw new Exception("GetCurrentLevel called outside of a level... how did you manage that?")
+                };
+                Session session = lvl.Session;
+                if (session != null)
+                {
+                    if (flagStateLevel == lvl.Session.Level)
+                    {
+                        session.SetFlag("_rgbblock_red", FlagStates[0]);
+                        session.SetFlag("_rgbblock_green", FlagStates[1]);
+                        session.SetFlag("_rgbblock_blue", FlagStates[2]);
+                    } else
+                    {
+                        flagStateLevel = lvl.Session.Level;
+                        FlagStates[0] = session.GetFlag("_rgbblock_red");
+                        FlagStates[1] = session.GetFlag("_rgbblock_green");
+                        FlagStates[2] = session.GetFlag("_rgbblock_blue");
+                    } 
+                }
+            }
         }
 
+        public static void Load()
+        {
+            On.Celeste.Level.LoadLevel += Level_LoadLevel;
+        }
+
+
+        public static void Unload()
+        {
+            On.Celeste.Level.LoadLevel -= Level_LoadLevel;
+        }
+
+        private static void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader)
+        {
+            if (playerIntro == Player.IntroTypes.Transition)
+            {
+                flagStateLevel = null;
+            }
+            orig(self, playerIntro, isFromLoader);
+        }
         private DashCollisionResults OnDashed(Player player, Vector2 direction)
         {
 			Session session = (Scene as Level).Session;
@@ -57,7 +112,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
                 Audio.Play("event:/game/05_mirror_temple/button_activate", this.Position);
             }
-
 
             return DashCollisionResults.Rebound;
         }
