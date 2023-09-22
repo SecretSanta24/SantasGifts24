@@ -28,6 +28,7 @@ namespace Celeste.Mod.SantasGifts24
 			RandomizeStartRoomController.Load();
 			DisableDeathSoundTrigger.Load();
 			CursedRefill.Load();
+			SMWKey.Load();
 		}
 
 		public override void Unload()
@@ -35,6 +36,7 @@ namespace Celeste.Mod.SantasGifts24
             RandomizeStartRoomController.Unload();
             DisableDeathSoundTrigger.Unload();
             CursedRefill.Unload();
+            SMWKey.Unload();
         }
 	}
 }

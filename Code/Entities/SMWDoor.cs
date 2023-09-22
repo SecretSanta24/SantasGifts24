@@ -23,7 +23,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         }
 
 
-        public SMWDoor(EntityData data, Vector2 offset) : base(data.Position, 8, data.Height, false)
+        public SMWDoor(EntityData data, Vector2 offset) : base(data.Position + offset, 8, data.Height, false)
         {
             doorTexture = GFX.Game["objects/ss2024/smwDoor/smwDoor"];
         }

@@ -6,9 +6,8 @@ using MonoMod.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Color = Microsoft.Xna.Framework.Color;
+using Image = Monocle.Image;
 
 namespace Celeste.Mod.SantasGifts24.Entities
 {
@@ -45,13 +44,16 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         private float hardVerticalHitSoundCooldown;
 
-        private JumpThru keyPlatform;
+        private JumpThru keySolid;
 
         private float tutorialTimer;
         private Vector2 scissorSpawnDirection;
         private Vector2 JUMPTHROUGH_OFFSET = new Vector2(-10,-8);
         private bool destroyed;
         private float highFrictionTimer;
+        private bool bufferGrab;
+        private bool ultraBufferGrab;
+        private bool grabOnDashEnd;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -63,7 +65,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             sprite.SetOrigin(10, 10);
             sprite.Visible = true;
             Add(Hold = new Holdable(0.1f));
-            Hold.PickupCollider = new Hitbox(16f, 22f, -8f, -16f);
+            Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
             Hold.SlowFall = false;
             Hold.SlowRun = true;
             Hold.OnPickup = OnPickup;
@@ -80,8 +82,14 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Add(new VertexLight(base.Collider.Center, Color.White, 1f, 32, 64));
             base.Tag = Tags.TransitionUpdate;
             Add(new MirrorReflection());
+            Add(new DashListener(OnDash));
 
             
+        }
+
+        public void OnDash(Vector2 direction)
+        {
+            bufferGrab = direction.X != 0 && direction.Y > 0;
         }
 
 
@@ -95,14 +103,17 @@ namespace Celeste.Mod.SantasGifts24.Entities
             base.Added(scene);
             Level = SceneAs<Level>();
 
-            keyPlatform = new JumpThru(Position + JUMPTHROUGH_OFFSET, 20, false);
-            scene.Add(keyPlatform);
+            keySolid = new JumpThru(Position + JUMPTHROUGH_OFFSET, 20, false);
+            scene.Add(keySolid);
         }
 
         public override void Update()
         {
-            //key code
 
+            base.Update();
+            //key code
+            bool tempCollidableState = Collidable; //key should be considered 
+            Collidable = true;
             Collider tempHolder = Collider;
             Collider = Hold.PickupCollider;
             List<Entity> doors = CollideAll<SMWDoor>();
@@ -116,12 +127,23 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 return;
             }
             Collider = tempHolder;
-            keyPlatform.Position = Position + JUMPTHROUGH_OFFSET;
-            keyPlatform.Collidable = !Hold.IsHeld;
+            Player player = Scene.Tracker.GetEntity<Player>();
+            if (bufferGrab)
+            {
+                Collidable = true;
+                Collider = Hold.PickupCollider;
+                grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
+                Collider = tempHolder;
+            }
+            keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
+            float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
+            keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter + JUMPTHROUGH_OFFSET : Position + JUMPTHROUGH_OFFSET), f1));
             //glider code
             float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
 
-            base.Update();
+
+            bool temp = keySolid.Collidable;
+            keySolid.Collidable = false;
             if (!destroyed)
             {
                 foreach (SeekerBarrier entity in base.Scene.Tracker.GetEntities<SeekerBarrier>())
@@ -184,12 +206,12 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     else if (Hold.ShouldHaveGravity)
                     {
                         float num2 = 300F;
-                        if (Speed.Y >= -75F)
+                        if (Speed.Y >= -90F)
                         {
                             num2 *= 0.5f;
                         }
-                        float num3 = ((Speed.Y < 0f) ? 40f : ((!(highFrictionTimer <= 0f)) ? 10f : 40f));
-                        Speed.X = Calc.Approach(Speed.X, 0f, num3 * Engine.DeltaTime);
+                        float num3 = ((Speed.Y < 0f) ? 80F : ((!(highFrictionTimer <= 0f)) ? 20f : 80F));
+                        Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
                         if (noGravityTimer > 0f)
                         {
                             noGravityTimer -= Engine.DeltaTime;
@@ -200,7 +222,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
                         }
                         else
                         {
-                            Speed.Y = Calc.Approach(Speed.Y, 75F, num2 * Engine.DeltaTime);
+                            Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
                         }
                     }
                     MoveH(Speed.X * Engine.DeltaTime, onCollideH);
@@ -234,7 +256,9 @@ namespace Celeste.Mod.SantasGifts24.Entities
                         RemoveSelf();
                         return;
                     }
+
                     Hold.CheckAgainstColliders();
+
                 }
                 /*
                 else
@@ -266,6 +290,9 @@ namespace Celeste.Mod.SantasGifts24.Entities
             {
                 Position += Speed * Engine.DeltaTime;
             }
+
+            keySolid.Collidable = temp;
+            Collidable = tempCollidableState;
         }
 
         public IEnumerator Shatter()
@@ -287,6 +314,48 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Level.Shake();
             yield return 1f;
             Level.Shake();
+        }
+
+        public static void Load()
+        {
+            On.Celeste.Player.DashEnd += Player_DashEnd;
+            On.Celeste.Holdable.Pickup += Holdable_Pickup;
+        }
+
+        public static void Unload()
+        {
+            On.Celeste.Player.DashEnd -= Player_DashEnd;
+            On.Celeste.Holdable.Pickup -= Holdable_Pickup;
+        }
+
+        private static bool Holdable_Pickup(On.Celeste.Holdable.orig_Pickup orig, Holdable self, Player player)
+        {
+            if (self.Entity is SMWKey key)
+            {
+                if (key.bufferGrab) return false;
+            }
+            return orig.Invoke(self, player);
+        }
+
+        private static void Player_DashEnd(On.Celeste.Player.orig_DashEnd orig, Player self)
+        {
+            orig.Invoke(self);
+            foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
+            {
+                key.bufferGrab = false;
+                key.Hold.Visible = true;
+                key.Collidable = true;
+                if (key.grabOnDashEnd)
+                {
+
+                    key.grabOnDashEnd = false;
+                    key.Position = self.Position + self.Speed.SafeNormalize();
+                    key.Hold.Pickup(self);
+                    break;
+
+                }
+                key.grabOnDashEnd = false;
+            }
         }
 
         public void ExplodeLaunch(Vector2 from)
@@ -320,7 +389,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
-            if(keyPlatform != null) scene.Remove(keyPlatform);
+            if(keySolid != null) scene.Remove(keySolid);
         }
 
         public void HitSeeker(Seeker seeker)
@@ -477,6 +546,8 @@ namespace Celeste.Mod.SantasGifts24.Entities
         {
             Speed = Vector2.Zero;
             AddTag(Tags.Persistent);
+
+            this.keySolid.AddTag(Tags.Persistent);
         }
 
         private void OnRelease(Vector2 force)
@@ -486,7 +557,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             {
                 force.Y = -0.4f;
             }
-            Speed = force * 200f;
+            Speed = force * 150f;
             if (Speed != Vector2.Zero)
             {
                 noGravityTimer = 0.1f;
