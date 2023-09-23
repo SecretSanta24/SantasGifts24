@@ -83,5 +83,6 @@ function smwDoorVert.rotate(room, entity, direction)
     return true
 end
 
+local door = {smwDoorVert, smwDoorHoriz};
 
-return {smwDoorVert, smwDoorHoriz}
+return nil
