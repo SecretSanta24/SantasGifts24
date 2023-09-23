@@ -45,7 +45,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             flagTrigger = data.Attr("flagTrigger", "");
             resetFlagState = data.Bool("resetFlagState");
             fallFlagState = data.Bool("fallFlagState");
-            invertTriggerFlag = !data.Bool("invertFlagTrigger");
+            invertTriggerFlag = data.Bool("invertFlagTrigger");
             maxSpeed = data.Float("maxSpeed", 160);
             fallingAcceleration = data.Float("acceleration", 500);
             climbFall = data.Bool("climbFall", false);
