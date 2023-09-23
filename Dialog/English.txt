@@ -1,0 +1,2 @@
+﻿modname_SantasGifts24= Santa's Gifts 2024
+modoptions_SantasGifts_title= Secret Santa Collab 2024

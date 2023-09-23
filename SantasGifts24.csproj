@@ -43,6 +43,10 @@
         </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Ahorn\entities\" />
+    </ItemGroup>
+
     <Choose>
         <When Condition="'$(CelesteType)' == 'FNA'">
             <ItemGroup>
