@@ -19,14 +19,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 		private static readonly string LDModeKey = "SantasGifts24_LDMode";
 
 		internal static void OnTransition(Level level, LevelData next, Vector2 _direction) {
-			if (SantasGifts24Module.Session != null) {
-				SantasGifts24Module.Session.LightDark = level.LightDarkGet();
+			if (SantasGiftsModule.Instance.Session != null) {
+				SantasGiftsModule.Instance.Session.LightDark = level.LightDarkGet();
 			}
 		}
 
 		internal static LightDarkMode LightDarkGet(this Level level) {
 			DynamicData dd = DynamicData.For(level);
-			return dd.Data.ContainsKey(LDModeKey) ? dd.Get<LightDarkMode>(LDModeKey) : SantasGifts24Module.Session?.LightDark ?? LightDarkMode.Normal;
+			return dd.Data.ContainsKey(LDModeKey) ? dd.Get<LightDarkMode>(LDModeKey) : SantasGiftsModule.Instance.Session?.LightDark ?? LightDarkMode.Normal;
 		}
 
 		internal static void LightDarkSet(this Level level, LightDarkMode newMode, bool persistent = false) {
@@ -35,7 +35,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 			DynamicData dd = DynamicData.For(level);
 			dd.Set(LDModeKey, newMode);
 			if (persistent) {
-				SantasGifts24Module.Session.LightDark = newMode;
+				SantasGiftsModule.Instance.Session.LightDark = newMode;
 			}
 			List<Component> listeners = level.Tracker.GetComponents<LightDarkListener>();
 			foreach (LightDarkListener listener in listeners.Cast<LightDarkListener>()) {
