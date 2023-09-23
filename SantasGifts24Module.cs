@@ -24,10 +24,10 @@ public class SantasGifts24Module : EverestModule {
 	}
 
 	public override void Load() {
-            
+		Everest.Events.Level.OnTransitionTo += Code.Mechanics.LightDarkSwapMethods.OnTransition;
 	}
 
 	public override void Unload() {
-            
+		Everest.Events.Level.OnTransitionTo -= Code.Mechanics.LightDarkSwapMethods.OnTransition;
 	}
 }

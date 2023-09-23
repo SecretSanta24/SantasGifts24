@@ -1,0 +1,58 @@
+﻿using Celeste.Mod.SantasGifts24.Code.Components;
+using Microsoft.Xna.Framework;
+using Monocle;
+using MonoMod.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
+
+	public enum LightDarkMode {
+		Normal = 0,
+		Dark = 1,
+	}
+
+	internal static class LightDarkSwapMethods {
+		private static readonly string LDModeKey = "SantasGifts24_LDMode";
+
+		internal static void OnTransition(Level level, LevelData next, Vector2 _direction) {
+			if (SantasGifts24Module.Session != null) {
+				SantasGifts24Module.Session.LightDark = level.LightDarkGet();
+			}
+		}
+
+		internal static LightDarkMode LightDarkGet(this Level level) {
+			DynamicData dd = DynamicData.For(level);
+			return dd.Data.ContainsKey(LDModeKey) ? dd.Get<LightDarkMode>(LDModeKey) : SantasGifts24Module.Session?.LightDark ?? LightDarkMode.Normal;
+		}
+
+		internal static void LightDarkSet(this Level level, LightDarkMode newMode, bool persistent = false) {
+			if (level.LightDarkGet() == newMode) return;
+			level.Flash(newMode == LightDarkMode.Dark ? Color.Black * 0.6f : Color.AntiqueWhite * 0.25f);
+			DynamicData dd = DynamicData.For(level);
+			dd.Set(LDModeKey, newMode);
+			if (persistent) {
+				SantasGifts24Module.Session.LightDark = newMode;
+			}
+			List<Component> listeners = level.Tracker.GetComponents<LightDarkListener>();
+			foreach (LightDarkListener listener in listeners.Cast<LightDarkListener>()) {
+				listener.NotifyChange(newMode);
+			}
+		}
+
+		internal static void LightDarkSwap(this Level level, bool persistent = false) {
+			switch (level.LightDarkGet()) {
+				case LightDarkMode.Normal:
+					level.LightDarkSet(LightDarkMode.Dark, persistent);
+					break;
+				case LightDarkMode.Dark:
+					level.LightDarkSet(LightDarkMode.Normal, persistent);
+					break;
+			}
+		}
+
+	}
+}
