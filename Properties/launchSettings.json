@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "SantasGifts24": {
+      "commandName": "Project"
+    },
+    "Celeste": {
+      "commandName": "Executable",
+      "executablePath": "../../../../../Celeste.exe"
+    }
+  }
+}

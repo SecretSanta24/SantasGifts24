@@ -1,8 +1,14 @@
+using Celeste.Mod.SantasGifts24.Code.Mechanics;
+
 namespace Celeste.Mod.SantasGifts24
 {
     public class SantasGiftsSession : EverestModuleSession
     {
-        public bool DisableDeathSound { get; set; } = false;
+		// Light/Dark Mode
+		public LightDarkMode LightDark { get; set; }
+
+        // 
+		public bool DisableDeathSound { get; set; } = false;
 
 
         //cursed refill
