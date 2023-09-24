@@ -85,6 +85,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private IEnumerator NewSequence()
         {
+            yield return null;
             while (true)
             {
                 while (!Triggered && !PlayerFallCheck())
