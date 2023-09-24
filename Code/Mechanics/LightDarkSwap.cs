@@ -17,6 +17,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 
 	internal static class LightDarkSwapMethods {
 		private static readonly string LDModeKey = "SantasGifts24_LDMode";
+		private static readonly string LDNormalFlag = "SantasGifts24_LDNormal";
+		private static readonly string LDDarkFlag = "SantasGifts24_LDDark";
 
 		internal static void OnTransition(Level level, LevelData next, Vector2 _direction) {
 			if (SantasGiftsModule.Instance.Session != null) {
@@ -41,6 +43,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 			foreach (LightDarkListener listener in listeners.Cast<LightDarkListener>()) {
 				listener.NotifyChange(newMode);
 			}
+			level.Session.SetFlag(LDNormalFlag, newMode == LightDarkMode.Normal);
+			level.Session.SetFlag(LDDarkFlag, newMode == LightDarkMode.Dark);
 		}
 
 		internal static void LightDarkSwap(this Level level, bool persistent = false) {

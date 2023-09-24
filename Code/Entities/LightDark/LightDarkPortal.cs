@@ -9,8 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     [CustomEntity("SS2024/LightDarkPortal")]
     public class LightDarkPortal : Entity
     {

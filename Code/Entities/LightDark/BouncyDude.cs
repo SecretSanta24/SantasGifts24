@@ -10,8 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     [CustomEntity("SS2024/BouncyDude")]
     public class BouncyDude : HappyFunDude
     {
@@ -143,15 +142,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             SceneAs<Level>().Shake(0.15f);
 
             // Explode physics stuff
-            Collider = explodeEffectZone;
-            Player player = CollideFirst<Player>();
-            if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center))
-            {
-                player.ExplodeLaunch(Position, false, true);
-                DynamicData dd = DynamicData.For(player);
-                dd.Set("dashCooldownTimer", 0.02f);
-            }
-            Collider = null;
+            if (CurrentMode == LightDarkMode.Normal) {
+				Collider = explodeEffectZone;
+				Player player = CollideFirst<Player>();
+				if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center)) {
+					player.ExplodeLaunch(Position, false, true);
+					DynamicData dd = DynamicData.For(player);
+					dd.Set("dashCooldownTimer", 0.02f);
+				}
+				Collider = null;
+			}
+            else {
+                Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * 10, false));
+				Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * -10, true));
+			}
 
             Collidable = false;
             SpriteVisible = false;
