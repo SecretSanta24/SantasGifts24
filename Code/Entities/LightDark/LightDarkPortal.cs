@@ -86,7 +86,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private void OnPlayer(Player player, Circle to, LightDarkMode mode)
         {
-            Audio.Play("event:/game/general/seed_reappear", player.Position);
+            Audio.Play("event:/game/06_reflection/badeline_freakout_1", player.Position);
             cooldownPrimary = true;
             cooldownSecondary = true;
             player.Position = to.Center + Position;

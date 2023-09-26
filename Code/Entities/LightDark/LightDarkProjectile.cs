@@ -67,18 +67,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 				if (!CollideCheck(spring)) continue;
 				booped = true;
 				DynamicData dd = DynamicData.For(spring);
-				dd.Invoke("BounceAnimate");
 				switch (spring.Orientation) {
 					case Spring.Orientations.Floor:
-						fallSpeed = -160f;
+						if (fallSpeed >= 0) {
+							dd.Invoke("BounceAnimate");
+							fallSpeed = -200f;
+						}
 						break;
 					case Spring.Orientations.WallLeft:
+						dd.Invoke("BounceAnimate");
 						goLeft = false;
 						NormalSprite.FlipX = false;
 						DarkSprite.FlipX = false;
 						fallSpeed = -72;
 						break;
 					case Spring.Orientations.WallRight:
+						dd.Invoke("BounceAnimate");
 						goLeft = true;
 						NormalSprite.FlipX = true;
 						DarkSprite.FlipX = true;
@@ -98,10 +102,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 		}
 
 		private void OnPlayerTop(Player player) {
-			if (booped || CurrentMode == LightDarkMode.Normal) return;
+			if (CurrentMode == LightDarkMode.Normal) return;
 			Audio.Play("event:/game/general/thing_booped", Position);
 			booped = true;
 			player.Bounce(Position.Y);
+			fallSpeed = Calc.Max(0, fallSpeed);
 		}
 
 		private void OnPlayerSide(Player player, bool isLeft) {

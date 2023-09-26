@@ -2,6 +2,7 @@
 using Celeste.Mod.SantasGifts24.Code.Mechanics;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,6 +82,125 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 				currentSprite.Play(anim);
 				currentSprite.SetAnimationFrame(frame);
 			}
+		}
+
+		new public bool MoveHCollideSolids(float moveH, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
+			DynamicData dd = DynamicData.For(this);
+			if (Engine.DeltaTime == 0f) {
+				LiftSpeed.X = 0f;
+			}
+			else {
+				LiftSpeed.X = moveH / Engine.DeltaTime;
+			}
+
+			Vector2 movementCounter = dd.Get<Vector2>("movementCounter");
+			movementCounter.X += moveH;
+			int num = (int)Math.Round(movementCounter.X);
+			if (num != 0) {
+				movementCounter.X -= num;
+				dd.Set("movementCounter", movementCounter);
+				return MoveHExactCollideSolids(num, thruDashBlocks, onCollide);
+			}
+			dd.Set("movementCounter", movementCounter);
+			return false;
+		}
+
+		new public bool MoveVCollideSolids(float moveV, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
+			DynamicData dd = DynamicData.For(this);
+			if (Engine.DeltaTime == 0f) {
+				LiftSpeed.Y = 0f;
+			}
+			else {
+				LiftSpeed.Y = moveV / Engine.DeltaTime;
+			}
+
+			Vector2 movementCounter = dd.Get<Vector2>("movementCounter");
+			movementCounter.Y += moveV;
+			int num = (int)Math.Round(movementCounter.Y);
+			if (num != 0) {
+				movementCounter.Y -= num;
+				dd.Set("movementCounter", movementCounter);
+				return MoveVExactCollideSolids(num, thruDashBlocks, onCollide);
+			}
+			dd.Set("movementCounter", movementCounter);
+			return false;
+		}
+
+		new public bool MoveHExactCollideSolids(int moveH, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
+			float x = X;
+			int moveStep = Math.Sign(moveH);
+			int moveDistance = 0;
+			Solid solid = null;
+			Collider orig_collider = Collider;
+			if (orig_collider != null) {
+				Collider new_collider = new Hitbox(orig_collider.Width, orig_collider.Height - 2, orig_collider.Left, orig_collider.Top + 1);
+				Collider = new_collider;
+			}
+			while (moveH != 0) {
+				if (thruDashBlocks) {
+					foreach (DashBlock entity in Scene.Tracker.GetEntities<DashBlock>()) {
+						if (CollideCheck(entity, Position + Vector2.UnitX * moveStep)) {
+							entity.Break(Center, Vector2.UnitX * moveStep, true, true);
+							SceneAs<Level>().Shake(0.2f);
+							Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+						}
+					}
+				}
+
+				var p = CollideAll<Solid>(Position + Vector2.UnitX * moveStep);
+				solid = p.FirstOrDefault(e => !(e is HappyFunDudeSolid)) as Solid;
+				if (solid != null) {
+					break;
+				}
+				moveDistance += moveStep;
+				moveH -= moveStep;
+				X += moveStep;
+			}
+			X = x;
+			Collider = orig_collider;
+			MoveHExact(moveDistance);
+			if (solid != null) {
+				onCollide?.Invoke(Vector2.UnitX * moveStep, Vector2.UnitX * moveDistance, solid);
+			}
+			return solid != null;
+		}
+
+		new public bool MoveVExactCollideSolids(int moveV, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
+			float y = Y;
+			int num = Math.Sign(moveV);
+			int num2 = 0;
+			Platform platform = null;
+			Collider orig_collider = Collider;
+			if (orig_collider != null) {
+				Collider new_collider = new Hitbox(orig_collider.Width - 2, orig_collider.Height, orig_collider.Left + 1, orig_collider.Top);
+				Collider = new_collider;
+			}
+			while (moveV != 0) {
+				if (thruDashBlocks) {
+					foreach (DashBlock entity in Scene.Tracker.GetEntities<DashBlock>()) {
+						if (CollideCheck(entity, Position + Vector2.UnitY * num)) {
+							entity.Break(Center, Vector2.UnitY * num, true, true);
+							SceneAs<Level>().Shake(0.2f);
+							Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+						}
+					}
+				}
+				var p = CollideAll<Solid>(Position + Vector2.UnitY * num);
+				platform = p.FirstOrDefault(e => !(e is HappyFunDudeSolid)) as Solid;
+				if (platform != null) {
+					break;
+				}
+				num2 += num;
+				moveV -= num;
+				Y += num;
+			}
+			Y = y;
+			Collider = orig_collider;
+			MoveVExact(num2);
+			if (platform != null) {
+				onCollide?.Invoke(Vector2.UnitY * num, Vector2.UnitY * num2, platform);
+			}
+			return platform != null;
 		}
 
 	}

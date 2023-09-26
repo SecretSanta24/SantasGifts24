@@ -43,7 +43,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             DarkSprite = GFX.SpriteBank.Create("corkr900SS24BouncyDudeDark");
             DarkSprite.Position = new Vector2(0f, -8f);
             headHitbox = new Hitbox(16f, 4f, -8f, -16f);
-            bodyHitbox = new Hitbox(16f, 16f, -8f, -8f);
+            bodyHitbox = new Hitbox(16f, 18f, -8f, -10f);
             explodeEffectZone = new Circle(effectRadius);
             Add(new PlayerCollider(OnPlayerHead, headHitbox));
             Add(new PlayerCollider(OnPlayerBody, bodyHitbox));
