@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Celeste.Mod.SantasGifts24.Code.Entities;
 using Celeste.Mod.SantasGifts24.Entities;
 using Celeste.Mod.SantasGifts24.Triggers;
 
+[assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
 {
     public class SantasGiftsModule : EverestModule
