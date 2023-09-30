@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
 
-namespace Celeste.Mod.SantasGifts24.Entities
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     // by Aurora Aquir
     [CustomEntity("SS2024/BoosterZipper")]
