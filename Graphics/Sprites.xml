@@ -6,4 +6,9 @@
 		<Loop id="spin" path="booster" delay="0.06" frames="18-25"/>
 		<Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
 	</boosterZipper>
+	<madelineRocket path="objects/ss2024/rocket/auroraaquir/" start="loop">
+		<Justify x="0.5" y="0.5"/>
+		<Loop id="stopped" path="rocket" delay="0.1" frames="0"/>
+		<Loop id="loop" path="rocket" delay="0.1" frames="1-5"/>
+	</madelineRocket>
 </Sprites>
