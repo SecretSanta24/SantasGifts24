@@ -31,6 +31,7 @@ namespace Celeste.Mod.SantasGifts24
 			DisableDeathSoundTrigger.Load();
 			CursedRefill.Load();
 			RGBBlockSwitch.Load();
+			BoosterZipper.Load();
 			Everest.Events.Level.OnTransitionTo += Code.Mechanics.LightDarkSwapMethods.OnTransition;
 		}
 
@@ -40,7 +41,8 @@ namespace Celeste.Mod.SantasGifts24
             DisableDeathSoundTrigger.Unload();
             CursedRefill.Unload();
             RGBBlockSwitch.Unload();
-			Everest.Events.Level.OnTransitionTo -= Code.Mechanics.LightDarkSwapMethods.OnTransition;
+            BoosterZipper.Unload();
+            Everest.Events.Level.OnTransitionTo -= Code.Mechanics.LightDarkSwapMethods.OnTransition;
 		}
 	}
 }
