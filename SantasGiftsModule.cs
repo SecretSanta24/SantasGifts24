@@ -3,7 +3,7 @@ using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Celeste.Mod.SantasGifts24.Code.Entities;
-//using Celeste.Mod.SantasGifts24.Code.States;
+using Celeste.Mod.SantasGifts24.Code.States;
 using Celeste.Mod.SantasGifts24.Triggers;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -56,7 +56,7 @@ namespace Celeste.Mod.SantasGifts24
         private void AddCustomStates(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
         {
             orig.Invoke(self, position, spriteMode);
-            //RocketFly.StateNumber = self.StateMachine.AddState(RocketFly.Update, RocketFly.Coroutine, RocketFly.Begin, RocketFly.End);
+            RocketFly.StateNumber = self.StateMachine.AddState(RocketFly.Update, RocketFly.Coroutine, RocketFly.Begin, RocketFly.End);
         }
     }
 
