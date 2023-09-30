@@ -85,7 +85,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 		}
 
 		new public bool MoveHCollideSolids(float moveH, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
-			DynamicData dd = DynamicData.For(this);
 			if (Engine.DeltaTime == 0f) {
 				LiftSpeed.X = 0f;
 			}
@@ -93,20 +92,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 				LiftSpeed.X = moveH / Engine.DeltaTime;
 			}
 
-			Vector2 movementCounter = dd.Get<Vector2>("movementCounter");
 			movementCounter.X += moveH;
 			int num = (int)Math.Round(movementCounter.X);
 			if (num != 0) {
 				movementCounter.X -= num;
-				dd.Set("movementCounter", movementCounter);
 				return MoveHExactCollideSolids(num, thruDashBlocks, onCollide);
 			}
-			dd.Set("movementCounter", movementCounter);
 			return false;
 		}
 
 		new public bool MoveVCollideSolids(float moveV, bool thruDashBlocks, Action<Vector2, Vector2, Platform> onCollide = null) {
-			DynamicData dd = DynamicData.For(this);
 			if (Engine.DeltaTime == 0f) {
 				LiftSpeed.Y = 0f;
 			}
@@ -114,15 +109,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 				LiftSpeed.Y = moveV / Engine.DeltaTime;
 			}
 
-			Vector2 movementCounter = dd.Get<Vector2>("movementCounter");
 			movementCounter.Y += moveV;
 			int num = (int)Math.Round(movementCounter.Y);
 			if (num != 0) {
 				movementCounter.Y -= num;
-				dd.Set("movementCounter", movementCounter);
 				return MoveVExactCollideSolids(num, thruDashBlocks, onCollide);
 			}
-			dd.Set("movementCounter", movementCounter);
 			return false;
 		}
 

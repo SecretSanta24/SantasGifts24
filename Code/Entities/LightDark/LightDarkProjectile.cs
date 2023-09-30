@@ -68,23 +68,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			foreach (Spring spring in level.Entities.FindAll<Spring>().Cast<Spring>()) {
 				if (!CollideCheck(spring)) continue;
 				booped = true;
-				DynamicData dd = DynamicData.For(spring);
 				switch (spring.Orientation) {
 					case Spring.Orientations.Floor:
 						if (fallSpeed >= 0) {
-							dd.Invoke("BounceAnimate");
+							spring.BounceAnimate();
 							fallSpeed = -200f;
 						}
 						break;
 					case Spring.Orientations.WallLeft:
-						dd.Invoke("BounceAnimate");
+						spring.BounceAnimate();
 						goLeft = false;
 						NormalSprite.FlipX = false;
 						DarkSprite.FlipX = false;
 						fallSpeed = -72;
 						break;
 					case Spring.Orientations.WallRight:
-						dd.Invoke("BounceAnimate");
+						spring.BounceAnimate();
 						goLeft = true;
 						NormalSprite.FlipX = true;
 						DarkSprite.FlipX = true;
@@ -170,8 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			Player player = CollideFirst<Player>();
 			if (player != null && !player.Dead) {
 				player.ExplodeLaunch(Position, false, sideOnly);
-				DynamicData dd = DynamicData.For(player);
-				dd.Set("dashCooldownTimer", 0.02f);
+				player.dashCooldownTimer = 0.02f;
 			}
 			Collider = null;
 

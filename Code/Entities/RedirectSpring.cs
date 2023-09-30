@@ -41,7 +41,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 			cooldown = 0.05f;
 			Vector2 playerSpeed = player.Speed;
 			if (Orientation == Orientations.Floor) {
-				DynamicData.For(this).Invoke("BounceAnimate");
+				BounceAnimate();
 				player.SuperBounce(Top);
 				player.Speed.X = playerSpeed.X;
 				player.Speed.Y = Calc.Min(player.Speed.Y, -Math.Abs(playerSpeed.Y));
@@ -50,14 +50,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 			if (Orientation == Orientations.WallLeft) {
 				player.Speed.X = 0;
 				player.SideBounce(1, Right, CenterY);
-				DynamicData.For(this).Invoke("BounceAnimate");
+				BounceAnimate();
 				player.Speed.X = Calc.Max(player.Speed.X, Math.Abs(playerSpeed.X) * 1.2f);
 				return;
 			}
 			if (Orientation == Orientations.WallRight) {
 				player.Speed.X = 0;
 				player.SideBounce(-1, Left, CenterY);
-				DynamicData.For(this).Invoke("BounceAnimate");
+				BounceAnimate();
 				player.Speed.X = Calc.Min(player.Speed.X, -Math.Abs(playerSpeed.X) * 1.2f);
 				return;
 			}

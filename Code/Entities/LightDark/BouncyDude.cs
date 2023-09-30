@@ -72,8 +72,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             if (stateMachine.State == stIdle) {
 				Audio.Play("event:/game/general/thing_booped", Position);
 				player.ExplodeLaunch(Position, false, true);
-				DynamicData dd = DynamicData.For(player);
-				dd.Set("dashCooldownTimer", 0.02f);
+                player.dashCooldownTimer = 0.02f;
 				stateMachine.State = stBounced;
 			}
         }
@@ -147,8 +146,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 				Player player = CollideFirst<Player>();
 				if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center)) {
 					player.ExplodeLaunch(Position, false, true);
-					DynamicData dd = DynamicData.For(player);
-					dd.Set("dashCooldownTimer", 0.02f);
+					player.dashCooldownTimer = 0.02f;
 				}
 				Collider = null;
 			}
