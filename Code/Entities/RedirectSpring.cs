@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Celeste.Mod.Entities;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities {
+	[TrackedAs(typeof(Spring))]
 	[CustomEntity("SS2024/RedirectSpringUp", "SS2024/RedirectSpringLeft", "SS2024/RedirectSpringRight")]
 	public class RedirectSpring : Spring {
 
@@ -27,7 +28,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 		private float cooldown = 0;
 
 		public RedirectSpring(EntityData data, Vector2 offset) : base(data, offset, GetOrientation(data)) {
-			Get<PlayerCollider>().OnCollide = OnCollide;
+			Get<PlayerCollider>().OnCollide = OnPlayerCollide;
 		}
 
 		public override void Update() {
@@ -35,7 +36,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 			if (cooldown > 0) cooldown -= Engine.DeltaTime;
 		}
 
-		private void OnCollide(Player player) {
+		private void OnPlayerCollide(Player player) {
 			if (cooldown > 0) return;
 			cooldown = 0.05f;
 			Vector2 playerSpeed = player.Speed;

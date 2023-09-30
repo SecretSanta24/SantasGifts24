@@ -22,6 +22,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 		private PlayerCollider playerColliderLeft;
 		private PlayerCollider playerColliderRight;
 
+		public bool Exploded { get; private set; } = false;
+
 		public LightDarkProjectile(Vector2 pos, bool left) : base(pos, 20, 16) {
 			goLeft = left;
 			NormalSprite = GFX.SpriteBank.Create("corkr900SS24LightDarkProjectileNormal");
@@ -93,11 +95,39 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			}
 		}
 
-		private void OnFlyCollide(Vector2 arg1, Vector2 arg2, Platform arg3) {
+		private void OnFlyCollide(Vector2 arg1, Vector2 arg2, Platform plat) {
+			if (plat is DashSwitch ds && !ds.pressed) {
+				if (goLeft && ds.side == DashSwitch.Sides.Left) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+				else if (!goLeft && ds.side == DashSwitch.Sides.Right) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+			}
 			Explode();
 		}
 
-		private void OnFallCollide(Vector2 arg1, Vector2 arg2, Platform arg3) {
+		private void OnFallCollide(Vector2 arg1, Vector2 arg2, Platform plat) {
+			if (plat is DashSwitch ds && !ds.pressed) {
+				if (goLeft && ds.side == DashSwitch.Sides.Left) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+				else if (!goLeft && ds.side == DashSwitch.Sides.Right) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+				else if (fallSpeed > 0 && ds.side == DashSwitch.Sides.Down) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+				else if (fallSpeed < 0 && ds.side == DashSwitch.Sides.Up) {
+					ds.OnDashed(null, ds.pressDirection);
+					return;
+				}
+			}
 			Explode();
 		}
 
@@ -106,23 +136,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			Audio.Play("event:/game/general/thing_booped", Position);
 			booped = true;
 			player.Bounce(Position.Y);
-			fallSpeed = Calc.Max(0, fallSpeed);
+			//fallSpeed = Calc.Max(0, fallSpeed);
 		}
 
 		private void OnPlayerSide(Player player, bool isLeft) {
 			if (booped) return;
 			if (isLeft == goLeft) {
-				Explode();
+				Explode(true);
 			}
 			else {
 				player.Die(isLeft ? Vector2.UnitX : -Vector2.UnitX);
 			}
 		}
 
-		private void Explode() {
+		private void Explode(bool sideOnly = false) {
+			if (Exploded) return;
+			Exploded = true;
 			Audio.Play("event:/new_content/game/10_farewell/puffer_splode", Position)
 				.setVolume(0.5f);
-
 			Entity explodeFXEntity = new Entity();
 			explodeFXEntity.Position = Position;
 			Scene.Add(explodeFXEntity);
@@ -138,7 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			Collider = explodeEffectZone;
 			Player player = CollideFirst<Player>();
 			if (player != null && !player.Dead) {
-				player.ExplodeLaunch(Position, false, false);
+				player.ExplodeLaunch(Position, false, sideOnly);
 				DynamicData dd = DynamicData.For(player);
 				dd.Set("dashCooldownTimer", 0.02f);
 			}

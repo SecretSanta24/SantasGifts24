@@ -105,10 +105,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             if (ldm == LightDarkMode.Normal) {
                 spritePrimary.Play("reenable");
 				spriteSecondary.Play("disable");
+				// TMP
+				spritePrimary.SetColor(Color.White);
+				spriteSecondary.SetColor(Color.White * 0.3f);
 			}
             else {
 				spritePrimary.Play("disable");
 				spriteSecondary.Play("reenable");
+                // TMP
+                spritePrimary.SetColor(Color.White * 0.3f);
+				spriteSecondary.SetColor(Color.White);
 			}
 		}
 
