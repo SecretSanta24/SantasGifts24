@@ -20,6 +20,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 		private static readonly string LDNormalFlag = "SantasGifts24_LDNormal";
 		private static readonly string LDDarkFlag = "SantasGifts24_LDDark";
 
+		internal static void Load() {
+			Everest.Events.Level.OnTransitionTo += OnTransition;
+			Everest.Events.Level.OnLoadLevel += OnLoadLevel;
+		}
+
+		internal static void Unload() {
+			Everest.Events.Level.OnTransitionTo -= OnTransition;
+			Everest.Events.Level.OnLoadLevel -= OnLoadLevel;
+		}
+
+		private static void OnLoadLevel(Level level, Player.IntroTypes introType, bool isFromLoader) {
+			level.LightDarkSet(SantasGiftsModule.Instance?.Session?.LightDark ?? LightDarkMode.Normal);
+		}
+
 		internal static void OnTransition(Level level, LevelData next, Vector2 _direction) {
 			if (SantasGiftsModule.Instance.Session != null) {
 				SantasGiftsModule.Instance.Session.LightDark = level.LightDarkGet();

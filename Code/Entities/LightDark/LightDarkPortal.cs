@@ -53,7 +53,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
 		public override void Added(Scene scene) {
 			base.Added(scene);
-            currentMode = (scene as Level)?.LightDarkGet() ?? LightDarkMode.Normal;
+            OnModeChange((scene as Level)?.LightDarkGet() ?? LightDarkMode.Normal);
 		}
 
 		public override void Update()

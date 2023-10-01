@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Celeste.Mod.SantasGifts24.Code.Entities;
 using Celeste.Mod.SantasGifts24.Code.States;
 using Celeste.Mod.SantasGifts24.Triggers;
+using Celeste.Mod.SantasGifts24.Code.Mechanics;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -36,9 +37,9 @@ namespace Celeste.Mod.SantasGifts24
 			CursedRefill.Load();
 			RGBBlockSwitch.Load();
 			BoosterZipper.Load();
-			Everest.Events.Level.OnTransitionTo += Code.Mechanics.LightDarkSwapMethods.OnTransition;
-
-            On.Celeste.Player.ctor += AddCustomStates;
+			LightDarkSwapMethods.Load();
+			
+			On.Celeste.Player.ctor += AddCustomStates;
         }
 
 		public override void Unload()
@@ -48,7 +49,7 @@ namespace Celeste.Mod.SantasGifts24
             CursedRefill.Unload();
             RGBBlockSwitch.Unload();
             BoosterZipper.Unload();
-            Everest.Events.Level.OnTransitionTo -= Code.Mechanics.LightDarkSwapMethods.OnTransition;
+            LightDarkSwapMethods.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
