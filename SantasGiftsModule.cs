@@ -8,6 +8,7 @@ using Celeste.Mod.SantasGifts24.Triggers;
 using Celeste.Mod.SantasGifts24.Code.Mechanics;
 using Microsoft.Xna.Framework;
 using Monocle;
+using Celeste.Mod.SantasGifts24.Code.Triggers;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
@@ -38,6 +39,7 @@ namespace Celeste.Mod.SantasGifts24
 			RGBBlockSwitch.Load();
 			BoosterZipper.Load();
 			LightDarkSwapMethods.Load();
+            RocketFly.RocketRenderer.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -50,6 +52,7 @@ namespace Celeste.Mod.SantasGifts24
             RGBBlockSwitch.Unload();
             BoosterZipper.Unload();
             LightDarkSwapMethods.Unload();
+            RocketFly.RocketRenderer.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }

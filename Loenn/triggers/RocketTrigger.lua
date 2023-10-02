@@ -11,4 +11,5 @@ trigger.placements = {
     }
 }
 
-return trigger
+--return trigger
+return nil

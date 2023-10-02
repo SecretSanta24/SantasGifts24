@@ -11,20 +11,50 @@ namespace Celeste.Mod.SantasGifts24.Code.States
 
             public Sprite sprite;
             private Player player;
+            private static PlayerDeadBody pdb;
 
             public RocketRenderer(Player player) : base(player.Position)
             {
                 this.player = player;
+                RocketRenderer.pdb = null;
                 base.Add(sprite = GFX.SpriteBank.Create("madelineRocket"));
                 sprite.Play("stopped");
                 sprite.CenterOrigin();
                 sprite.Position -= new Vector2(0, player.Height) / 2;
             }
 
+            public static void Load()
+            {
+                On.Celeste.Player.Die += Player_Die;
+            }
+
+            public static void Unload()
+            {
+                On.Celeste.Player.Die -= Player_Die;
+            }
+            private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
+            {
+                PlayerDeadBody pdb = orig(self, direction, evenIfInvincible, registerDeathInStats);
+
+                if(pdb != null)
+                {
+                    RocketRenderer.pdb = pdb;
+                }
+
+                return pdb;
+            }
+
+
             public override void Update()
             {
                 base.Update();
                 if (player != null) this.Position = player.Position;
+                if (pdb != null )
+                {
+                    if (pdb.deathEffect != null) RemoveSelf();
+                    this.Position = pdb.Position;
+                    this.sprite.Rotation += Calc.DegToRad * 33;
+                }
             }
 
         }

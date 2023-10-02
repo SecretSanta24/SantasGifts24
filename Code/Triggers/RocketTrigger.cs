@@ -36,5 +36,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Triggers
                 player.StateMachine.State = Player.StNormal;
             }
         }
+
     }
 }
