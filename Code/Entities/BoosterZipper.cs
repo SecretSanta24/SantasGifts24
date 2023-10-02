@@ -22,7 +22,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private BoosterZipper.ZipMoverPathRenderer pathRenderer;
         private Vector2 target;
         public bool atEndPoint = false;
-        public bool explodeNextUpdate = false;
 
         private float respawnTime = 1f;
         private float zipperMoveTime = 0.5f;
@@ -47,23 +46,29 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             On.Celeste.Player.BoostCoroutine += Player_BoostCoroutine;
             On.Celeste.Player.BoostUpdate += Player_BoostUpdate;
+
             On.Celeste.Booster.PlayerReleased += Booster_PlayerReleased;
+            On.Celeste.Booster.PlayerBoosted += Booster_PlayerBoosted;
+            On.Celeste.Booster.OnPlayer += Booster_OnPlayer;
+            On.Celeste.Booster.Respawn += Booster_Respawn;
         }
+
+
         public static void Unload()
         {
             On.Celeste.Player.BoostCoroutine -= Player_BoostCoroutine;
             On.Celeste.Player.BoostUpdate -= Player_BoostUpdate;
-            On.Celeste.Booster.PlayerReleased -= Booster_PlayerReleased;
-        }
 
+            On.Celeste.Booster.PlayerReleased -= Booster_PlayerReleased;
+            On.Celeste.Booster.PlayerBoosted -= Booster_PlayerBoosted;
+            On.Celeste.Booster.OnPlayer -= Booster_OnPlayer;
+            On.Celeste.Booster.Respawn -= Booster_Respawn;
+
+        }
 
         private static int Player_BoostUpdate(On.Celeste.Player.orig_BoostUpdate orig, Player self)
         {
             int result = orig(self);
-            if(result == 2 && self.CurrentBooster is BoosterZipper bz && bz.atEndPoint)
-            {
-                bz.explodeNextUpdate = true;
-            }
             return result;
         }
 
@@ -82,10 +87,45 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private static void Booster_PlayerReleased(On.Celeste.Booster.orig_PlayerReleased orig, Booster self)
         {
+            string id = self.sprite.CurrentAnimationID;
             orig(self);
             if(self is BoosterZipper bz)
             {
                 self.respawnTimer = bz.respawnTime;
+                if(bz.atEndPoint && id != "spin")
+                {
+                    bz.sprite.Play("pop_end", false, false);
+                }
+            }
+        }
+
+        private static void Booster_PlayerBoosted(On.Celeste.Booster.orig_PlayerBoosted orig, Booster self, Player player, Vector2 direction)
+        {
+            orig(self, player, direction);
+            if(self is BoosterZipper bz && bz.atEndPoint)
+            {
+                bz.sprite.Play("spin_end", false, false);
+                Vector2 launch = player.ExplodeLaunch(player.Center - direction, false, false);
+                (Engine.Scene as Level)?.DirectionalShake(launch, 0.15f);
+                Audio.Play("event:/new_content/game/10_farewell/puffer_splode", self.Position);
+                player.dashCooldownTimer = 0;
+            }
+        }
+        private static void Booster_OnPlayer(On.Celeste.Booster.orig_OnPlayer orig, Booster self, Player player)
+        {
+            orig(self, player);
+            if (self is BoosterZipper bz && bz.atEndPoint && bz.sprite.CurrentAnimationID == "inside")
+            {
+                bz.sprite.Play("inside_end", false, false);
+            }
+        }
+
+        private static void Booster_Respawn(On.Celeste.Booster.orig_Respawn orig, Booster self)
+        {
+            orig(self);
+            if(self is BoosterZipper bz && bz.atEndPoint)
+            {
+                bz.sprite.Play("loop_end", true, false);
             }
         }
 
@@ -106,14 +146,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Update();
             var player = Scene.Tracker.GetEntity<Player>();
-            if (player != null && explodeNextUpdate)
-            {
-                explodeNextUpdate = false;
-                Vector2 dashDir = player.CorrectDashPrecision(player.lastAim);
-                if (dashDir.X != 0) dashDir.Y = 0;
-                player.ExplodeLaunch(Center - dashDir, true, false);
-                player.dashCooldownTimer = 0;
-            }
             if (player != null && player.CurrentBooster == this)
             {
                 BoostingPlayer = true;
@@ -127,7 +159,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             var player = Scene.Tracker.GetEntity<Player>();
             Vector2 start = this.Position;
-
             float movementSpeed = 1f/zipperMoveTime;
             for (; ; )
             {
@@ -153,7 +184,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         {
                             //(vector - Position) / Engine.DeltaTime;
                             atEndPoint = true;
-                            sprite.Color = Color.Yellow;
+                            Console.WriteLine(sprite.CurrentAnimationID);
+                            if (sprite.CurrentAnimationID == "loop") sprite.Play("toEndloop");
+                            if (sprite.CurrentAnimationID == "inside") sprite.Play("toEndinside");
+                            if (sprite.CurrentAnimationID == "inside_loop") sprite.Play("toEndinside");
                         }
                         Position = vector;
                         outline.Position = Position;
@@ -164,8 +198,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     //this.StopPlayerRunIntoAnimation = true;
                     yield return 0.5f;
 
-                    sprite.Color = Color.White;
                     atEndPoint = false;
+                    if (sprite.CurrentAnimationID == "loop_end") sprite.Play("fromEndLoop");
+                    if (sprite.CurrentAnimationID == "inside_end") sprite.Play("fromEndinside");
+                    if (sprite.CurrentAnimationID == "inside_loop_end") sprite.Play("fromEndinside");
 
                     //this.StopPlayerRunIntoAnimation = false;
                     //this.streetlight.SetAnimationFrame(2);
