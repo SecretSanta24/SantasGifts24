@@ -5,7 +5,7 @@ using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
 
-namespace Celeste.Mod.SantasGifts24.Entities
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
 	// by Aurora Aquir
     [CustomEntity("SS2024/RGBBlock")]

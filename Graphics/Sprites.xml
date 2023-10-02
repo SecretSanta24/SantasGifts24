@@ -1,0 +1,26 @@
+<Sprites>
+	<boosterZipper path="objects/ss2024/boosterzip/Duskiemoon/" start="loop">
+		<Justify x="0.5" y="0.5"/>
+		<Loop id="loop" path="booster" delay="0.1" frames="0-4"/>
+		<Anim id="inside" path="booster" delay="0.1" frames="5-8" goto="inside_loop"/>
+		<Loop id="inside_loop" path="booster" delay="0.1" frames="18-25"/>
+		<Loop id="spin" path="booster" delay="0.06" frames="18-25"/>
+		<Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
+
+		<Anim id="toEndloop" path="booster_transition" delay="0.1" frames="0" goto="loop_end"/>
+		<Anim id="toEndinside" path="booster_transition" delay="0.1" frames="0" goto="inside_end"/>
+		<Anim id="fromEndLoop" path="booster_transition" delay="0.1" frames="1" goto="loop"/>
+		<Anim id="fromEndinside" path="booster_transition" delay="0.1" frames="1" goto="inside"/>		
+		
+		<Loop id="loop_end" path="golden_booster" delay="0.1" frames="0-4"/>
+		<Anim id="inside_end" path="golden_booster" delay="0.1" frames="5-8" goto="inside_loop_end"/>
+		<Loop id="inside_loop_end" path="golden_booster" delay="0.1" frames="18-25"/>
+		<Loop id="spin_end" path="golden_booster" delay="0.06" frames="18-25"/>
+		<Anim id="pop_end" path="golden_booster" delay="0.08" frames="9-17"/>
+	</boosterZipper>
+	<madelineRocket path="objects/ss2024/rocket/auroraaquir/" start="loop">
+		<Justify x="0.5" y="0.5"/>
+		<Loop id="stopped" path="rocket" delay="0.1" frames="0"/>
+		<Loop id="loop" path="rocket" delay="0.1" frames="1-5"/>
+	</madelineRocket>
+</Sprites>

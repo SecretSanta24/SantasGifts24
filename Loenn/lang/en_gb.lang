@@ -10,6 +10,13 @@ entities.SS2024/RandomizeStartRoomController.attributes.description.RoomNames= C
 entities.SS2024/RGBBlock.name.RGBBlock= RGB Block
 entities.SS2024/RGBBlockSwitch.name.RGBBlockSwitch= RGB Block Switch
 
+
+# ---------- Triggers ----------
+
+# RocketTrigger
+triggers.SS2024/RocketTrigger.attributes.description.timeToMaxSpeed=Time to max speed from 0
+triggers.SS2024/RocketTrigger.attributes.description.timeToStop=Time to 0 from max speed if nothing is pressed
+
 # Disable Death Sound Trigger
 triggers.SantasGifts24/DisableDeathSoundTrigger.placements.name.trigger=Disable Death Sound
 triggers.SantasGifts24/DisableDeathSoundTrigger.attributes.description.disable=If checked, disables sounds emitted on death and respawn.
