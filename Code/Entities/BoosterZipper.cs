@@ -187,7 +187,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                             Console.WriteLine(sprite.CurrentAnimationID);
                             if (sprite.CurrentAnimationID == "loop") sprite.Play("toEndloop");
                             if (sprite.CurrentAnimationID == "inside") sprite.Play("toEndinside");
-                            if (sprite.CurrentAnimationID == "inside_loop") sprite.Play("toEndinside");
+                            if (sprite.CurrentAnimationID == "inside_loop") sprite.Play("toEndinsideLoop");
                         }
                         Position = vector;
                         outline.Position = Position;
@@ -201,7 +201,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     atEndPoint = false;
                     if (sprite.CurrentAnimationID == "loop_end") sprite.Play("fromEndLoop");
                     if (sprite.CurrentAnimationID == "inside_end") sprite.Play("fromEndinside");
-                    if (sprite.CurrentAnimationID == "inside_loop_end") sprite.Play("fromEndinside");
+                    if (sprite.CurrentAnimationID == "inside_loop_end") sprite.Play("fromEndinsideLoop");
 
                     //this.StopPlayerRunIntoAnimation = false;
                     //this.streetlight.SetAnimationFrame(2);
