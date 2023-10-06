@@ -40,6 +40,7 @@ namespace Celeste.Mod.SantasGifts24
 			BoosterZipper.Load();
 			LightDarkSwapMethods.Load();
             RocketFly.RocketRenderer.Load();
+            RewindController.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -53,6 +54,7 @@ namespace Celeste.Mod.SantasGifts24
             BoosterZipper.Unload();
             LightDarkSwapMethods.Unload();
             RocketFly.RocketRenderer.Unload();
+            RewindController.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
