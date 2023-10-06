@@ -40,11 +40,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (obj is RewindState rs) return this.Position == rs.Position && this.Facing == rs.Facing && this.HairColor == rs.HairColor;
                 return base.Equals(obj);
             }
+
+            public override int GetHashCode()
+            {
+                return Position.GetHashCode() ^ Facing.GetHashCode() ^ HairColor.GetHashCode();
+            }
         }
 
         public static List<RewindState> states;
         public static float timeSinceReset = 0f;
         public static bool reversing = false;
+        public static bool blocked = false;
         private Player player;
         private Level level;
         private Coroutine coroutine;
@@ -70,10 +76,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public RewindController(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
+            blocked = false;
             states = new();
             lines = new();
             timeSinceReset = 0f;
             underwater = Audio.CreateSnapshot("snapshot:/underwater", false);
+            Depth = Depths.Top;
         }
 
         public static void Load()
@@ -159,23 +167,25 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Update()
         {
-            base.Update();
-            timeSinceReset += Engine.DeltaTime;
-            if(reversing)
-            {
-                float rotation = (float)(-2 * Math.PI) * Engine.DeltaTime;
-                secondHand = secondHand.Rotate(rotation);
-                minuteHand = minuteHand.Rotate(rotation/60);
-            }
-
             if (player == null || level == null)
             {
                 player = Engine.Scene.Tracker?.GetEntity<Player>();
                 level = (Engine.Scene as Level);
                 return;
             }
-            if (!reversing && player != null) AddState(player);
-            if(Input.Grab.Check && timeSinceReset > 1f && states.Count > 0)
+
+            base.Update();
+            timeSinceReset += Engine.DeltaTime;
+            if (reversing)
+            {
+                float rotation = (float)(-2 * Math.PI) * Engine.DeltaTime;
+                secondHand = secondHand.Rotate(rotation);
+                minuteHand = minuteHand.Rotate(rotation/60);
+            }
+
+            if (!reversing && !blocked && player != null) AddState(player);
+
+            if (!blocked && Input.Grab.Check && timeSinceReset > 1f && states.Count > 0 && player != null && !player.Dead)
             {
                 if (coroutine != null) return;
 
@@ -213,8 +223,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 }
             }
         }
+
         private IEnumerator RewindRoutine(Player player, Level level)
         {
+            if (player == null || level == null || player.Dead) yield break;
+
             Audio.ResumeSnapshot(underwater);
             reversing = true;
             string currColorGrade = level.Session.ColorGrade;
@@ -226,7 +239,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             foreach (RewindState state in StatesToArray().Reverse())
             {
-                if (!Input.Grab.Check || player == null)
+                if (!Input.Grab.Check || player == null || player.Dead)
                 {
                     break;
                 }
@@ -244,25 +257,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Audio.MusicUnderwater = false;
             level.SnapColorGrade(currColorGrade);
-            Audio.EndSnapshot(underwater);
-            player.StateMachine.State = Player.StNormal;
-            player.ForceCameraUpdate = false;
-            player.DummyGravity = true;
-            player.Dashes = dashes;
+            Audio.EndSnapshot(underwater); 
             states.Clear();
             lines.Clear();
             timeSinceReset = 0f;
-            if (player != null)
+            if (player != null && !player.Dead)
             {
+                player.Dashes = dashes;
                 AddState(player);
                 player.Speed = Vector2.Zero;
-                if (player.CollideCheck<Solid>())
+                if (player != null && !player.Dead && player.CollideCheck<Solid>())
                 {
                     reversing = false;
                     player.Die(Vector2.Zero);
                 }
+                player.StateMachine.State = Player.StNormal;
+                player.ForceCameraUpdate = false;
+                player.DummyGravity = true;
             }
-            
             reversing = false;
             coroutine = null;
             yield break;

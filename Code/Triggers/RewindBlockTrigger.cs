@@ -17,13 +17,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Triggers
         public override void OnStay(Player player)
         {
             base.OnStay(player);
-            RewindController.timeSinceReset = 0;
+            RewindController.blocked = true;
         }
 
         public override void OnLeave(Player player)
         {
             base.OnLeave(player);
             RewindController.states.Clear();
+            RewindController.blocked = false;
         }
     }
 }
