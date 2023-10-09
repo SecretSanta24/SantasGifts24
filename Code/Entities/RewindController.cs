@@ -154,7 +154,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Added(Scene scene)
         {
-            if (scene.Tracker.CountEntities<RewindController>() > 0) RemoveSelf();
+            if (scene.Tracker.CountEntities<RewindController>() > 0)
+            {
+                RemoveSelf();
+                return;
+            }
+            base.Added(scene);
         }
 
         public override void Awake(Scene scene)
@@ -247,7 +252,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 player.Position = state.Position;
                 player.Facing = state.Facing;
                 player.Hair.Color = state.HairColor;
-                player.Depth = state.Depth;
+                player.Depth = Depths.Top - 1; //state.Depth;
                 if(state.Animation != null && state.Animation.Length > 0) player.Sprite.Play(state.Animation);
                 //player.Sprite.Scale = state.Scale;
                 //player.Hair.Sprite.Position = state.Position;
@@ -257,13 +262,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Audio.MusicUnderwater = false;
             level.SnapColorGrade(currColorGrade);
-            Audio.EndSnapshot(underwater); 
+            Audio.EndSnapshot(underwater);
+            int depth = (states.Count > 0 ? states.First().Depth : 0);
             states.Clear();
             lines.Clear();
             timeSinceReset = 0f;
             if (player != null && !player.Dead)
             {
                 player.Dashes = dashes;
+                player.depth = depth;
                 AddState(player);
                 player.Speed = Vector2.Zero;
                 if (player != null && !player.Dead && player.CollideCheck<Solid>())
