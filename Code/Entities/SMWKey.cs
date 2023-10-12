@@ -272,8 +272,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     }
                     Input.Rumble(RumbleStrength.Climb, RumbleLength.Short);
                 }
-                sprite.Scale.Y = Calc.Approach(sprite.Scale.Y, one.Y, Engine.DeltaTime * 2f);
-                sprite.Scale.X = Calc.Approach(sprite.Scale.X, (float)Math.Sign(sprite.Scale.X) * one.X, Engine.DeltaTime * 2f);
             }
             else
             {
