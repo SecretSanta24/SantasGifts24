@@ -18,8 +18,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         public Vector2 Speed;
 
-        public bool OnPedestal;
-
         public Holdable Hold;
 
         private Image sprite;
@@ -50,7 +48,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
         private Vector2 scissorSpawnDirection;
         private Vector2 JUMPTHROUGH_OFFSET = new Vector2(-10,-8);
         private bool destroyed;
-        private float highFrictionTimer;
         private bool bufferGrab;
         private bool ultraBufferGrab;
         private bool grabOnDashEnd;
@@ -172,10 +169,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 }
                 else if (true)
                 {
-                    if (highFrictionTimer > 0f)
-                    {
-                        highFrictionTimer -= Engine.DeltaTime;
-                    }
                     if (OnGround())
                     {
                         float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
@@ -211,7 +204,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
                         {
                             num2 *= 0.5f;
                         }
-                        float num3 = ((Speed.Y < 0f) ? 80F : ((!(highFrictionTimer <= 0f)) ? 20f : 80F));
+                        float num3 = (Speed.Y < 0f) ? 80F : 80f;
                         Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
                         if (noGravityTimer > 0f)
                         {
@@ -261,11 +254,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     Hold.CheckAgainstColliders();
 
                 }
-                /*
-                else
-                {
-                    Position = startPos + Vector2.UnitY * platformSine.Value * 1f;
-                }*/
                 Vector2 one = Vector2.One;
                 if (!Hold.IsHeld)
                 {
@@ -558,7 +546,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             {
                 force.Y = -0.4f;
             }
-            Speed = force * 150f;
+            Speed = new Vector2(force.X * 120F, force.Y * 120f);
             if (Speed != Vector2.Zero)
             {
                 noGravityTimer = 0.1f;
