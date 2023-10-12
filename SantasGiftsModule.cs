@@ -41,6 +41,7 @@ namespace Celeste.Mod.SantasGifts24
 			LightDarkSwapMethods.Load();
             RocketFly.RocketRenderer.Load();
             RewindController.Load();
+            Minecart.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -55,6 +56,7 @@ namespace Celeste.Mod.SantasGifts24
             LightDarkSwapMethods.Unload();
             RocketFly.RocketRenderer.Unload();
             RewindController.Unload();
+            Minecart.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
@@ -63,6 +65,7 @@ namespace Celeste.Mod.SantasGifts24
         {
             orig.Invoke(self, position, spriteMode);
             RocketFly.StateNumber = self.StateMachine.AddState(RocketFly.Update, RocketFly.Coroutine, RocketFly.Begin, RocketFly.End);
+            StMinecart.Id = self.StateMachine.AddState(self.MinecartUpdate);
         }
     }
 
