@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Entities
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     [Tracked]
     [CustomEntity(new string[] { 

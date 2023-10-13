@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using Color = Microsoft.Xna.Framework.Color;
 using Image = Monocle.Image;
 
-namespace Celeste.Mod.SantasGifts24.Entities
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     [Tracked]
     [CustomEntity("SS2024/SMWKey")]
@@ -548,8 +548,9 @@ namespace Celeste.Mod.SantasGifts24.Entities
             return false;
         }
 
-        protected override void OnSquish(CollisionData data)
+        public override void OnSquish(CollisionData data)
         {
+            base.OnSquish(data);
             if (!TrySquishWiggle(data, 3, 3) && !SaveData.Instance.Assists.Invincible)
             {
                 Die();
