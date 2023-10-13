@@ -52,6 +52,8 @@ namespace Celeste.Mod.SantasGifts24.Entities
         private bool ultraBufferGrab;
         private bool grabOnDashEnd;
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
+        private float leniencyGrabTimer;
+        private bool canLeniency;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -133,9 +135,24 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
                 Collider = tempHolder;
             }
+            if (leniencyGrabTimer > 0)
+            {
+                leniencyGrabTimer -= Engine.DeltaTime;
+                if (Input.GrabCheck && player.Holding == null)
+                {
+                    Position = player.Position;
+                    keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                    Hold.Pickup(player);
+                    foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
+                    {
+                        key.leniencyGrabTimer = 0;
+                    }
+                }
+            }
             keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
             float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
             keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter + JUMPTHROUGH_OFFSET : Position + JUMPTHROUGH_OFFSET), f1));
+            
             //glider code
             float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
 
@@ -327,6 +344,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         private static void Player_DashEnd(On.Celeste.Player.orig_DashEnd orig, Player self)
         {
             orig.Invoke(self);
+            bool grabbed = false;
             foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
             {
                 key.bufferGrab = false;
@@ -334,14 +352,23 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 key.Collidable = true;
                 if (key.grabOnDashEnd)
                 {
-
+                    key.leniencyGrabTimer = 0;
                     key.grabOnDashEnd = false;
                     key.Position = self.Position + self.Speed.SafeNormalize();
                     key.Hold.Pickup(self);
+                    grabbed = true;
                     break;
 
                 }
                 key.grabOnDashEnd = false;
+            }
+            //add leniency to keys colliding
+            if (!grabbed)
+            {
+                self.Scene.CollideDo<SMWKey>(new Rectangle((int)self.Left, (int)self.Top, (int)self.Width, (int)self.Height), (smwkey) => 
+                {
+                    smwkey.leniencyGrabTimer = Engine.DeltaTime * 6;
+                });
             }
         }
 
