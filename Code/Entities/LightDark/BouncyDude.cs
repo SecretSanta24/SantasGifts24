@@ -10,8 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     [CustomEntity("SS2024/BouncyDude")]
     public class BouncyDude : HappyFunDude
     {
@@ -44,7 +43,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             DarkSprite = GFX.SpriteBank.Create("corkr900SS24BouncyDudeDark");
             DarkSprite.Position = new Vector2(0f, -8f);
             headHitbox = new Hitbox(16f, 4f, -8f, -16f);
-            bodyHitbox = new Hitbox(16f, 16f, -8f, -8f);
+            bodyHitbox = new Hitbox(16f, 18f, -8f, -10f);
             explodeEffectZone = new Circle(effectRadius);
             Add(new PlayerCollider(OnPlayerHead, headHitbox));
             Add(new PlayerCollider(OnPlayerBody, bodyHitbox));
@@ -73,8 +72,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (stateMachine.State == stIdle) {
 				Audio.Play("event:/game/general/thing_booped", Position);
 				player.ExplodeLaunch(Position, false, true);
-				DynamicData dd = DynamicData.For(player);
-				dd.Set("dashCooldownTimer", 0.02f);
+                player.dashCooldownTimer = 0.02f;
 				stateMachine.State = stBounced;
 			}
         }
@@ -143,15 +141,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             SceneAs<Level>().Shake(0.15f);
 
             // Explode physics stuff
-            Collider = explodeEffectZone;
-            Player player = CollideFirst<Player>();
-            if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center))
-            {
-                player.ExplodeLaunch(Position, false, true);
-                DynamicData dd = DynamicData.For(player);
-                dd.Set("dashCooldownTimer", 0.02f);
-            }
-            Collider = null;
+            if (CurrentMode == LightDarkMode.Normal) {
+				Collider = explodeEffectZone;
+				Player player = CollideFirst<Player>();
+				if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center)) {
+					player.ExplodeLaunch(Position, false, true);
+					player.dashCooldownTimer = 0.02f;
+				}
+				Collider = null;
+			}
+            else {
+                Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * 10, false));
+				Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * -10, true));
+			}
 
             Collidable = false;
             SpriteVisible = false;

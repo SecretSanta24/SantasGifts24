@@ -9,8 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     [CustomEntity("SS2024/LightDarkPortal")]
     public class LightDarkPortal : Entity
     {
@@ -54,7 +53,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		public override void Added(Scene scene) {
 			base.Added(scene);
-            currentMode = (scene as Level)?.LightDarkGet() ?? LightDarkMode.Normal;
+            OnModeChange((scene as Level)?.LightDarkGet() ?? LightDarkMode.Normal);
 		}
 
 		public override void Update()
@@ -87,7 +86,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void OnPlayer(Player player, Circle to, LightDarkMode mode)
         {
-            Audio.Play("event:/game/general/seed_reappear", player.Position);
+            Audio.Play("event:/game/06_reflection/badeline_freakout_1", player.Position);
             cooldownPrimary = true;
             cooldownSecondary = true;
             player.Position = to.Center + Position;
@@ -106,10 +105,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (ldm == LightDarkMode.Normal) {
                 spritePrimary.Play("reenable");
 				spriteSecondary.Play("disable");
+				// TMP
+				spritePrimary.SetColor(Color.White);
+				spriteSecondary.SetColor(Color.White * 0.3f);
 			}
             else {
 				spritePrimary.Play("disable");
 				spriteSecondary.Play("reenable");
+                // TMP
+                spritePrimary.SetColor(Color.White * 0.3f);
+				spriteSecondary.SetColor(Color.White);
 			}
 		}
 

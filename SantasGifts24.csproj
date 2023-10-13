@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+		<NoWarn>CS0436</NoWarn>
         <TargetFramework>net452</TargetFramework>
         <AssemblyName>SantasGifts24</AssemblyName>
         <RootNamespace>Celeste.Mod.SantasGifts24</RootNamespace>
@@ -32,10 +33,10 @@
 
     <ItemGroup>
         <PackageReference Include="MonoMod.RuntimeDetour" Version="22.01.04.03" PrivateAssets="all" ExcludeAssets="runtime" />
-    </ItemGroup>
-
+		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
+	</ItemGroup>
     <ItemGroup>
-        <Reference Include="$(CelestePrefix)\Celeste.exe">
+        <Reference Include="$(CelestePrefix)\Celeste.exe" Publicize="true">
             <Private>false</Private>
         </Reference>
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">

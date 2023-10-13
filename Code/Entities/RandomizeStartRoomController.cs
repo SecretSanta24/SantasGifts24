@@ -8,7 +8,7 @@ using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.SantasGifts24.Entities
+namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     // by aurora
     [CustomEntity("SS2024/RandomizeStartRoomController")]

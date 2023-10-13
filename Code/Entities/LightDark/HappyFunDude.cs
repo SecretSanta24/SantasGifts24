@@ -8,8 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
     public class HappyFunDude : Entity
     {
@@ -76,9 +75,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void UpdateSprite()
         {
-            currentSprite?.RemoveSelf();
+            string anim = "";
+            int frame = 0;
+            if (currentSprite != null) {
+                anim = currentSprite.CurrentAnimationID;
+                frame = currentSprite.CurrentAnimationFrame;
+				currentSprite.RemoveSelf();
+			}
             if (CurrentMode == LightDarkMode.Normal && NormalSprite != null) Add(currentSprite = NormalSprite);
             if (CurrentMode == LightDarkMode.Dark && DarkSprite != null) Add(currentSprite = DarkSprite);
+            if (!string.IsNullOrEmpty(anim)) {
+                currentSprite.Play(anim);
+                currentSprite.SetAnimationFrame(frame);
+            }
         }
 
     }

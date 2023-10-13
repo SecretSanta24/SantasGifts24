@@ -9,8 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
-{
+namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     [Tracked]
     [CustomEntity("SS2024/LightDarkTilesController")]
     internal class LightDarkTilesController : Entity
@@ -21,11 +20,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private VirtualMap<char> newFgData;
         private VirtualMap<MTexture> newFgTexes;
         private LightDarkMode currentMode = LightDarkMode.Normal;
+        private Rectangle? bounds = null;
 
-        public LightDarkTilesController(EntityData data, Vector2 offset) : base()
+
+		public LightDarkTilesController(EntityData data, Vector2 offset) : base()
         {
             Add(new LightDarkListener(OnModeChange));
-            TransitionListener listener = new TransitionListener();
             string changesStr = data.Attr("tileChanges", "")
                 .Replace(" ", "")
                 .Replace(",", "");
@@ -39,7 +39,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        public override void Added(Scene scene)
+		public override void Added(Scene scene)
         {
             base.Added(scene);
             if (scene is Level level)
@@ -49,12 +49,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        private void GetData(Level level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes)
-        {
-            tw = (int)Math.Ceiling(level.Bounds.Width / 8f);
-            th = (int)Math.Ceiling(level.Bounds.Height / 8f);
-            ox = (int)Math.Round((double)level.LevelSolidOffset.X);
-            oy = (int)Math.Round((double)level.LevelSolidOffset.Y);
+        private void GetData(Level level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes) {
+            if (bounds == null) {
+                bounds = new Rectangle(
+					level.LevelSolidOffset.X,
+					level.LevelSolidOffset.Y,
+                    level.Bounds.Width,
+                    level.Bounds.Height);
+			}
+			tw = (int)Math.Ceiling(bounds.Value.Width / 8f);
+            th = (int)Math.Ceiling(bounds.Value.Height / 8f);
+            ox = (int)Math.Round((double)bounds.Value.X);
+            oy = (int)Math.Round((double)bounds.Value.Y);
             fgData = level.SolidsData;
             fgTexes = level.SolidTiles.Tiles.Tiles;
         }
@@ -64,7 +70,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             // A lot of this code is closely modeled after Pandoras Box Tile Glitcher code
             GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
 
-            oldFgData = new VirtualMap<char>(tw, th, '0');
+			oldFgData = new VirtualMap<char>(tw, th, '0');
             oldFgTexes = new VirtualMap<MTexture>(tw, th, null);
             newFgData = new VirtualMap<char>(tw, th, '0');
             newFgTexes = new VirtualMap<MTexture>(tw, th, null);
@@ -133,5 +139,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-    }
+		public override void Removed(Scene scene) {
+			base.Removed(scene);
+            RestoreOriginalTiles(scene as Level);
+		}
+	}
 }
