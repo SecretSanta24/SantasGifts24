@@ -8,7 +8,7 @@ entity.placements = {
         name = "RewindController",
         placementType = "rectangle",
         data = {
-            RoomNames = ""
+            requiredFlag = ""
         }
     }
 }
