@@ -20,9 +20,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private FieldInfo respawnTimerField;
         private Image outline;
         private float rsTimer;
-        private Color particleColor1 = Calc.HexToColor("888888");
-        private Color particleColor2 = Calc.HexToColor("444444");
+        private static Color particleColor1 = Calc.HexToColor("888888");
+        private static Color particleColor2 = Calc.HexToColor("444444");
 
+        private static Color smokeColor = Calc.HexToColor("BBBBBB");
+
+        private static Random particleRandom = new Random();
+        private static float ChanceOfParticle = 0.25f;
         private static SantasGiftsSession session => SantasGiftsModule.Instance.Session;
 
         public CursedRefill(EntityData data, Vector2 offset) : base(data.Position + offset, false, false)
@@ -127,12 +131,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             orig.Invoke(self);
         }
-
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
             //add smoke particles
             orig.Invoke(self);
-            if (session.playerCursed) self.SceneAs<Level>().ParticlesFG.Emit(ParticleTypes.Steam, 1, self.Center, self.Collider.HalfSize, Color.White);
+            if (session.playerCursed && particleRandom.NextFloat() < ChanceOfParticle) self.SceneAs<Level>().ParticlesBG.Emit(ParticleTypes.Steam, 1, self.Center, self.Collider.HalfSize, smokeColor);
             if (session.killPlayerWhenSafe && PlayerCanSafelyDie(self))
             {
                 self.Die(Vector2.UnitY, true);
