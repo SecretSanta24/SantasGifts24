@@ -190,11 +190,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 minuteHand = minuteHand.Rotate(rotation/60);
             }
 
-            bool flagCheck = (requiredFlag == "" || level.Session.GetFlag(requiredFlag));
-            if (!reversing && !blocked && player != null && flagCheck) AddState(player);
-            if (requiredFlag != "" && flagCheck) states.Clear();
+            if (!reversing && !blocked && player != null) AddState(player);
             if (!blocked && Input.Grab.Check && timeSinceReset > 1f && states.Count > 0 
-                && player != null && !player.Dead && flagCheck)
+                && player != null && !player.Dead && (requiredFlag == "" || level.Session.GetFlag(requiredFlag)))
             {
                 if (coroutine != null) return;
 
