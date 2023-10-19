@@ -51,6 +51,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public static float timeSinceReset = 0f;
         public static bool reversing = false;
         public static bool blocked = false;
+        private string requiredFlag;
         private Player player;
         private Level level;
         private Coroutine coroutine;
@@ -76,6 +77,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public RewindController(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
+            requiredFlag = data.Attr("requiredFlag", "");
             blocked = false;
             states = new();
             lines = new();
@@ -189,8 +191,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
 
             if (!reversing && !blocked && player != null) AddState(player);
-
-            if (!blocked && Input.Grab.Check && timeSinceReset > 1f && states.Count > 0 && player != null && !player.Dead)
+            if (!blocked && Input.Grab.Check && timeSinceReset > 1f && states.Count > 0 
+                && player != null && !player.Dead && (requiredFlag == "" || level.Session.GetFlag(requiredFlag)))
             {
                 if (coroutine != null) return;
 

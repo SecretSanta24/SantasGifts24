@@ -79,50 +79,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 offTexture.FlipY = true;
             }
 
-            //update
-            Level lvl = Engine.Scene switch
-            {
-                Level level => level,
-                LevelLoader loader => loader.Level,
-                AssetReloadHelper => (Level)AssetReloadHelper.ReturnToScene,
-                _ => throw new Exception("GetCurrentLevel called outside of a level... how did you manage that?")
-            };
-            Session session = lvl.Session;
-            Player player = (Engine.Scene as Level)?.Tracker?.GetEntity<Player>();
-            if (session == null || player == null) return;
-
-            int flagByte = 0;
-            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_red") ? 1 : 0);
-            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_green") ? 1 : 0);
-            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_blue") ? 1 : 0);
-
-            this.Collidable = (flagByte & flags[colorIndex]) == flags[colorIndex] || (colorIndex == 7 && flagByte == 0);
-            if (inverse) this.Collidable = !this.Collidable;
-            if (player.CollideCheck(this)) this.Collidable = false;
-            if (lastCollideState != this.Collidable)
-            {
-                if (this.Collidable)
-                {
-                    this.EnableStaticMovers();
-                    this.Depth = -2;
-                    foreach (StaticMover staticMover in this.staticMovers)
-                    {
-                        staticMover.Entity.Depth = -1;
-                    }
-                }
-                else
-                {
-                    this.DisableStaticMovers();
-                    this.Depth = 1;
-                    foreach (StaticMover staticMover in this.staticMovers)
-                    {
-                        staticMover.Entity.Depth = 2;
-                    }
-                }
-            }
-            offTexture.Visible = !this.Collidable;
-            onTexture.Visible = this.Collidable;
-            lastCollideState = this.Collidable;
+           
         }
 
         public override void Awake(Scene scene)
@@ -145,11 +102,48 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     spring.VisibleWhenDisabled = true;
                 }
             }
-            DisableStaticMovers();
-            foreach (StaticMover staticMover in this.staticMovers)
+
+            //update
+            Level lvl = Engine.Scene switch
             {
-                staticMover.Entity.Depth = 2;
+                Level level => level,
+                LevelLoader loader => loader.Level,
+                AssetReloadHelper => (Level)AssetReloadHelper.ReturnToScene,
+                _ => throw new Exception("GetCurrentLevel called outside of a level... how did you manage that?")
+            };
+            Session session = lvl.Session;
+            Player player = (Engine.Scene as Level)?.Tracker?.GetEntity<Player>();
+            if (session == null) return;
+
+            int flagByte = 0;
+            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_red") ? 1 : 0);
+            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_green") ? 1 : 0);
+            flagByte = (flagByte << 1) | (session.GetFlag("_rgbblock_blue") ? 1 : 0);
+
+            this.Collidable = (flagByte & flags[colorIndex]) == flags[colorIndex] || (colorIndex == 7 && flagByte == 0);
+            if (inverse) this.Collidable = !this.Collidable;
+            if (player != null && player.CollideCheck(this)) this.Collidable = false;
+            if (this.Collidable)
+            {
+                this.EnableStaticMovers();
+                this.Depth = -2;
+                foreach (StaticMover staticMover in this.staticMovers)
+                {
+                    staticMover.Entity.Depth = -1;
+                }
             }
+            else
+            {
+                this.DisableStaticMovers();
+                this.Depth = 1;
+                foreach (StaticMover staticMover in this.staticMovers)
+                {
+                    staticMover.Entity.Depth = 2;
+                }
+            }
+            offTexture.Visible = !this.Collidable;
+            onTexture.Visible = this.Collidable;
+            lastCollideState = this.Collidable;
         }
 
         public override void Update()
