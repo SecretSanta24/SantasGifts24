@@ -112,69 +112,70 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             base.Update();
             //key code
-            bool tempCollidableState = Collidable; //key should be considered 
-            Collidable = true;
-            Collider tempHolder = Collider;
-            Collider = doorCollider;
-            List<Entity> doors = CollideAll<SMWDoor>();
-            if (doors.Count > 0)
-            {
-                Scene.Remove(doors[0]);
-                Scene.Remove(this);
-                Collider = tempHolder;
-
-                Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
-                return;
-            }
-            Collider = tempHolder;
-            Player player = Scene.Tracker.GetEntity<Player>();
-            if (player != null)
-            {
-
-                if (bufferGrab)
-                {
-                    Collidable = true;
-                    Collider = Hold.PickupCollider;
-                    grabOnDashEnd = CollideCheck<Player>() && player?.Holding != null;
-                    Collider = tempHolder;
-                }
-                if (leniencyGrabTimer > 0)
-                {
-                    leniencyGrabTimer -= Engine.DeltaTime;
-                    if (Input.GrabCheck && player.Holding == null)
-                    {
-                        Position = player.Position;
-                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                        Hold.Pickup(player);
-                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                        {
-                            key.leniencyGrabTimer = 0;
-                        }
-                    }
-                }
-                keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
-                float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
-                keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter  : Position ) + JUMPTHROUGH_OFFSET, f1));
-
-            }
-
-            if ((Position - previousPosition).LengthSquared() > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
-            {
-                bool collideStateHolder = keySolid.Collidable;
-                keySolid.Collidable = false;
-                keySolid.Position = (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET;
-                keySolid.Collidable = collideStateHolder;
-
-
-            }
-            //glider code
-            float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
-
-
-            bool temp = keySolid.Collidable;
-            keySolid.Collidable = false;
+            
             if (!destroyed)
             {
+                bool tempCollidableState = Collidable; //key should be considered 
+                Collidable = true;
+                Collider tempHolder = Collider;
+                Collider = doorCollider;
+                List<Entity> doors = CollideAll<SMWDoor>();
+                if (doors.Count > 0)
+                {
+                    Scene.Remove(doors[0]);
+                    Scene.Remove(this);
+                    Collider = tempHolder;
+
+                    Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
+                    return;
+                }
+                Collider = tempHolder;
+                Player player = Scene.Tracker.GetEntity<Player>();
+                if (player != null)
+                {
+
+                    if (bufferGrab)
+                    {
+                        Collidable = true;
+                        Collider = Hold.PickupCollider;
+                        grabOnDashEnd = CollideCheck<Player>() && player?.Holding != null;
+                        Collider = tempHolder;
+                    }
+                    if (leniencyGrabTimer > 0)
+                    {
+                        leniencyGrabTimer -= Engine.DeltaTime;
+                        if (Input.GrabCheck && player.Holding == null)
+                        {
+                            Position = player.Position;
+                            keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                            Hold.Pickup(player);
+                            foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
+                            {
+                                key.leniencyGrabTimer = 0;
+                            }
+                        }
+                    }
+                    keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
+                    float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
+                    keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET, f1));
+
+                }
+
+                if ((Position - previousPosition).LengthSquared() > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
+                {
+                    bool collideStateHolder = keySolid.Collidable;
+                    keySolid.Collidable = false;
+                    keySolid.Position = (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET;
+                    keySolid.Collidable = collideStateHolder;
+
+
+                }
+                //glider code
+                float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
+
+
+                bool temp = keySolid.Collidable;
+                keySolid.Collidable = false;
                 foreach (SeekerBarrier entity in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                 {
                     entity.Collidable = true;
@@ -191,6 +192,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                             Speed = speed2 * 0.333f;
                             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
                         }
+                        Add(new Coroutine(DestroyAnimationRoutine()));
                         return;
                     }
                 }
@@ -303,37 +305,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                     Input.Rumble(RumbleStrength.Climb, RumbleLength.Short);
                 }
+                keySolid.Collidable = temp;
+                Collidable = tempCollidableState;
             }
             else
             {
-                Position += Speed * Engine.DeltaTime;
+                sprite.Scale *= 0.8F;
             }
 
-            keySolid.Collidable = temp;
-            Collidable = tempCollidableState;
             previousPosition = Position;
             previousSpeed = Speed;
-        }
-
-        public IEnumerator Shatter()
-        {
-            shattering = true;
-            BloomPoint bloom = new BloomPoint(0f, 32f);
-            VertexLight light = new VertexLight(Color.AliceBlue, 0f, 64, 200);
-            Add(bloom);
-            Add(light);
-            for (float p = 0f; p < 1f; p += Engine.DeltaTime)
-            {
-                Position += Speed * (1f - p) * Engine.DeltaTime;
-                Level.ZoomFocusPoint = TopCenter - Level.Camera.Position;
-                light.Alpha = p;
-                bloom.Alpha = p;
-                yield return null;
-            }
-            yield return 0.5f;
-            Level.Shake();
-            yield return 1f;
-            Level.Shake();
         }
 
         public static void Load()
@@ -553,6 +534,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 positionRange = Vector2.UnitX * 6f;
             }
             Level.Particles.Emit(TheoCrystal.P_Impact, 12, position, positionRange, direction);
+        }
+        private IEnumerator DestroyAnimationRoutine()
+        {
+            Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
+            yield return 1f;
+            RemoveSelf();
         }
 
         public override bool IsRiding(Solid solid)
