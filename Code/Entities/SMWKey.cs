@@ -54,6 +54,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
         private bool canLeniency;
+        private bool firstGrab;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -76,6 +77,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Hold.OnHitSpring = HitSpring;
             Hold.OnHitSpinner = HitSpinner;
             Hold.SpeedGetter = () => Speed;
+            
             onCollideH = OnCollideH;
             onCollideV = OnCollideV;
             LiftSpeedGraceTime = 0.1f;
@@ -160,8 +162,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET, f1));
 
                 }
-
-                if ((Position - previousPosition).LengthSquared() > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
+                float f2 = (Position - previousPosition).LengthSquared();
+                if (f2 > 0)
+                {
+                    firstGrab = true;
+                }
+                if (f2 > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
                 {
                     bool collideStateHolder = keySolid.Collidable;
                     keySolid.Collidable = false;
@@ -199,8 +205,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (Hold.IsHeld)
                 {
                     prevLiftSpeed = Vector2.Zero;
+                    firstGrab = true;
                 }
-                else if (true)
+                
+                if (firstGrab)
                 {
                     if (OnGround())
                     {
@@ -288,9 +296,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
                 }
                 Vector2 one = Vector2.One;
-                if (!Hold.IsHeld)
-                {
-                }
+                if (!Hold.IsHeld) { }
                 else if (Hold.Holder.Speed.Y > 20f || Level.Wind.Y < 0f)
                 {
                     if (Input.GliderMoveY.Value > 0)
