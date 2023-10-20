@@ -9,6 +9,8 @@
 
 		<Anim id="toEndloop" path="booster_transition" delay="0.1" frames="0" goto="loop_end"/>
 		<Anim id="toEndinside" path="booster_transition" delay="0.1" frames="0" goto="inside_end"/>
+		<Anim id="toEndinsideLoop" path="booster_transition" delay="0.1" frames="1" goto="inside_loop_end"/>
+		<Anim id="fromEndinsideLoop" path="booster_transition" delay="0.1" frames="1" goto="inside_loop"/>
 		<Anim id="fromEndLoop" path="booster_transition" delay="0.1" frames="1" goto="loop"/>
 		<Anim id="fromEndinside" path="booster_transition" delay="0.1" frames="1" goto="inside"/>		
 		

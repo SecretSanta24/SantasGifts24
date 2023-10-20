@@ -10,6 +10,13 @@ entities.SS2024/RandomizeStartRoomController.attributes.description.RoomNames= C
 entities.SS2024/RGBBlock.name.RGBBlock= RGB Block
 entities.SS2024/RGBBlockSwitch.name.RGBBlockSwitch= RGB Block Switch
 
+# Minecart
+entities.SS2024/Minecart.placements.name.default=Minecart
+
+# Minecart Track
+entities.SS2024/MinecartTrack.placements.name.quadratic=Minecart Track (Quadratic)
+entities.SS2024/MinecartTrack.placements.name.cubic=Minecart Track (Cubic)
+
 
 # ---------- Triggers ----------
 
