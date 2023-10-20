@@ -45,7 +45,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             flagTrigger = data.Attr("flagTrigger", "");
             resetFlagState = data.Bool("resetFlagState");
             fallFlagState = data.Bool("fallFlagState");
-            invertTriggerFlag = data.Bool("invertFlagTrigger");
+            invertTriggerFlag = !data.Bool("invertFlagTrigger");
             maxSpeed = data.Float("maxSpeed", 160);
             fallingAcceleration = data.Float("acceleration", 500);
             climbFall = data.Bool("climbFall", false);
@@ -85,7 +85,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private IEnumerator NewSequence()
         {
-            yield return null;
             while (true)
             {
                 while (!Triggered && !PlayerFallCheck())
@@ -193,11 +192,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     StopShaking();
                     break;
                 }
-                float impactTimer = restartDelay;
+                float impactTimer = 0.4f;
 
                 Vector2 crashPosition = Position;
 
-                while (impactTimer > 0f)
+                while (impactTimer > 0f && PlayerWaitCheck())
                 {
                     yield return null;
                     impactTimer -= Engine.DeltaTime;
@@ -211,9 +210,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
 
                     yield return 0.2f;
-                    float timer = 0.4f;
+                    float timer = restartDelay;
 
-                    while (timer > 0f)
+                    while (timer > 0f && PlayerWaitCheck())
                     {
                         yield return null;
                         timer -= Engine.DeltaTime;
@@ -262,61 +261,56 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                                 break;
                         }
                         speed = Calc.Approach(speed, returnMaxSpeed * Calc.Clamp(Ease.QuadOut(Math.Abs(ease)), 0.2F, 1F), returnAcceleration * Engine.DeltaTime);
-                        if (speed > returnMaxSpeed * Calc.Clamp(Ease.QuadOut(Math.Abs(ease)), 0.2F, 1F)) speed = returnMaxSpeed * Calc.Clamp(Ease.QuadOut(Math.Abs(ease)), 0.2F, 1F);
+                        if (speed > returnMaxSpeed * Calc.Clamp(Ease.QuadOut(Math.Abs(ease)), 0.2F, 1F)) 
+                            speed = returnMaxSpeed * Calc.Clamp(Ease.QuadOut(Math.Abs(ease)), 0.2F, 1F);
                         bool stop = false;
                         switch (orientation)
                         {
-                            case Orientation.Left:
-
-                                stop = Position.X >= initialPos.X;
-                                break;
-                            case Orientation.Right:
-                                stop = Position.X <= initialPos.X;
-                                break;
                             case Orientation.Up:
                                 stop = Position.Y >= initialPos.Y;
                                 break;
                             case Orientation.Down:
                                 stop = Position.Y <= initialPos.Y;
-
-                                break;
-
-                        }
-                        bool flag2 = false;
-                        switch (orientation)
-                        {
-                            case Orientation.Up:
-                                if (flag2 = MoveVCollideSolids(speed * Engine.DeltaTime, thruDashBlocks: true)) break;
-                                break;
-                            case Orientation.Down:
-                                if (flag2 = MoveVCollideSolids(-speed * Engine.DeltaTime, thruDashBlocks: true)) break;
                                 break;
                             case Orientation.Left:
-                                if (flag2 = MoveHCollideSolids(speed * Engine.DeltaTime, thruDashBlocks: true)) break;
+                                stop = Position.X >= initialPos.X;
                                 break;
                             case Orientation.Right:
-                                if (flag2 = MoveHCollideSolids(-speed * Engine.DeltaTime, thruDashBlocks: true)) break;
+                                stop = Position.X <= initialPos.X;
                                 break;
-                            default:
-                                break;
+
                         }
-                        if (flag2 || stop)
+                        if (stop)
                         {
-                            //collision happens here normally, let it impact
+                            MoveTo(initialPos);
+                            break;
+                        } else
+                        {
+
+                            bool flag2 = false;
                             switch (orientation)
                             {
-                                case Orientation.Left:
-                                case Orientation.Right:
-                                    Position.X = initialPos.X;
-                                    break;
                                 case Orientation.Up:
-                                case Orientation.Down:
-                                    Position.Y = initialPos.Y;
+                                    if (flag2 = MoveVCollideSolids(speed * Engine.DeltaTime, thruDashBlocks: true)) break;
                                     break;
-
+                                case Orientation.Down:
+                                    if (flag2 = MoveVCollideSolids(-speed * Engine.DeltaTime, thruDashBlocks: true)) break;
+                                    break;
+                                case Orientation.Left:
+                                    if (flag2 = MoveHCollideSolids(speed * Engine.DeltaTime, thruDashBlocks: true)) break;
+                                    break;
+                                case Orientation.Right:
+                                    if (flag2 = MoveHCollideSolids(-speed * Engine.DeltaTime, thruDashBlocks: true)) break;
+                                    break;
+                                default:
+                                    break;
                             }
-                            break;
-                        }
+                            if (flag2)
+                            {
+                                MoveTo(initialPos);
+                                break;
+                            }
+                        } 
 
                         if (Top > level.Bounds.Bottom + 16 || Top > level.Bounds.Bottom - 1 && CollideCheck<Solid>(Position + new Vector2(0f, 1f)))
                         {
