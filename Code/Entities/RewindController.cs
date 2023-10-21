@@ -52,6 +52,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public static bool reversing = false;
         public static bool blocked = false;
         private string requiredFlag;
+        private bool ignoreIfNotMoving;
         private Player player;
         private Level level;
         private Coroutine coroutine;
@@ -77,6 +78,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public RewindController(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
+            ignoreIfNotMoving = data.Bool("ignoreIfNotMoving", false);
             requiredFlag = data.Attr("requiredFlag", "");
             blocked = false;
             states = new();
@@ -140,7 +142,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             return rewindStates;
         }
 
-        public static void AddState(Player player)
+        public static void AddState(Player player, bool doNotRepeatPositions = false)
         {
             RewindState state = new(player);
             if(states.Count == 0)
@@ -150,7 +152,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
 
             RewindState last = states.Last();
-            if (state == last) last.RepeatFrames++;
+            if (state.Equals(last))
+            {
+                if (!doNotRepeatPositions) last.RepeatFrames++;
+            }
             else states.Add(state);
         }
 
@@ -190,7 +195,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 minuteHand = minuteHand.Rotate(rotation/60);
             }
 
-            if (!reversing && !blocked && player != null) AddState(player);
+            if (!reversing && !blocked && player != null) AddState(player, ignoreIfNotMoving);
             if (!blocked && Input.Grab.Check && timeSinceReset > 1f && states.Count > 0 
                 && player != null && !player.Dead && (requiredFlag == "" || level.Session.GetFlag(requiredFlag)))
             {
@@ -237,6 +242,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Audio.ResumeSnapshot(underwater);
             reversing = true;
+            level.Session.SetFlag("rewinding_time", true);
             string currColorGrade = level.Session.ColorGrade;
             int dashes = player.Dashes;
             level.SnapColorGrade("SS2024/phant/rollback");
@@ -258,7 +264,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if(state.Animation != null && state.Animation.Length > 0) player.Sprite.Play(state.Animation);
                 //player.Sprite.Scale = state.Scale;
                 //player.Hair.Sprite.Position = state.Position;
-                if(lines.Count > 0) lines.RemoveAt(lines.Count() - 1);
+                state.RepeatFrames--;
+                if(lines.Count > 0 && state.RepeatFrames < 1) lines.RemoveAt(lines.Count() - 1);
                 yield return 0;
             }
 
@@ -285,6 +292,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 player.DummyGravity = true;
             }
             reversing = false;
+            level.Session.SetFlag("rewinding_time", false);
             coroutine = null;
             yield break;
         }

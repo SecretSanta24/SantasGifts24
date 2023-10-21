@@ -8,7 +8,8 @@ entity.placements = {
         name = "RewindController",
         placementType = "rectangle",
         data = {
-            requiredFlag = ""
+            requiredFlag = "",
+            ignoreIfNotMoving = false
         }
     }
 }
