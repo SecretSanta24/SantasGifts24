@@ -25,4 +25,14 @@
 		<Loop id="stopped" path="rocket" delay="0.1" frames="0"/>
 		<Loop id="loop" path="rocket" delay="0.1" frames="1-5"/>
 	</madelineRocket>
+	<SS2024Thalassocardiologist path="objects/ss2024/thalassocardiologist/" start="idle">
+    	<Center/>
+    	<Loop id="idle" path="idle" delay="0.08"/>
+    	<Anim id="alert" path="alert" goto="alerted" delay="0.08"/>
+    	<Loop id="alerted" path="alerted" delay="0.08"/>
+    	<Anim id="explode" path="explode" goto="hidden" delay="0.08"/>
+    	<Anim id="unalert" path="alert" goto="idle" delay="0.08" frames="1,0"/>
+    	<Loop id="hidden" path="hidden" delay="0.08"/>
+    	<Anim id="recover" path="recover" goto="idle" delay="0.05"/>
+  	</SS2024Thalassocardiologist>
 </Sprites>
