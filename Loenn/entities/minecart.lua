@@ -10,7 +10,9 @@ minecart.placements = {
     name = "default",
     data = {
         direction = "Right",
-        speed = 100.0
+        speed = 100.0,
+        reentryCooldown = 0.5,
+        oneUse = false,
     }
 }
 

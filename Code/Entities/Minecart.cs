@@ -22,7 +22,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		private float targetSpeed;
 		private float approachSpeed;
+		private float reentryCooldown;
 		private Facings facing;
+		private bool oneUse;
 
 		private Outline outline;
 		private WheelPart leftWheel;
@@ -32,6 +34,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 		private float trackDistance = 0f;
 		private float trackSpeed = 0f;
 		private float attachDelay = 0f;
+		private float reentryTimer = 0f;
 		private bool activated = false;
 		private bool stopped = false;
 		private int lastDepth;
@@ -63,6 +66,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			targetSpeed = data.Float("speed", 100f);
 			approachSpeed = data.Float("approachSpeed", targetSpeed);
 			facing = data.Enum("direction", Facings.Right);
+			oneUse = data.Bool("oneUse", true);
+			reentryCooldown = data.Float("reentryCooldown", 0.5f);
 
 			Depth = Depths.SolidsBelow + 2;
 
@@ -323,7 +328,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		public void PostUpdateEntryCheck()
 		{
-			if (Carrying == null && !stopped)
+			if (Carrying == null && !stopped && reentryTimer <= 0f)
 				CheckCarryableEntry();
 
 			UpdateLastCarryablePositions();
@@ -339,6 +344,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			StopCarrying();
 
 			//Audio.Play("event:/game/06_reflection/crushblock_impact", Center);
+
+			reentryTimer = reentryCooldown;
 
 			if (Carrying is Player player)
 			{
@@ -386,6 +393,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			SnapToTrack(trackDistance);
 		}
 
+		public void Stop(bool flip = false)
+		{
+			stopped = oneUse;
+			activated = false;
+
+			if (flip)
+			{
+				facing = (Facings)(-(int)facing);
+			}
+
+			trackSpeed = 0f;
+
+			Track = null;
+			TryAttach(Position - (Vector2.UnitY * 2f), Position + (Vector2.UnitY * 2f));
+		}
+
 		public override void Update()
 		{
 			base.Update();
@@ -396,6 +419,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 				Track?.Mover.TriggerPlatform();
 			}
+
+			if (reentryTimer > 0f)
+				reentryTimer = Calc.Approach(reentryTimer, 0f, Engine.DeltaTime);
 
 			if (!activated)
 				return;
@@ -443,9 +469,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 					return;
 				}
 
-				stopped = true;
-				activated = false;
-
 				if (Carrying != null)
 				{
 					UpdateCarrying();
@@ -455,6 +478,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 				Rotation = rotationAdd + derivative.Angle();
 
 				UpdateWheels();
+
+				Stop(true);
 			}
 
 			leftWheel.Rotation = Calc.WrapAngle(leftWheel.Rotation + (int)facing * ((float)Math.PI * (trackSpeed / 25f)) * Engine.DeltaTime);
@@ -527,8 +552,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 				Speed.X = 0f;
 				if (grounded)
 				{
-					activated = false;
-					stopped = true;
+					Stop(true);
 				}
 			}
 
@@ -536,8 +560,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			{
 				if (Speed.Y > 0 && Speed.X == 0f)
 				{
-					activated = false;
-					stopped = true;
+					Stop(true);
 				}
 				Speed.Y = 0f;
 			}
