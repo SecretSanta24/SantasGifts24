@@ -1,5 +1,4 @@
 local SS2024Monopticon = {}
-return nil
 
 SS2024Monopticon.name = "SS2024/Monopticon"
 SS2024Monopticon.depth = -8500
@@ -20,8 +19,10 @@ SS2024Monopticon.placements = {
         dashCancelDelay = 9,
         openFrames = 20,
         preOpenFrames = 12,
-        closeFrames = 20
+        closeFrames = 20,
+        cooldownFrames = 6,
     }
 }
 
-return SS2024Monopticon
+return nil
+--return SS2024Monopticon
