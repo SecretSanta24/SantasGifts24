@@ -54,7 +54,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
         private bool canLeniency;
-        private bool firstGrab;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -133,40 +132,37 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 }
                 Collider = tempHolder;
                 Player player = Scene.Tracker.GetEntity<Player>();
-                if (player != null)
+                if (player == null)
                 {
+                    return;
+                }
 
-                    if (bufferGrab)
+
+                if (bufferGrab)
+                {
+                    Collidable = true;
+                    Collider = Hold.PickupCollider;
+                    grabOnDashEnd = CollideCheck<Player>() && player?.Holding != null;
+                    Collider = tempHolder;
+                }
+                if (leniencyGrabTimer > 0)
+                {
+                    leniencyGrabTimer -= Engine.DeltaTime;
+                    if (Input.GrabCheck && player.Holding == null)
                     {
-                        Collidable = true;
-                        Collider = Hold.PickupCollider;
-                        grabOnDashEnd = CollideCheck<Player>() && player?.Holding != null;
-                        Collider = tempHolder;
-                    }
-                    if (leniencyGrabTimer > 0)
-                    {
-                        leniencyGrabTimer -= Engine.DeltaTime;
-                        if (Input.GrabCheck && player.Holding == null)
+                        Position = player.Position;
+                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                        Hold.Pickup(player);
+                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
                         {
-                            Position = player.Position;
-                            keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                            Hold.Pickup(player);
-                            foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                            {
-                                key.leniencyGrabTimer = 0;
-                            }
+                            key.leniencyGrabTimer = 0;
                         }
                     }
-                    keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
-                    float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
-                    keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET, f1));
-
                 }
+                keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
+                float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
+                keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET, f1));
                 float f2 = (Position - previousPosition).LengthSquared();
-                if (f2 > 0)
-                {
-                    firstGrab = true;
-                }
                 if (f2 > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
                 {
                     bool collideStateHolder = keySolid.Collidable;
@@ -177,7 +173,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
                 }
                 //glider code
-                float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
 
 
                 bool temp = keySolid.Collidable;
@@ -205,96 +200,90 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (Hold.IsHeld)
                 {
                     prevLiftSpeed = Vector2.Zero;
-                    firstGrab = true;
                 }
-                
-                if (firstGrab)
+                if (OnGround())
                 {
-                    if (OnGround())
+                    float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
+                    Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
+                    Vector2 liftSpeed = base.LiftSpeed;
+                    if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
                     {
-                        float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
-                        Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
-                        Vector2 liftSpeed = base.LiftSpeed;
-                        if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
+                        Speed = prevLiftSpeed;
+                        prevLiftSpeed = Vector2.Zero;
+                        Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
+                        if (Speed.X != 0f && Speed.Y == 0f)
                         {
-                            Speed = prevLiftSpeed;
-                            prevLiftSpeed = Vector2.Zero;
-                            Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
-                            if (Speed.X != 0f && Speed.Y == 0f)
-                            {
-                                Speed.Y = -60f;
-                            }
-                            if (Speed.Y < 0f)
-                            {
-                                noGravityTimer = 0.15f;
-                            }
+                            Speed.Y = -60f;
                         }
-                        else
+                        if (Speed.Y < 0f)
                         {
-                            prevLiftSpeed = liftSpeed;
-                            if (liftSpeed.Y < 0f && Speed.Y < 0f)
-                            {
-                                Speed.Y = 0f;
-                            }
+                            noGravityTimer = 0.15f;
                         }
                     }
-                    else if (Hold.ShouldHaveGravity)
+                    else
                     {
-                        float num2 = 300F;
-                        if (Speed.Y >= -90F)
+                        prevLiftSpeed = liftSpeed;
+                        if (liftSpeed.Y < 0f && Speed.Y < 0f)
                         {
-                            num2 *= 0.5f;
-                        }
-                        float num3 = (Speed.Y < 0f) ? 80F : 80f;
-                        Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
-                        if (noGravityTimer > 0f)
-                        {
-                            noGravityTimer -= Engine.DeltaTime;
-                        }
-                        else if (Level.Wind.Y < 0f)
-                        {
-                            Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
-                        }
-                        else
-                        {
-                            Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
+                            Speed.Y = 0f;
                         }
                     }
-                    MoveH(Speed.X * Engine.DeltaTime, onCollideH);
-                    MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-                    if (base.Left < (float)Level.Bounds.Left)
-                    {
-                        base.Left = Level.Bounds.Left;
-                        OnCollideH(new CollisionData
-                        {
-                            Direction = -Vector2.UnitX
-                        });
-                    }
-                    else if (base.Right > (float)Level.Bounds.Right)
-                    {
-                        base.Right = Level.Bounds.Right;
-                        OnCollideH(new CollisionData
-                        {
-                            Direction = Vector2.UnitX
-                        });
-                    }
-                    if (base.Top < (float)Level.Bounds.Top)
-                    {
-                        base.Top = Level.Bounds.Top;
-                        OnCollideV(new CollisionData
-                        {
-                            Direction = -Vector2.UnitY
-                        });
-                    }
-                    else if (base.Top > (float)(Level.Bounds.Bottom + 16))
-                    {
-                        RemoveSelf();
-                        return;
-                    }
-
-                    Hold.CheckAgainstColliders();
-
                 }
+                else if (Hold.ShouldHaveGravity)
+                {
+                    float num2 = 300F;
+                    if (Speed.Y >= -90F)
+                    {
+                        num2 *= 0.5f;
+                    }
+                    float num3 = (Speed.Y < 0f) ? 80F : 80f;
+                    Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
+                    if (noGravityTimer > 0f)
+                    {
+                        noGravityTimer -= Engine.DeltaTime;
+                    }
+                    else if (Level.Wind.Y < 0f)
+                    {
+                        Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
+                    }
+                    else
+                    {
+                        Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
+                    }
+                }
+                MoveH(Speed.X * Engine.DeltaTime, onCollideH);
+                MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
+                if (base.Left < (float)Level.Bounds.Left)
+                {
+                    base.Left = Level.Bounds.Left;
+                    OnCollideH(new CollisionData
+                    {
+                        Direction = -Vector2.UnitX
+                    });
+                }
+                else if (base.Right > (float)Level.Bounds.Right)
+                {
+                    base.Right = Level.Bounds.Right;
+                    OnCollideH(new CollisionData
+                    {
+                        Direction = Vector2.UnitX
+                    });
+                }
+                if (base.Top < (float)Level.Bounds.Top)
+                {
+                    base.Top = Level.Bounds.Top;
+                    OnCollideV(new CollisionData
+                    {
+                        Direction = -Vector2.UnitY
+                    });
+                }
+                else if (base.Top > (float)(Level.Bounds.Bottom + 16))
+                {
+                    RemoveSelf();
+                    return;
+                }
+
+                Hold.CheckAgainstColliders();
                 Vector2 one = Vector2.One;
                 if (!Hold.IsHeld) { }
                 else if (Hold.Holder.Speed.Y > 20f || Level.Wind.Y < 0f)
