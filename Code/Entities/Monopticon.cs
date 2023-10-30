@@ -31,9 +31,6 @@ namespace Celeste.Mod.NeutronHelper
         }
 
 
-        private TalkComponent talk;
-
-
         private Sprite sprite;
 
         private Tween lightTween;
@@ -70,14 +67,13 @@ namespace Celeste.Mod.NeutronHelper
         public float preOpenFrames;
         public float openFrames;
         public float closeFrames;
+        public float cooldownFrames;
         public bool canDashCoroutine;
 
         public Monopticon(EntityData data, Vector2 offset)
             : base(data, offset)
         {
             base.Depth = -8500;
-            Add(talk = new TalkComponent(new Rectangle(-24, -8, 48, 8), new Vector2(-2000, -2000), Interact));
-            talk.PlayerMustBeFacing = false;
 
             summit = data.Bool("summit");
             onlyY = data.Bool("onlyY");
@@ -115,6 +111,7 @@ namespace Celeste.Mod.NeutronHelper
             preOpenFrames = data.Float("preOpenFrames", 12f);
             openFrames = data.Float("openFrames", 20f);
             closeFrames = data.Float("closeFrames", 20f);
+            cooldownFrames = data.Float("cooldownFrames", 6f);
         }
 
         public static void Load()
@@ -272,6 +269,7 @@ namespace Celeste.Mod.NeutronHelper
                     coroutine.RemoveOnComplete = true;
                     mono.Add(coroutine);
                     mono.interacting = true;
+                    mono.talk.cooldown = mono.cooldownFrames / 60f;
                 }
             }
 
@@ -280,7 +278,7 @@ namespace Celeste.Mod.NeutronHelper
         public override void Added(Scene scene)
         {
             base.Added(scene);
-            base.talk.UI = new UnsociableTalkComponentUI(talk);
+            talk.UI = new UnsociableTalkComponentUI(talk);
         }
 
         public override void Removed(Scene scene)

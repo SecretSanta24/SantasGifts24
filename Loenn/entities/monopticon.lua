@@ -19,8 +19,10 @@ SS2024Monopticon.placements = {
         dashCancelDelay = 9,
         openFrames = 20,
         preOpenFrames = 12,
-        closeFrames = 20
+        closeFrames = 20,
+        cooldownFrames = 6,
     }
 }
 
-return SS2024Monopticon
+return nil
+--return SS2024Monopticon
