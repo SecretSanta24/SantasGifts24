@@ -9,6 +9,7 @@ using Celeste.Mod.SantasGifts24.Code.Mechanics;
 using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
+using Celeste.Mod.NeutronHelper;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
@@ -33,7 +34,10 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
-			RandomizeStartRoomController.Load();
+            Monopticon.Load();
+            GaseousGrandControl.Load();
+            Thalassocardiologist.Load();
+            RandomizeStartRoomController.Load();
 			DisableDeathSoundTrigger.Load();
 			CursedRefill.Load();
 			SMWKey.Load();
@@ -49,6 +53,9 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Unload()
         {
+            Monopticon.Unload();
+            GaseousGrandControl.Unload();
+            Thalassocardiologist.Unload();
             RandomizeStartRoomController.Unload();
             DisableDeathSoundTrigger.Unload();
             CursedRefill.Unload();

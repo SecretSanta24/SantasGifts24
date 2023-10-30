@@ -16,7 +16,8 @@ const placements = Ahorn.PlacementDict(
 )
 
 Ahorn.editingOptions(entity::AutoReturnFallingBlock) = Dict{String, Any}(
-    "tiletype" => Ahorn.tiletypeEditingOptions()
+    "tiletype" => Ahorn.tiletypeEditingOptions(),
+    "direction" => Maple.move_block_directions
 )
 
 Ahorn.minimumSize(entity::AutoReturnFallingBlock) = 8, 8
