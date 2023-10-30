@@ -435,7 +435,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallLeft && Speed.X <= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = 220f;
+                    Speed.X = 135f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;
@@ -443,7 +443,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallRight && Speed.X >= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = -220f;
+                    Speed.X = -135f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;
