@@ -1,5 +1,4 @@
 local SS2024OcularBarrier = {}
-return nil
 
 SS2024OcularBarrier.name = "SS2024/OcularBarrier"
 SS2024OcularBarrier.fillColor = {1.0, 0.3, 0.8, 0.6}

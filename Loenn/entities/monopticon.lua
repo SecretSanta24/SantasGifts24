@@ -1,5 +1,4 @@
 local SS2024Monopticon = {}
-return nil
 
 SS2024Monopticon.name = "SS2024/Monopticon"
 SS2024Monopticon.depth = -8500
