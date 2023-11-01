@@ -9,7 +9,8 @@ namespace Celeste.Mod.SantasGifts24.Code.States
     {
         public class RocketRenderer : Entity{
 
-            public Sprite sprite;
+            private Sprite sprite;
+            private Sprite spriteDiag;
             private Player player;
             private static PlayerDeadBody pdb;
 
@@ -21,6 +22,12 @@ namespace Celeste.Mod.SantasGifts24.Code.States
                 sprite.Play("stopped");
                 sprite.CenterOrigin();
                 sprite.Position -= new Vector2(0, player.Height) / 2;
+                base.Add(spriteDiag = GFX.SpriteBank.Create("madelineRocketDiag"));
+                spriteDiag.Play("stopped");
+                spriteDiag.CenterOrigin();
+                spriteDiag.Position -= new Vector2(0, player.Height) / 2;
+
+                spriteDiag.Visible = false;
             }
 
             public static void Load()
@@ -51,12 +58,47 @@ namespace Celeste.Mod.SantasGifts24.Code.States
                 if (player != null) this.Position = player.Position;
                 if (pdb != null )
                 {
+                    this.sprite.Visible = false;
+                    this.spriteDiag.Visible = true;
+                    Play("stopped");
+
                     if (pdb.deathEffect != null) RemoveSelf();
                     this.Position = pdb.Position;
-                    this.sprite.Rotation += Calc.DegToRad * 33;
+                    this.spriteDiag.Rotation += Calc.DegToRad * 33;
                 }
             }
 
+            private void Play(string id)
+            {
+                sprite.Play(id);
+                spriteDiag.Play(id);
+            }
+
+            public void SetDIR(Vector2 dir)
+            {
+
+                if (dir == Vector2.Zero)
+                {
+                    if (!sprite.CurrentAnimationID.Contains("stop")) Play("stop");
+                    return;
+                } 
+                else if (sprite.CurrentAnimationID.Contains("stop")) Play("start");
+
+                // diagonal check
+                if(dir.X != 0 && dir.Y != 0)
+                {
+                    spriteDiag.Visible = true;
+                    sprite.Visible = false;
+                } else
+                {
+                    spriteDiag.Visible = false;
+                    sprite.Visible = true;
+                }
+
+                sprite.Rotation = dir.Angle() + (float)Math.PI / 2;
+                spriteDiag.Rotation = dir.Angle() + (float)Math.PI / 2 - 45f.ToRad();
+
+            }
         }
 
         public static int StateNumber;
@@ -85,9 +127,7 @@ namespace Celeste.Mod.SantasGifts24.Code.States
                 player.Speed.Y = Calc.Approach(player.Speed.Y, target.Y, speedUp * Engine.DeltaTime);
             }
 
-            if (player.Speed == Vector2.Zero) rocket.sprite.Play("stopped");
-            else rocket.sprite.Play("loop");
-            if(Input.Aim.Value != Vector2.Zero) rocket.sprite.Rotation = dir.Angle() + (float)Math.PI/2;
+            rocket.SetDIR(Input.Aim.Value);
 
             return StateNumber;
         }

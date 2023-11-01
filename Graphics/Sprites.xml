@@ -20,9 +20,18 @@
 		<Loop id="spin_end" path="golden_booster" delay="0.06" frames="18-25"/>
 		<Anim id="pop_end" path="golden_booster" delay="0.08" frames="9-17"/>
 	</boosterZipper>
-	<madelineRocket path="objects/ss2024/rocket/auroraaquir/" start="loop">
+	<madelineRocket path="objects/ss2024/rocket/butcherberries/" start="loop">
 		<Justify x="0.5" y="0.5"/>
-		<Loop id="stopped" path="rocket" delay="0.1" frames="0"/>
-		<Loop id="loop" path="rocket" delay="0.1" frames="1-5"/>
+		<Loop id="stopped" path="small" delay="0.1" frames="0"/>
+		<Anim id="start" path="smallflame_on" delay="0.1" frames="0-3" goto="loop"/>
+		<Loop id="loop" path="smallflame" delay="0.1" frames="0-5"/>
+		<Anim id="stop" path="smallflame_off" delay="0.1" frames="0-3" goto="stopped"/>
 	</madelineRocket>
+	<madelineRocketDiag path="objects/ss2024/rocket/butcherberries/" start="loop">
+		<Justify x="0.5" y="0.5"/>
+		<Loop id="stopped" path="small_diag" delay="0.1" frames="0"/>
+		<Anim id="start" path="smallflame_diag_on" delay="0.1" frames="0-3" goto="loop"/>
+		<Loop id="loop" path="smallflame_diag" delay="0.1" frames="0-5"/>
+		<Anim id="stop" path="smallflame_diag_off" delay="0.1" frames="0-3" goto="stopped"/>
+	</madelineRocketDiag>
 </Sprites>
