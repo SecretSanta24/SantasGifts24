@@ -56,6 +56,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public string flag;
 
+        public bool stopMomentum;
+
         public BooleanGem(Vector2 position, bool twoDashes, bool oneUse, string path, string path2)
             : base(position)
         {
@@ -111,7 +113,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             UpdateY();
             Depth = -100;
 
-
         }
 
         public BooleanGem(EntityData data, Vector2 offset)
@@ -124,6 +125,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             P_RegenTwo = new ParticleType(Refill.P_RegenTwo);
             P_GlowTwo = new ParticleType(Refill.P_GlowTwo);
             flag = data.Attr("flag", "yeah");
+            stopMomentum = data.Bool("stopMomentum", true);
             
         }
 
@@ -230,7 +232,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
         public bool UseRefill2(Player player, bool twoDashes)
         {
-            player.Speed = Vector2.Zero;
+            if(stopMomentum) player.Speed = Vector2.Zero;
             Add(new Coroutine(FlagRoutine(flag)));
             return true;
         }

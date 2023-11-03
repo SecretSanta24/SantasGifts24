@@ -12,6 +12,9 @@ entities.SS2024/Monopticon.placements.name.mono=Monopticon
 # Gaseous Grand Control
 entities.SS2024/GaseousControl.placements.name.gaseous=Gaseous Grand Control
 
+# Nulled Voltage
+entities.SS2024/NulledVoltage.placements.name.volts=Nulled Voltage
+
 # Ocular Barrier
 entities.SS2024/OcularBarrier.placements.name.bar=Ocular Barrier
 

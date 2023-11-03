@@ -34,4 +34,5 @@ SS2024OcularBarrier.placements = {
 
 SS2024OcularBarrier.depth = 0
 
-return SS2024OcularBarrier
+return nil
+--return SS2024OcularBarrier
