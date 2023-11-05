@@ -18,6 +18,9 @@ entities.SS2024/NulledVoltage.placements.name.volts=Nulled Voltage
 # Ocular Barrier
 entities.SS2024/OcularBarrier.placements.name.bar=Ocular Barrier
 
+# Boolean Gem
+entities.SS2024/BooleanGem.placements.name.boolean=Boolean Gem
+
 # Randomize Start Room Controller
 entities.SS2024/RandomizeStartRoomController.name.RandomizeStartRoomController= Randomize Start Room Controller
 entities.SS2024/RandomizeStartRoomController.attributes.description.RoomNames= Comma seperated room names you can spawn in, if room can't be found or has no spawn you will spawn in starting room instead.

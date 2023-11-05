@@ -43,6 +43,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     player.Depth = 0;
                     mono.Depth = -8500;
                 }
+                if(player.StateMachine.state == 14)
+                {
+                    player.ForceCameraUpdate = true;
+                } 
+                else
+                {
+                    player.ForceCameraUpdate = false;
+                }
             }
         }
     }

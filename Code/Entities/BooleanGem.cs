@@ -58,35 +58,29 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public bool stopMomentum;
 
-        public BooleanGem(Vector2 position, bool twoDashes, bool oneUse, string path, string path2)
+        public BooleanGem(Vector2 position, bool twoDashes, bool oneUse, string path, string pcolors)
             : base(position)
-        {
+        { 
+            //thanks communal helper
+            Color[] cols = pcolors
+                          .Split(',')
+                          .Select(str => Calc.HexToColor(str.Trim()))
+                          .ToArray();
             Collider = new Hitbox(16f, 16f, -8f, -8f);
             Add(new PlayerCollider(OnPlayer));
             this.twoDashes = twoDashes;
             this.oneUse = oneUse;
             string text;
-            if (twoDashes)
-            {
-                text = path;
-                p_shatter = new ParticleType(Refill.P_ShatterTwo);
-                p_regen = new ParticleType(Refill.P_RegenTwo);
-                p_glow = new ParticleType(Refill.P_GlowTwo);
-
-                p_shatter.Color = Calc.HexToColor("d3edff");
-                p_shatter.Color2 = Calc.HexToColor("94a5ef");
-                p_regen.Color = Calc.HexToColor("a5c3ff");
-                p_regen.Color2 = Calc.HexToColor("6c74dd");
-                p_glow.Color = Calc.HexToColor("a5c3ff");
-                p_glow.Color2 = Calc.HexToColor("6c74dd");
-            }
-            else
-            {
-                text = path2;
-                p_shatter = new ParticleType(Refill.P_Shatter);
-                p_regen = new ParticleType(Refill.P_Regen);
-                p_glow = new ParticleType(Refill.P_Glow);
-            }
+            text = path;
+            p_shatter = new ParticleType(Refill.P_Shatter);
+            p_regen = new ParticleType(Refill.P_Regen);
+            p_glow = new ParticleType(Refill.P_Glow);
+            p_shatter.Color = cols[0];
+            p_shatter.Color2 = cols[1];
+            p_regen.Color = cols[2];
+            p_regen.Color2 = cols[3];
+            p_glow.Color = cols[2];
+            p_glow.Color2 = cols[3];
             Add(outline = new Image(GFX.Game[text + "outline"]));
             outline.CenterOrigin();
             outline.Visible = false;
@@ -116,7 +110,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
 
         public BooleanGem(EntityData data, Vector2 offset)
-            : this(data.Position + offset, data.Bool("twoDash"), data.Bool("oneUse"), data.Attr("path", "objects/refill/"), data.Attr("path2", "objects/refillTwo/"))
+            : this(data.Position + offset, data.Bool("twoDash"), data.Bool("oneUse"), data.Attr("path", "objects/refill/"), data.Attr("particleColors", "d3edff,94a5ef,a5c3ff,6c74dd"))
         {
             P_Shatter = new ParticleType(Refill.P_Shatter);
             P_Regen = new ParticleType(Refill.P_Regen);

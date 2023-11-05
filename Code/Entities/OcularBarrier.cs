@@ -99,7 +99,7 @@ namespace Celeste.Mod.NeutronHelper
         {
             flashTimer = 1f;
             EnableStaticMovers();
-            Depth = -100;
+            Depth = -9000;
             foreach (StaticMover staticMover in staticMovers)
             {
                 staticMover.Entity.Depth = base.Depth + 1;
