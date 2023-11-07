@@ -608,7 +608,6 @@ namespace Celeste.Mod.NeutronHelper
             level.ScreenPadding = 0f;
             level.ZoomSnap(Vector2.Zero, 1f);
             
-            player.StateMachine.State = 0;
             yield return null;
         }
     }
