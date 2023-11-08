@@ -36,7 +36,7 @@ public class InMapJournal : Entity{
 	private int pageCount = 12;
 
 	private bool turningPage;
-	private float turningScale, dot, dotTarget, dotEase, leftArrowEase, rightArrowEase, rotation = -0.025f;
+	private float turningScale = 1, dot, dotTarget, dotEase, leftArrowEase, rightArrowEase, rotation = -0.025f;
 
 	public InMapJournal(Player p){
 		Tag |= TagsExt.SubHUD;
@@ -69,7 +69,7 @@ public class InMapJournal : Entity{
 
 		if(turningPage && turnLeft > 0)
 			MTN.Journal[pageIdx == 0 ? "cover" : "page"].Draw(position, Vector2.Zero, BackColor, new Vector2(-1 * turnLeft, 1), rotation);
-		if(turnRight > 0.0){
+		if(turnRight > 0){
 			MTN.Journal[pageIdx == 0 ? "cover" : "page"].Draw(position, Vector2.Zero, Color.White, new Vector2(turnRight, 1), rotation);
 			Draw.SpriteBatch.Draw(CurrentPageBuffer, position, CurrentPageBuffer.Bounds, Color.White, rotation, Vector2.Zero, new Vector2(turnRight, 1), SpriteEffects.None, 0);
 		}
@@ -90,10 +90,18 @@ public class InMapJournal : Entity{
 	private IEnumerator Routine(Player player){
 		Audio.Play("event:/ui/world_map/journal/page_cover_forward");
 
+		for(float p = 0; p < 1; p += Engine.DeltaTime / .4f){
+			rotation = -0.025f * Ease.BackOut(p);
+			X = 1920 * Ease.CubeInOut(p) - 1920;
+			dotEase = p;
+			yield return null;
+		}
+		dotEase = 1f;
+		
 		while(!Input.MenuCancel.Pressed){
 			dot = Calc.Approach(dot, dotTarget, Engine.DeltaTime * 8);
 			leftArrowEase = Calc.Approach(leftArrowEase, dotTarget > 0 ? 1 : 0, Engine.DeltaTime * 5) * dotEase;
-			rightArrowEase = Calc.Approach(rightArrowEase, dotTarget < (double)(pageCount - 1) ? 1 : 0, Engine.DeltaTime * 5) * dotEase;
+			rightArrowEase = Calc.Approach(rightArrowEase, dotTarget < pageCount - 1 ? 1 : 0, Engine.DeltaTime * 5) * dotEase;
 
 			if(!turningPage){
 				if(Input.MenuLeft.Pressed && pageIdx > 0){
@@ -107,6 +115,14 @@ public class InMapJournal : Entity{
 
 			yield return null;
 		}
+		
+		for(float p = 1; p > 0; p -= Engine.DeltaTime / .4f){
+			rotation = -0.025f * Ease.BackOut(p);
+			X = 1920 * Ease.CubeInOut(p) - 1920;
+			dotEase = p;
+			yield return null;
+		}
+		dotEase = 1f;
 
 		Visible = false;
 		CurrentPageBuffer.Dispose();
@@ -124,13 +140,13 @@ public class InMapJournal : Entity{
 			dotTarget--;
 			//this.Page.Redraw(this.CurrentPageBuffer);
 			//this.NextPage.Redraw(this.NextPageBuffer);
-			while((turningScale = Calc.Approach(turningScale, 1f, Engine.DeltaTime * 8f)) < 1.0)
+			while((turningScale = Calc.Approach(turningScale, 1, Engine.DeltaTime * 8)) < 1)
 				yield return null;
 		} else{
 			//this.NextPage.Redraw(this.NextPageBuffer);
 			turningScale = 1;
 			dotTarget++;
-			while((turningScale = Calc.Approach(turningScale, -1f, Engine.DeltaTime * 8f)) > -1.0)
+			while((turningScale = Calc.Approach(turningScale, -1, Engine.DeltaTime * 8)) > -1)
 				yield return null;
 			pageIdx++;
 			//this.Page.Redraw(this.CurrentPageBuffer);
