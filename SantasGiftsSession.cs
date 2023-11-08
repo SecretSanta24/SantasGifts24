@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Celeste.Mod.SantasGifts24.Code.Mechanics;
 
 namespace Celeste.Mod.SantasGifts24
@@ -15,6 +16,9 @@ namespace Celeste.Mod.SantasGifts24
         public bool playerCursed = false;
         public bool ignoreDash = false;
         public bool killPlayerWhenSafe = false;
+
+        // in-map journal
+        public List<string> JournalPages { get; set; } = new();
 
         public void ResetCurse()
         {

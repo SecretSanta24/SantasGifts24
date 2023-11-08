@@ -33,7 +33,7 @@ public class InMapJournal : Entity{
 	private VirtualRenderTarget NextPageBuffer;
 
 	private int pageIdx = 0;
-	private int pageCount = 12;
+	private int pageCount = 1;
 
 	private bool turningPage;
 	private float turningScale = 1, dot, dotTarget, dotEase, leftArrowEase, rightArrowEase, rotation = -0.025f;
@@ -43,6 +43,8 @@ public class InMapJournal : Entity{
 
 		NextPageBuffer = VirtualContent.CreateRenderTarget("SSC24:journal-a", 1610, 1000);
 		CurrentPageBuffer = VirtualContent.CreateRenderTarget("SSC24:journal-b", 1610, 1000);
+
+		pageCount = SantasGiftsModule.Instance.Session.JournalPages.Count + 1;
 
 		Add(new Coroutine(Routine(p)));
 	}
@@ -54,21 +56,25 @@ public class InMapJournal : Entity{
 		Vector2 position = Position + new Vector2(128, 120);
 		float turnRight = Ease.CubeInOut(Math.Max(0, turningScale));
 		float turnLeft = Ease.CubeInOut(Math.Abs(Math.Min(0, turningScale)));
+		// draw bookmarks
 		if(SaveData.Instance.CheatMode)
 			MTN.FileSelect["cheatmode"].DrawCentered(position + new Vector2(80, 360), Color.White, 1, MathHelper.PiOver2);
 		if(SaveData.Instance.AssistMode)
 			MTN.FileSelect["assist"].DrawCentered(position + new Vector2(100, 370), Color.White, 1, MathHelper.PiOver2);
+		// left edge of the journal
 		MTexture edge = MTN.Journal["edge"];
 		edge.Draw(position + new Vector2(-edge.Width, 0), Vector2.Zero, Color.White, 1, rotation);
-		if(pageIdx > 0)
+		if(pageIdx > 0){
 			MTN.Journal[pageIdx == 1 ? "cover" : "page"].Draw(position, Vector2.Zero, BackColor, new Vector2(-1, 1), rotation);
+		}
 		if(turningPage){
 			MTN.Journal["page"].Draw(position, Vector2.Zero, Color.White, 1, rotation);
 			Draw.SpriteBatch.Draw(NextPageBuffer, position, NextPageBuffer.Bounds, Color.White, rotation, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
 		}
 
-		if(turningPage && turnLeft > 0)
+		if(turningPage && turnLeft > 0){
 			MTN.Journal[pageIdx == 0 ? "cover" : "page"].Draw(position, Vector2.Zero, BackColor, new Vector2(-1 * turnLeft, 1), rotation);
+		}
 		if(turnRight > 0){
 			MTN.Journal[pageIdx == 0 ? "cover" : "page"].Draw(position, Vector2.Zero, Color.White, new Vector2(turnRight, 1), rotation);
 			Draw.SpriteBatch.Draw(CurrentPageBuffer, position, CurrentPageBuffer.Bounds, Color.White, rotation, Vector2.Zero, new Vector2(turnRight, 1), SpriteEffects.None, 0);
@@ -87,8 +93,14 @@ public class InMapJournal : Entity{
 		GFX.Gui["dotarrow_outline"].DrawCentered(vector2 + new Vector2(num2 / 2 + 50, 32 * (1 - Ease.CubeOut(rightArrowEase))), Color.White * rightArrowEase);
 	}
 
+	public override void HandleGraphicsReset(){
+		base.HandleGraphicsReset();
+		DrawPage(pageIdx, CurrentPageBuffer);
+	}
+
 	private IEnumerator Routine(Player player){
 		Audio.Play("event:/ui/world_map/journal/page_cover_forward");
+		DrawPage(pageIdx, CurrentPageBuffer);
 
 		for(float p = 0; p < 1; p += Engine.DeltaTime / .4f){
 			rotation = -0.025f * Ease.BackOut(p);
@@ -132,27 +144,48 @@ public class InMapJournal : Entity{
 		RemoveSelf();
 	}
 
-	public IEnumerator TurnPage(int direction){
+	private IEnumerator TurnPage(int direction){
 		turningPage = true;
 		if(direction < 0){
 			pageIdx--;
 			turningScale = -1;
 			dotTarget--;
 			//this.Page.Redraw(this.CurrentPageBuffer);
+			DrawPage(pageIdx, CurrentPageBuffer);
 			//this.NextPage.Redraw(this.NextPageBuffer);
+			DrawPage(pageIdx + 1, NextPageBuffer);
 			while((turningScale = Calc.Approach(turningScale, 1, Engine.DeltaTime * 8)) < 1)
 				yield return null;
 		} else{
 			//this.NextPage.Redraw(this.NextPageBuffer);
+			DrawPage(pageIdx + 1, NextPageBuffer);
 			turningScale = 1;
 			dotTarget++;
 			while((turningScale = Calc.Approach(turningScale, -1, Engine.DeltaTime * 8)) > -1)
 				yield return null;
 			pageIdx++;
 			//this.Page.Redraw(this.CurrentPageBuffer);
+			DrawPage(pageIdx, CurrentPageBuffer);
 		}
 
 		turningScale = 1;
 		turningPage = false;
+	}
+
+	private void DrawPage(int page, VirtualRenderTarget buffer){
+		Engine.Graphics.GraphicsDevice.SetRenderTarget(buffer);
+		Engine.Graphics.GraphicsDevice.Clear(Color.Transparent);
+		
+		Draw.SpriteBatch.Begin();
+		
+		if(page == 0){
+			string str = Dialog.Clean("journal_of");
+			if (str.Length > 0)
+				str += "\n";
+			ActiveFont.Draw(SaveData.Instance == null || !Dialog.Language.CanDisplay(SaveData.Instance.Name) ? str + Dialog.Clean("FILE_DEFAULT") : str + SaveData.Instance.Name, new Vector2(805f, 400f), new Vector2(0.5f, 0.5f), Vector2.One * 2f, Color.Black * 0.5f);
+		}else
+			GFX.Gui[SantasGiftsModule.Instance.Session.JournalPages[page - 1]].Draw(Position);
+
+		Draw.SpriteBatch.End();
 	}
 }
