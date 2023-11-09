@@ -28,5 +28,8 @@ namespace Celeste.Mod.SantasGifts24
             this.ignoreDash = ignoreDashNew;
             this.playerCursed = playerCursed || !ignoreDashNew;
         }
+
+        //fastfallcontroller
+        public bool fastfallActive { get; set; } = true;
     }
 }

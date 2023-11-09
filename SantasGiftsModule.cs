@@ -49,6 +49,7 @@ namespace Celeste.Mod.SantasGifts24
             RocketFly.RocketRenderer.Load();
             RewindController.Load();
             Minecart.Load();
+            FastfallController.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -69,6 +70,7 @@ namespace Celeste.Mod.SantasGifts24
             RocketFly.RocketRenderer.Unload();
             RewindController.Unload();
             Minecart.Unload();
+            FastfallController.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
