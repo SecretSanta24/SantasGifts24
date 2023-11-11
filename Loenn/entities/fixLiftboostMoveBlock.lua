@@ -148,4 +148,4 @@ function moveBlock.sprite(room, entity)
     return sprites
 end
 
-return moveBlock
+return nil
