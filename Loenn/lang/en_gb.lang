@@ -36,6 +36,8 @@ entities.SS2024/Minecart.placements.name.default=Minecart
 entities.SS2024/MinecartTrack.placements.name.quadratic=Minecart Track (Quadratic)
 entities.SS2024/MinecartTrack.placements.name.cubic=Minecart Track (Cubic)
 
+#shockwaveEmitter
+entities.SS2024/ShockwaveEmitter.attributes.description.focalRatio=ellipticalness of shockwave. 1 = circle, >1 horizontal / flat ellipse, <1 means tall ellipse
 
 # ---------- Triggers ----------
 
