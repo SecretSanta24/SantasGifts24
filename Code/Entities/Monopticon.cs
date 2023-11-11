@@ -78,6 +78,7 @@ namespace Celeste.Mod.NeutronHelper
             summit = data.Bool("summit");
             onlyY = data.Bool("onlyY");
             base.Collider = new Hitbox(4f, 4f, -2f, -4f);
+            Add(new MirrorReflection());
             VertexLight vertexLight = new VertexLight(new Vector2(-1f, -11f), Color.White, 0.8f, 16, 24);
             Add(vertexLight);
             lightTween = vertexLight.CreatePulseTween();
@@ -607,7 +608,6 @@ namespace Celeste.Mod.NeutronHelper
             level.ScreenPadding = 0f;
             level.ZoomSnap(Vector2.Zero, 1f);
             
-            player.StateMachine.State = 0;
             yield return null;
         }
     }

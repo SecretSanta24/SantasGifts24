@@ -12,8 +12,14 @@ entities.SS2024/Monopticon.placements.name.mono=Monopticon
 # Gaseous Grand Control
 entities.SS2024/GaseousControl.placements.name.gaseous=Gaseous Grand Control
 
+# Nulled Voltage
+entities.SS2024/NulledVoltage.placements.name.volts=Nulled Voltage
+
 # Ocular Barrier
 entities.SS2024/OcularBarrier.placements.name.bar=Ocular Barrier
+
+# Boolean Gem
+entities.SS2024/BooleanGem.placements.name.boolean=Boolean Gem
 
 # Randomize Start Room Controller
 entities.SS2024/RandomizeStartRoomController.name.RandomizeStartRoomController= Randomize Start Room Controller

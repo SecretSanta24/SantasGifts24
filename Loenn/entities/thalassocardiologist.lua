@@ -2,7 +2,7 @@ local drawableSprite = require("structs.drawable_sprite")
 local drawing = require("utils.drawing")
 local utils = require("utils")
 local SS2024Thalassocardiologist = {}
-return nil
+
 
 SS2024Thalassocardiologist.name = "SS2024/Thalassocardiologist"
 SS2024Thalassocardiologist.depth = 0
@@ -62,5 +62,5 @@ function SS2024Thalassocardiologist.selection(room, entity)
     local x, y = entity.x, entity.y
     return utils.rectangle(x-8, y-8, 16, 16)
 end
-
-return SS2024Thalassocardiologist
+return nil
+--return SS2024Thalassocardiologist

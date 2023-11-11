@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
 using Celeste.Mod.NeutronHelper;
+using Celeste.Mod.SantasGifts24.Entities;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
@@ -37,6 +38,7 @@ namespace Celeste.Mod.SantasGifts24
             Monopticon.Load();
             GaseousGrandControl.Load();
             Thalassocardiologist.Load();
+            NulledVoltage.Load();
             RandomizeStartRoomController.Load();
 			DisableDeathSoundTrigger.Load();
 			CursedRefill.Load();
@@ -47,6 +49,7 @@ namespace Celeste.Mod.SantasGifts24
             RocketFly.RocketRenderer.Load();
             RewindController.Load();
             Minecart.Load();
+            FastfallController.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -56,6 +59,7 @@ namespace Celeste.Mod.SantasGifts24
             Monopticon.Unload();
             GaseousGrandControl.Unload();
             Thalassocardiologist.Unload();
+            NulledVoltage.Unload();
             RandomizeStartRoomController.Unload();
             DisableDeathSoundTrigger.Unload();
             CursedRefill.Unload();
@@ -66,6 +70,7 @@ namespace Celeste.Mod.SantasGifts24
             RocketFly.RocketRenderer.Unload();
             RewindController.Unload();
             Minecart.Unload();
+            FastfallController.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
