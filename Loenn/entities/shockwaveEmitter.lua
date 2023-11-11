@@ -1,8 +1,8 @@
-local shockwaveEmiiter = {}
+local shockwaveEmitter = {}
 
-shockwaveEmiiter.name = "SS2024/ShockwaveEmitter"
-shockwaveEmiiter.depth = 100
-shockwaveEmiiter.placements = {
+shockwaveEmitter.name = "SS2024/ShockwaveEmitter"
+shockwaveEmitter.depth = 100
+shockwaveEmitter.placements = {
     {
         name = "Shockwave Emitter",
         data = {
@@ -18,8 +18,8 @@ shockwaveEmiiter.placements = {
     }
 }
 
-function shockwaveEmiiter.texture(room, entity)
+function shockwaveEmitter.texture(room, entity)
     return "objects/ss2024/ellipticalShockwave/loennspriteplaceholder"
 end
 
-return shockwaveEmiiter
+return nil
