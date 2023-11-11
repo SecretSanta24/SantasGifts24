@@ -46,6 +46,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
         }
 
+        public override void Removed(Scene scene)
+        {
+            base.Removed(scene);
+            foreach (StaticMover sm in staticMovers)
+            {
+                scene.Remove(sm.Entity);
+            }
+        }
+
         public override void Render()
         {
             base.Render();
