@@ -110,10 +110,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Update()
         {
-
+            bool tempSolidCollide = keySolid.Collidable;
+            keySolid.Collidable = false;
             base.Update();
+            keySolid.Collidable = tempSolidCollide;
             //key code
-            
+
             if (!destroyed)
             {
                 bool tempCollidableState = Collidable; //key should be considered 
@@ -161,7 +163,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 }
                 keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
                 float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
-                keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET, f1));
+                keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? Position : Position) + JUMPTHROUGH_OFFSET, f1));
                 float f2 = (Position - previousPosition).LengthSquared();
                 if (f2 > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
                 {
@@ -229,7 +231,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         }
                     }
                 }
-                else if (Hold.ShouldHaveGravity)
+                else if (Hold.ShouldHaveGravity && !Hold.IsHeld)
                 {
                     float num2 = 300F;
                     if (Speed.Y >= -90F)
@@ -267,14 +269,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     OnCollideH(new CollisionData
                     {
                         Direction = Vector2.UnitX
-                    });
-                }
-                if (base.Top < (float)Level.Bounds.Top)
-                {
-                    base.Top = Level.Bounds.Top;
-                    OnCollideV(new CollisionData
-                    {
-                        Direction = -Vector2.UnitY
                     });
                 }
                 else if (base.Top > (float)(Level.Bounds.Bottom + 16))
