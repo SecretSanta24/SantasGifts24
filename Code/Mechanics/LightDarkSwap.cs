@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.SantasGifts24.Code.Components;
+using Celeste.Mod.SantasGifts24.Code.Entities.LightDark;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -23,11 +24,36 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 		internal static void Load() {
 			Everest.Events.Level.OnTransitionTo += OnTransition;
 			Everest.Events.Level.OnLoadLevel += OnLoadLevel;
+			On.Celeste.Level.LoadLevel += OnLevelLoadLevel;
+			On.Celeste.Solid.Awake += OnSolidAwake;
+			On.Celeste.FakeWall.Awake += OnFakeWallAwake;
 		}
 
 		internal static void Unload() {
 			Everest.Events.Level.OnTransitionTo -= OnTransition;
 			Everest.Events.Level.OnLoadLevel -= OnLoadLevel;
+			On.Celeste.Level.LoadLevel -= OnLevelLoadLevel;
+			On.Celeste.Solid.Awake -= OnSolidAwake;
+			On.Celeste.FakeWall.Awake -= OnFakeWallAwake;
+		}
+
+		private static void OnLevelLoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader) {
+			orig(self, playerIntro, isFromLoader);
+			foreach (var controller in self.Tracker.GetEntities<LightDarkTilesController>().Cast<LightDarkTilesController>()) {
+				controller.OnAfterLevelLoad(self);
+			}
+		}
+
+		private static void OnSolidAwake(On.Celeste.Solid.orig_Awake orig, Solid self, Scene scene) {
+			orig(self, scene);
+			if (self is DashBlock or FallingBlock) {
+				self.Add(new LightDarkTilesHandler());
+			}
+		}
+
+		private static void OnFakeWallAwake(On.Celeste.FakeWall.orig_Awake orig, FakeWall self, Scene scene) {
+			orig(self, scene);
+			self.Add(new LightDarkTilesHandler());
 		}
 
 		private static void OnLoadLevel(Level level, Player.IntroTypes introType, bool isFromLoader) {
