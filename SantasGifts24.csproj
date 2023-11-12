@@ -46,6 +46,7 @@
 
     <ItemGroup>
       <Folder Include="Ahorn\entities\" />
+      <Folder Include="Loenn\effects\" />
     </ItemGroup>
 
     <Choose>
