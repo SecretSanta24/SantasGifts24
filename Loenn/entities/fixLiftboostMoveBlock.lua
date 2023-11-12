@@ -30,7 +30,9 @@ for _, direction in ipairs(moveBlockDirections) do
                     height = 16,
                     direction = direction,
                     canSteer = steerable == 1,
-                    fast = fast == 1
+                    fast = fast == 1,
+                    yLiftboost = 40,
+                    xLiftboost = 40
                 }
             })
         end
