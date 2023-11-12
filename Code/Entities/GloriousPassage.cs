@@ -82,7 +82,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Level level = Scene as Level;
             player.StateMachine.state = 11;
-            level.Session.SetFlag("bino_transition_assist", false);
+
             for(float i = 0; i < 1; i += Engine.RawDeltaTime * 4)
             {
                 Engine.TimeRate = Calc.Approach(Engine.TimeRate, 0, Engine.RawDeltaTime * 4);
@@ -95,12 +95,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void tp()
         {
-            
-            Engine.TimeRate = 1;
-            Level level = Scene as Level;
-            Player player = Scene.Tracker.GetEntity<Player>();
             if (player != null)
             {
+                Engine.TimeRate = 1;
+                Level level = Scene as Level;
+                level.Session.SetFlag("bino_transition_assist", false);
+                Player player = Scene.Tracker.GetEntity<Player>();
                 level.OnEndOfFrame += delegate
                 {
                     new Vector2(level.LevelOffset.X + (float)level.Bounds.Width - player.X, player.Y - level.LevelOffset.Y);
