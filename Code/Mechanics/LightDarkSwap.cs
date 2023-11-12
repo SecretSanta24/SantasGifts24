@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.SantasGifts24.Code.Components;
+using Celeste.Mod.SantasGifts24.Code.Entities.LightDark;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -23,11 +24,27 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 		internal static void Load() {
 			Everest.Events.Level.OnTransitionTo += OnTransition;
 			Everest.Events.Level.OnLoadLevel += OnLoadLevel;
+			On.Celeste.DashBlock.Awake += OnDashBlockAwake;
+			On.Celeste.Level.LoadLevel += OnLevelLoadLevel;
 		}
 
 		internal static void Unload() {
 			Everest.Events.Level.OnTransitionTo -= OnTransition;
 			Everest.Events.Level.OnLoadLevel -= OnLoadLevel;
+			On.Celeste.DashBlock.Awake -= OnDashBlockAwake;
+			On.Celeste.Level.LoadLevel -= OnLevelLoadLevel;
+		}
+
+		private static void OnLevelLoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader) {
+			orig(self, playerIntro, isFromLoader);
+			foreach (var controller in self.Tracker.GetEntities<LightDarkTilesController>().Cast<LightDarkTilesController>()) {
+				controller.OnAfterLevelLoad(self);
+			}
+		}
+
+		private static void OnDashBlockAwake(On.Celeste.DashBlock.orig_Awake orig, DashBlock self, Scene scene) {
+			orig(self, scene);
+			self.Add(new LightDarkTilesHandler());
 		}
 
 		private static void OnLoadLevel(Level level, Player.IntroTypes introType, bool isFromLoader) {
