@@ -15,11 +15,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Components {
 
 		internal bool GetBlendin() {
 			if (Entity is DashBlock db) return db.blendIn;
+			if (Entity is FakeWall) return true;
 			return false;
 		}
 
 		internal char? GetOriginalTileType() {
 			if (Entity is DashBlock db) return db.tileType;
+			if (Entity is FakeWall fw) return fw.fillTile;
+			if (Entity is FallingBlock fb) return fb.TileType;
 			return null;
 		}
 
@@ -46,6 +49,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Components {
 			}
 			e.Add(tileGrid);
 			e.Add(new TileInterceptor(tileGrid, highPriority: true));
+
+			if (e is FakeWall fw) fw.tiles = tileGrid;
+			else if (e is FallingBlock fb) fb.tiles = tileGrid;
 		}
 	}
 }

@@ -109,7 +109,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private void ApplyAlteredTiles(Level level)
         {
+            if (newFgData == null || newFgTexes == null) return;
             GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
+
             for (int x = 0; x < tw; x++)
             {
                 for (int y = 0; y < th; y++)

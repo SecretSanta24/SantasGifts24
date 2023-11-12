@@ -26,6 +26,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 		}
 
 		private float cooldown = 0;
+		private Vector2 prevPlayerVelocity;
+		private Player player;
 
 		public RedirectSpring(EntityData data, Vector2 offset) : base(data, offset, GetOrientation(data)) {
 			Get<PlayerCollider>().OnCollide = OnPlayerCollide;
@@ -34,12 +36,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities {
 		public override void Update() {
 			base.Update();
 			if (cooldown > 0) cooldown -= Engine.DeltaTime;
+			if (player == null) {
+				player = Scene.Tracker.GetEntity<Player>();
+			}
+			else {
+				prevPlayerVelocity = player.Speed;
+			}
 		}
 
 		private void OnPlayerCollide(Player player) {
 			if (cooldown > 0) return;
 			cooldown = 0.05f;
-			Vector2 playerSpeed = player.Speed;
+			Vector2 playerSpeed = prevPlayerVelocity;
 			if (Orientation == Orientations.Floor) {
 				BounceAnimate();
 				player.SuperBounce(Top);
