@@ -15,25 +15,52 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     {
         public Player player;
         public Monopticon mono;
+        public bool gotMonopticon;
 
         public EchoChamberManager() : base(Vector2.Zero)
         {
-
+            gotMonopticon = false;
         }
 
         public override void Awake(Scene scene)
         {
             base.Awake(scene);
             player = Scene.Tracker.GetEntity<Player>();
-            mono = Scene.Tracker.GetNearestEntity<Monopticon>(player.Position);
+            if(player != null)
+            {
+                mono = Scene.Tracker.GetNearestEntity<Monopticon>(player.Position);
+                gotMonopticon = true;
+            }
+            
+
+            List<Entity> t = new List<Entity>();
+            t = Scene.Tracker.GetEntities<TouchSwitch>();
+            for (int i = 0; i < t.Count; i++)
+            {
+                TouchSwitch e = t[i] as TouchSwitch;
+                if (e != null)
+                {
+                    e.Depth = -12000;
+                }
+            }
         }
 
         public override void Update()
         {
+
+
             base.Update();
+
             if(player != null)
             {
-                if(player.Center.Y >= (Scene as Level).Bounds.Bottom + 16)
+
+                if (!gotMonopticon)
+                {
+                    mono = Scene.Tracker.GetNearestEntity<Monopticon>(player.Position);
+                    gotMonopticon = true;
+                }
+
+                if (player.Center.Y >= (Scene as Level).Bounds.Bottom + 16)
                 {
                     player.StateMachine.state = 0; // this is idle state
                 }

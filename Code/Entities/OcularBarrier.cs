@@ -68,12 +68,14 @@ namespace Celeste.Mod.NeutronHelper
                     spikes.DisabledColor = invert ? color4 : color2;
                     spikes.VisibleWhenDisabled = true;
                     spikes.SetSpikeColor(ReturnColor);
+                    spikes.Depth = base.Depth + 1;
                 }
                 Spring spring = staticMover.Entity as Spring;
                 if (spring != null)
                 {
                     spring.DisabledColor = invert? color4 : color2;
                     spring.VisibleWhenDisabled = true;
+                    spring.Depth = base.Depth + 1;
                 }
             }
         }
