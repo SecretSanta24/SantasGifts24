@@ -32,10 +32,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Depth = 10;
 
             flag = data.Attr("flag", "door_check");
-            roomName = data.Attr("room", "");
+            roomName = data.Attr("roomName", "");
             audio = data.Attr("audio", "event:/paeceful_sibs_chamber/smw_door_opens");
-            closed = GFX.Game[data.Attr("closedPath", "objects/SS2024/WatchtowerContest/Paeceful/door/closed")];
-            open = GFX.Game[data.Attr("closedPath", "objects/SS2024/WatchtowerContest/Paeceful/door/open")];
+            closed = GFX.Game[data.Attr("closedPath", "objects/ss2024/gloriousPassage/closed")];
+            open = GFX.Game[data.Attr("openPath", "objects/ss2024/gloriousPassage/open")];
             simple = data.Bool("simpleTrigger", false);
         }
 

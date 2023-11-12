@@ -15,6 +15,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             
             (Scene as Level).DoScreenWipe(wipeIn: true);
             (Scene as Level).Camera.Position = player.CameraTarget;
+            player.StateMachine.State = 0;
             RemoveSelf();
         }
     }
