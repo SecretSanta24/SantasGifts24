@@ -117,6 +117,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            expand += expandRate * Engine.DeltaTime;
+            if (CheckPlayerMovingInShockwaveDirection(player))
+            {
+                return;
+            }
             Vector2 playerPos = player.TopLeft;
             Vector2 playerSize = new Vector2(player.Width, player.Height);
 
@@ -180,8 +185,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collider = null;
             
 
-            expand += expandRate * Engine.DeltaTime;
 
+        }
+
+        private bool CheckPlayerMovingInShockwaveDirection(Player play)
+        {
+            if (play.Position == Position) return false;
+
+            Vector2 deltaPos = (play.Position - Position);
+            deltaPos.Normalize();
+            Vector2 playerSpeed = play.Speed;
+            playerSpeed.Normalize();
+            return Math.Acos(Vector2.Dot(deltaPos, playerSpeed)) < Math.PI * 0.5F;
         }
     }
 }
