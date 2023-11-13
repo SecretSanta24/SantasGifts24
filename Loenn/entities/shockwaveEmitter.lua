@@ -22,4 +22,4 @@ function shockwaveEmitter.texture(room, entity)
     return "objects/ss2024/ellipticalShockwave/loennspriteplaceholder"
 end
 
-return shockwaveEmitter
+return nil

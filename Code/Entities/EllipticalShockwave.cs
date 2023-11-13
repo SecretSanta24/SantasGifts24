@@ -193,7 +193,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (play.Position == Position) return false;
 
             Vector2 deltaPos = (play.Position - Position);
-            deltaPos.Normalize();
+            deltaPos = new Vector2(deltaPos.X / b, deltaPos.Y / a);
+            deltaPos.Normalize();   
             Vector2 playerSpeed = play.Speed;
             playerSpeed.Normalize();
             return Math.Acos(Vector2.Dot(deltaPos, playerSpeed)) < Math.PI * 0.5F;
