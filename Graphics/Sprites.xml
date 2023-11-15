@@ -44,4 +44,8 @@
     	<Loop id="hidden" path="hidden" delay="0.08"/>
     	<Anim id="recover" path="recover" goto="idle" delay="0.05"/>
   	</SS2024Thalassocardiologist>
+	<smwKey path="objects/ss2024/smwKey/" start="idle">
+		<Loop id="idle" path="leafkey" delay="0.1" frames="0"/>
+		<Anim id="destroyed" path="leafkey" delay="0.05" frames="1-12"/>
+	</smwKey>
 </Sprites>
