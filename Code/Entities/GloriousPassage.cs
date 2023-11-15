@@ -95,7 +95,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void tp()
         {
-            if (player != null)
+            if (player != null && Scene != null)
             {
                 Engine.TimeRate = 1;
                 Level level = Scene as Level;
