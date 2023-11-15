@@ -9,6 +9,10 @@ entities.SS2024/Thalassocardiologist.placements.name.right=Thalassocardiologist 
 # Monopticon
 entities.SS2024/Monopticon.placements.name.mono=Monopticon
 
+# Glorious Passage
+entities.SS2024/GloriousPassage.placements.name.passage=Glorious Passage
+entities.SS2024/GloriousPassage.placements.name.door=Monopticon Door
+
 # Gaseous Grand Control
 entities.SS2024/GaseousControl.placements.name.gaseous=Gaseous Grand Control
 
@@ -36,6 +40,29 @@ entities.SS2024/Minecart.placements.name.default=Minecart
 entities.SS2024/MinecartTrack.placements.name.quadratic=Minecart Track (Quadratic)
 entities.SS2024/MinecartTrack.placements.name.cubic=Minecart Track (Cubic)
 
+#Shockwave Emitter
+entities.SS2024/ShockwaveEmitter.attributes.description.focalRatio=ellipticalness of shockwave. 1 = circle, >1 horizontal / flat ellipse, <1 means tall ellipse
+
+#FixedLiftboostMoveBlock
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.up_nosteer_fast=Move Block (Fixed Liftboost, Up, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.up_steer_fast=Move Block (Fixed Liftboost, Up, Steerable, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.up_nosteer_slow=Move Block (Fixed Liftboost, Up, Slow)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.up_steer_slow=Move Block (Fixed Liftboost, Up, Steerable, Slow)
+
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.right_nosteer_fast=Move Block (Fixed Liftboost, Right, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.right_steer_fast=Move Block (Fixed Liftboost, Right, Steerable, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.right_nosteer_slow=Move Block (Fixed Liftboost, Right, Slow)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.right_steer_slow=Move Block (Fixed Liftboost, Right, Steerable, Slow)
+
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.left_nosteer_fast=Move Block (Fixed Liftboost, Left, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.left_steer_fast=Move Block (Fixed Liftboost, Left, Steerable, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.left_nosteer_slow=Move Block (Fixed Liftboost, Left, Slow)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.left_steer_slow=Move Block (Fixed Liftboost, Left, Steerable, Slow)
+
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_nosteer_fast=Move Block (Fixed Liftboost, Down, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_steer_fast=Move Block (Fixed Liftboost, Down, Steerable, Fast)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_nosteer_slow=Move Block (Fixed Liftboost, Down, Slow)
+entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_steer_slow=Move Block (Fixed Liftboost, Down, Steerable, Slow)
 
 # ---------- Triggers ----------
 

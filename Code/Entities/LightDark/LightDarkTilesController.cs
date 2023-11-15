@@ -22,7 +22,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
         private LightDarkMode currentMode = LightDarkMode.Normal;
         private Rectangle? bounds = null;
 
-
 		public LightDarkTilesController(EntityData data, Vector2 offset) : base()
         {
             Add(new LightDarkListener(OnModeChange));
@@ -39,15 +38,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             }
         }
 
-		public override void Added(Scene scene)
-        {
-            base.Added(scene);
-            if (scene is Level level)
-            {
-                GenerateTiles(level);
-                OnModeChange(level.LightDarkGet());
-            }
-        }
+		internal void OnAfterLevelLoad(Level level) {
+			GenerateTiles(level);
+			OnModeChange(level.LightDarkGet());
+		}
 
         private void GetData(Level level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes) {
             if (bounds == null) {
@@ -115,7 +109,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private void ApplyAlteredTiles(Level level)
         {
+            if (newFgData == null || newFgTexes == null) return;
             GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
+
             for (int x = 0; x < tw; x++)
             {
                 for (int y = 0; y < th; y++)
@@ -124,9 +120,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                     fgTexes[x + ox, y + oy] = newFgTexes[x, y];
                 }
             }
+            foreach (var handler in level.Tracker.GetComponents<LightDarkTilesHandler>().Cast<LightDarkTilesHandler>()) {
+                char? origTiles = handler.GetOriginalTileType();
+                if (origTiles == null) continue;
+                if (tileChanges.TryGetValue(origTiles.Value, out char newTileType)) {
+					handler.SetTiles(newTileType);
+				}
+            }
         }
 
-        private void RestoreOriginalTiles(Level level)
+        private void RestoreOriginalTiles(Level level, bool skipTileEntities = false)
         {
             GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
             for (int x = 0; x < tw; x++)
@@ -136,12 +139,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                     fgData[x + ox, y + oy] = oldFgData[x, y];
                     fgTexes[x + ox, y + oy] = oldFgTexes[x, y];
                 }
-            }
-        }
+			}
+            if (!skipTileEntities) {
+				foreach (var handler in level.Tracker.GetComponents<LightDarkTilesHandler>().Cast<LightDarkTilesHandler>()) {
+					handler.SetTiles();
+				}
+			}
+		}
 
 		public override void Removed(Scene scene) {
 			base.Removed(scene);
-            RestoreOriginalTiles(scene as Level);
+            RestoreOriginalTiles(scene as Level, true);
 		}
+
 	}
 }

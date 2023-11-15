@@ -20,7 +20,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public Holdable Hold;
 
-        private Image sprite;
+        private Sprite sprite;
 
         private Level Level;
 
@@ -33,7 +33,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Vector2 prevLiftSpeed;
 
         private Vector2 previousPosition;
-        private Vector2 previousSpeed;
+
         private HoldableCollider hitSeeker;
 
         private float swatTimer;
@@ -61,8 +61,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             previousPosition = position;
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
-            Add(sprite = new Image(GFX.Game["objects/ss2024/smwKey/smwKey"]));
-            sprite.SetOrigin(10, 10);
+            Add(sprite = GFX.SpriteBank.Create("smwKey"));
+            sprite.Play("idle");
+            sprite.SetOrigin(18, 20);
             sprite.Visible = true;
             Add(Hold = new Holdable(0.1f));
             Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
@@ -76,7 +77,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Hold.OnHitSpring = HitSpring;
             Hold.OnHitSpinner = HitSpinner;
             Hold.SpeedGetter = () => Speed;
-            
             onCollideH = OnCollideH;
             onCollideV = OnCollideV;
             LiftSpeedGraceTime = 0.1f;
@@ -88,16 +88,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             
         }
 
+        public SMWKey(EntityData e, Vector2 offset)
+            : this(e.Position + offset)
+        {
+        }
+
         public void OnDash(Vector2 direction)
         {
             bufferGrab = direction.X != 0 && direction.Y > 0;
         }
 
 
-        public SMWKey(EntityData e, Vector2 offset)
-            : this(e.Position + offset)
-        {
-        }
 
         public override void Added(Scene scene)
         {
@@ -110,75 +111,58 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Update()
         {
-            bool tempSolidCollide = keySolid.Collidable;
-            keySolid.Collidable = false;
+
             base.Update();
-            keySolid.Collidable = tempSolidCollide;
             //key code
-
-            if (!destroyed)
+            bool tempCollidableState = Collidable; //key should be considered 
+            Collidable = true;
+            Collider tempHolder = Collider;
+            Collider = doorCollider;
+            List<Entity> doors = CollideAll<SMWDoor>();
+            if (doors.Count > 0)
             {
-                bool tempCollidableState = Collidable; //key should be considered 
-                Collidable = true;
-                Collider tempHolder = Collider;
-                Collider = doorCollider;
-                List<Entity> doors = CollideAll<SMWDoor>();
-                if (doors.Count > 0)
-                {
-                    Scene.Remove(doors[0]);
-                    Scene.Remove(this);
-                    Collider = tempHolder;
-
-                    Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
-                    return;
-                }
+                Scene.Remove(doors[0]);
+                Scene.Remove(this);
                 Collider = tempHolder;
-                Player player = Scene.Tracker.GetEntity<Player>();
-                if (player == null)
-                {
-                    return;
-                }
 
-
-                if (bufferGrab)
+                Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
+                return;
+            }
+            Collider = tempHolder;
+            Player player = Scene.Tracker.GetEntity<Player>();
+            if (bufferGrab)
+            {
+                Collidable = true;
+                Collider = Hold.PickupCollider;
+                grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
+                Collider = tempHolder;
+            }
+            if (leniencyGrabTimer > 0)
+            {
+                leniencyGrabTimer -= Engine.DeltaTime;
+                if (Input.GrabCheck && player.Holding == null)
                 {
-                    Collidable = true;
-                    Collider = Hold.PickupCollider;
-                    grabOnDashEnd = CollideCheck<Player>() && player?.Holding != null;
-                    Collider = tempHolder;
-                }
-                if (leniencyGrabTimer > 0)
-                {
-                    leniencyGrabTimer -= Engine.DeltaTime;
-                    if (Input.GrabCheck && player.Holding == null)
+                    Position = player.Position;
+                    keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                    Hold.Pickup(player);
+                    foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
                     {
-                        Position = player.Position;
-                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                        Hold.Pickup(player);
-                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                        {
-                            key.leniencyGrabTimer = 0;
-                        }
+                        key.leniencyGrabTimer = 0;
                     }
                 }
-                keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
-                float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
-                keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? Position : Position) + JUMPTHROUGH_OFFSET, f1));
-                float f2 = (Position - previousPosition).LengthSquared();
-                if (f2 > Math.Max(previousSpeed.LengthSquared(), Speed.LengthSquared()))
-                {
-                    bool collideStateHolder = keySolid.Collidable;
-                    keySolid.Collidable = false;
-                    keySolid.Position = (Hold.IsHeld ? player.TopCenter : Position) + JUMPTHROUGH_OFFSET;
-                    keySolid.Collidable = collideStateHolder;
+            }
+            keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
+            float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
+            keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter + JUMPTHROUGH_OFFSET : Position + JUMPTHROUGH_OFFSET), f1));
+            
+            //glider code
+            float target = ((!Hold.IsHeld) ? 0f : ((!Hold.Holder.OnGround()) ? Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, (float)Math.PI / 3f, -(float)Math.PI / 3f) : Calc.ClampedMap(Hold.Holder.Speed.X, -300f, 300f, 0.6981317f, -0.6981317f)));
 
 
-                }
-                //glider code
-
-
-                bool temp = keySolid.Collidable;
-                keySolid.Collidable = false;
+            bool temp = keySolid.Collidable;
+            keySolid.Collidable = false;
+            if (!destroyed)
+            {
                 foreach (SeekerBarrier entity in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                 {
                     entity.Collidable = true;
@@ -186,8 +170,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     entity.Collidable = false;
                     if (num)
                     {
-                        destroyed = true;
-                        Collidable = false;
+
+                        Add(new Coroutine(DestroyKey()));
                         if (Hold.IsHeld)
                         {
                             Vector2 speed2 = Hold.Holder.Speed;
@@ -195,7 +179,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                             Speed = speed2 * 0.333f;
                             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
                         }
-                        Add(new Coroutine(DestroyAnimationRoutine()));
                         return;
                     }
                 }
@@ -203,83 +186,97 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 {
                     prevLiftSpeed = Vector2.Zero;
                 }
-                if (OnGround())
+                else if (true)
                 {
-                    float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
-                    Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
-                    Vector2 liftSpeed = base.LiftSpeed;
-                    if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
+                    if (OnGround())
                     {
-                        Speed = prevLiftSpeed;
-                        prevLiftSpeed = Vector2.Zero;
-                        Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
-                        if (Speed.X != 0f && Speed.Y == 0f)
+                        float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
+                        Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
+                        Vector2 liftSpeed = base.LiftSpeed;
+                        if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
                         {
-                            Speed.Y = -60f;
+                            Speed = prevLiftSpeed;
+                            prevLiftSpeed = Vector2.Zero;
+                            Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
+                            if (Speed.X != 0f && Speed.Y == 0f)
+                            {
+                                Speed.Y = -60f;
+                            }
+                            if (Speed.Y < 0f)
+                            {
+                                noGravityTimer = 0.15f;
+                            }
                         }
-                        if (Speed.Y < 0f)
+                        else
                         {
-                            noGravityTimer = 0.15f;
+                            prevLiftSpeed = liftSpeed;
+                            if (liftSpeed.Y < 0f && Speed.Y < 0f)
+                            {
+                                Speed.Y = 0f;
+                            }
                         }
                     }
-                    else
+                    else if (Hold.ShouldHaveGravity)
                     {
-                        prevLiftSpeed = liftSpeed;
-                        if (liftSpeed.Y < 0f && Speed.Y < 0f)
+                        float num2 = 300F;
+                        if (Speed.Y >= -90F)
                         {
-                            Speed.Y = 0f;
+                            num2 *= 0.5f;
+                        }
+                        float num3 = (Speed.Y < 0f) ? 80F : 80f;
+                        Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
+                        if (noGravityTimer > 0f)
+                        {
+                            noGravityTimer -= Engine.DeltaTime;
+                        }
+                        else if (Level.Wind.Y < 0f)
+                        {
+                            Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
+                        }
+                        else
+                        {
+                            Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
                         }
                     }
-                }
-                else if (Hold.ShouldHaveGravity && !Hold.IsHeld)
-                {
-                    float num2 = 300F;
-                    if (Speed.Y >= -90F)
+                    MoveH(Speed.X * Engine.DeltaTime, onCollideH);
+                    MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
+                    if (base.Left < (float)Level.Bounds.Left)
                     {
-                        num2 *= 0.5f;
+                        base.Left = Level.Bounds.Left;
+                        OnCollideH(new CollisionData
+                        {
+                            Direction = -Vector2.UnitX
+                        });
                     }
-                    float num3 = (Speed.Y < 0f) ? 80F : 80f;
-                    Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
-                    if (noGravityTimer > 0f)
+                    else if (base.Right > (float)Level.Bounds.Right)
                     {
-                        noGravityTimer -= Engine.DeltaTime;
+                        base.Right = Level.Bounds.Right;
+                        OnCollideH(new CollisionData
+                        {
+                            Direction = Vector2.UnitX
+                        });
                     }
-                    else if (Level.Wind.Y < 0f)
+                    if (base.Top < (float)Level.Bounds.Top)
                     {
-                        Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
+                        base.Top = Level.Bounds.Top;
+                        OnCollideV(new CollisionData
+                        {
+                            Direction = -Vector2.UnitY
+                        });
                     }
-                    else
+                    else if (base.Top > (float)(Level.Bounds.Bottom + 16))
                     {
-                        Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
+                        RemoveSelf();
+                        return;
                     }
-                }
-                MoveH(Speed.X * Engine.DeltaTime, onCollideH);
-                MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-                if (base.Left < (float)Level.Bounds.Left)
-                {
-                    base.Left = Level.Bounds.Left;
-                    OnCollideH(new CollisionData
-                    {
-                        Direction = -Vector2.UnitX
-                    });
-                }
-                else if (base.Right > (float)Level.Bounds.Right)
-                {
-                    base.Right = Level.Bounds.Right;
-                    OnCollideH(new CollisionData
-                    {
-                        Direction = Vector2.UnitX
-                    });
-                }
-                else if (base.Top > (float)(Level.Bounds.Bottom + 16))
-                {
-                    RemoveSelf();
-                    return;
-                }
 
-                Hold.CheckAgainstColliders();
+                    Hold.CheckAgainstColliders();
+
+                }
                 Vector2 one = Vector2.One;
-                if (!Hold.IsHeld) { }
+                if (!Hold.IsHeld)
+                {
+                }
                 else if (Hold.Holder.Speed.Y > 20f || Level.Wind.Y < 0f)
                 {
                     if (Input.GliderMoveY.Value > 0)
@@ -294,17 +291,40 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                     Input.Rumble(RumbleStrength.Climb, RumbleLength.Short);
                 }
-                keySolid.Collidable = temp;
-                Collidable = tempCollidableState;
             }
             else
             {
-                sprite.Scale *= 0.8F;
+                
             }
 
-            previousPosition = Position;
-            previousSpeed = Speed;
+            keySolid.Collidable = temp;
+            Collidable = tempCollidableState;
         }
+
+        private void StartDestroyKey()
+        {
+        }
+
+        private IEnumerator DestroyKey()
+        {
+            destroyed = true;
+            Collidable = false;
+            sprite.Play("destroyed");
+            Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
+
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 12f, 36f, 0.5f);
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 24f, 48f, 0.5f);
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 36f, 60f, 0.5f);
+            while (sprite.CurrentAnimationFrame != sprite.CurrentAnimationTotalFrames - 1)
+            {
+                Position += Speed * Engine.DeltaTime;
+                Speed *= 0.95f;
+                yield return null;
+            }
+            RemoveSelf();
+            yield return null;
+        }
+
 
         public static void Load()
         {
@@ -429,7 +449,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallLeft && Speed.X <= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = 135f;
+                    Speed.X = 220f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;
@@ -437,7 +457,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallRight && Speed.X >= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = -135f;
+                    Speed.X = -220f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;
@@ -523,12 +543,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 positionRange = Vector2.UnitX * 6f;
             }
             Level.Particles.Emit(TheoCrystal.P_Impact, 12, position, positionRange, direction);
-        }
-        private IEnumerator DestroyAnimationRoutine()
-        {
-            Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
-            yield return 1f;
-            RemoveSelf();
         }
 
         public override bool IsRiding(Solid solid)

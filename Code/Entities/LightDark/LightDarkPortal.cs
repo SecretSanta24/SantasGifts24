@@ -89,7 +89,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             Audio.Play("event:/game/06_reflection/badeline_freakout_1", player.Position);
             cooldownPrimary = true;
             cooldownSecondary = true;
-            player.Position = to.Center + Position;
+            player.Center = to.Center + Position;
             if (player.CollideCheck<Solid>())
             {
                 player.Die(Vector2.Zero);

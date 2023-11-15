@@ -1,5 +1,4 @@
 local SS2024GaseousControl = {}
-return nil
 
 SS2024GaseousControl.name = "SS2024/GaseousControl"
 SS2024GaseousControl.depth = 0
@@ -18,4 +17,5 @@ SS2024GaseousControl.placements = {
     }
 }
 
-return SS2024GaseousControl
+return nil
+--return SS2024GaseousControl
