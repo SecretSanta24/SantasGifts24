@@ -58,7 +58,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void DebugRender(Camera camera)
         {
-            /**
             base.DebugRender(camera);
 
             Player player = Scene.Tracker.GetEntity<Player>();
@@ -101,7 +100,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Position = shockwaveActualPos;
             Collidable = false;
-            Collider = null;*/
+            Collider = null;
 
         }
 
@@ -122,6 +121,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            if (CheckPlayerPos(player)) player.Die(new Vector2(1,0));
+        }
+
+        public bool CheckPlayerPos(Player player)
+        {
+            bool toReturn = false;
+
             Vector2 playerPos = player.TopLeft;
             Vector2 playerSize = new Vector2(player.Width, player.Height);
 
@@ -142,7 +148,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveTransformedPosition;
             Collider = new Circle(expand);
             this.Collidable = true;
-            if(this.CollideCheck(player))
+            if (this.CollideCheck(player))
             {
                 //check if it's inside the smaller ellipse
                 if (expand - thickness > 0)
@@ -152,7 +158,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     {
 
 
-                    } else
+                    }
+                    else
                     {
 
                         player.Collider = playerActualHitbox;
@@ -161,7 +168,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         Position = shockwaveActualPos;
                         Collidable = false;
                         Collider = null;
-                        player.Die(Vector2.UnitY);
+                        toReturn = true;
                     }
                 }
                 else
@@ -173,7 +180,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Position = shockwaveActualPos;
                     Collidable = false;
                     Collider = null;
-                    player.Die(Vector2.UnitY);
+                    toReturn = true;
                 }
             }
 
@@ -183,9 +190,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveActualPos;
             Collidable = false;
             Collider = null;
-            
 
-
+            return toReturn;
         }
 
         private bool CheckPlayerMovingInShockwaveDirection(Player play)
