@@ -1,106 +1,68 @@
-﻿using Celeste.Mod.Entities;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
+using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Celeste.Mod.Entities;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
-    [Tracked]
-    [CustomEntity("SS2024/GloriousPassage")]
-    public class GloriousPassage : Entity
+    [CustomEntity("SS2024/TimeAnnouncer")]
+    internal class TimeAnnouncer : Entity
     {
-        public string flag;
-        public int lastinput;
-        public string roomName;
-        public bool yeahforsure;
-        public Player player;
-        public string audio;
-        public MTexture closed;
-        public MTexture open;
-        public bool simple;
-        public bool done;
-        public GloriousPassage(EntityData data, Vector2 offset) : base(data.Position + offset)
+        public float fade;
+        public float fade2;
+        public MTexture texture;
+        public float alpha;
+        public bool started;
+        public SoundSource sound;
+        public TimeAnnouncer(EntityData data, Vector2 offset) : base(data.Position + offset) 
         {
-            Collider = new Hitbox(data.Width, data.Height);
-            Add(new PlayerCollider(onPlayer, Collider));
-            Depth = 10;
+            base.Tag = Tags.PauseUpdate | Tags.HUD;
 
-            flag = data.Attr("flag", "door_check");
-            roomName = data.Attr("roomName", "");
-            audio = data.Attr("audio", "event:/paeceful_sibs_chamber/smw_door_opens");
-            closed = GFX.Game[data.Attr("closedPath", "objects/ss2024/gloriousPassage/closed")];
-            open = GFX.Game[data.Attr("openPath", "objects/ss2024/gloriousPassage/open")];
-            simple = data.Bool("simpleTrigger", false);
+            base.Collider = new Hitbox(data.Width, data.Height);
+            Add(new PlayerCollider(OnPlayer));
+            texture = GFX.Game["objects/ss2024/timecard/six"];
+            alpha = 0;
+            fade2 = 0;
+            sound = new SoundSource();
         }
-
-        public override void Awake(Scene scene)
+        public void OnPlayer(Player player)
         {
-            base.Awake(scene);
-            (Scene as Level).Session.SetFlag(flag, false);
-        }
-
-        public void onPlayer(Player player)
-        {
-            if (simple && !done)
+            if (!started)
             {
-                (Scene as Level).Session.SetFlag(flag, true);
                 Add(new Coroutine(Routine(player)));
-                done = true;
-                return;
             }
-            yeahforsure = true;
-            this.player = player;
+            
         }
-
-        public override void Update()
-        {
-            base.Update();
-            if (yeahforsure && !done) {
-                if (player.onGround)
-                {
-                    if (Input.MoveY.Value == -1 && lastinput != -1)
-                    {
-                        (Scene as Level).Session.SetFlag(flag, true);
-                        Audio.Play(audio);
-                        Add(new Coroutine(Routine(player)));
-                        done = true;
-                    }
-                }
-            }
-            lastinput = Input.MoveY.Value;
-            yeahforsure = false;
-        }
-
         public IEnumerator Routine(Player player)
         {
+            started = true;
 
-            Level level = Scene as Level;
+            sound.Play("event:/sunset_secretsanta/timecard");
+            yield return 0.5f;
+            alpha = 1;
             player.StateMachine.state = 11;
-
-            for(float i = 0; i < 1; i += Engine.RawDeltaTime * 4)
+            yield return 2.0f;
+            for (float i = 0; i < 1; i += Engine.DeltaTime * 2)
             {
-                Engine.TimeRate = Calc.Approach(Engine.TimeRate, 0, Engine.RawDeltaTime * 4);
+                fade2 = Ease.SineOut(i);
                 yield return null;
             }
-            level.DoScreenWipe(wipeIn: false, new Action(tp));
-
-            yield return null;
+            tp(player);
         }
 
-        public void tp()
+        public void tp(Player player)
         {
             if (player != null && Scene != null)
             {
                 Engine.TimeRate = 1;
                 Level level = Scene as Level;
-                level.Session.SetFlag("bino_transition_assist", false);
-                Player player = Scene.Tracker.GetEntity<Player>();
                 level.OnEndOfFrame += delegate
                 {
                     new Vector2(level.LevelOffset.X + (float)level.Bounds.Width - player.X, player.Y - level.LevelOffset.Y);
@@ -119,7 +81,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Vector2 cameraDelta = level.Camera.Position - pos;
                     level.Remove(player);
                     level.UnloadLevel();
-                    level.Session.Level = roomName;
+                    level.Session.Level = "b-00";
                     level.Session.RespawnPoint = level.GetSpawnPoint(new Vector2(level.Bounds.Left, level.Bounds.Top));
 
                     level.Session.FirstLevel = false;
@@ -136,7 +98,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     if (level.Camera.Position.X + 320 > level.Bounds.Right) level.Camera.Position = new Vector2(level.Bounds.Right, level.Camera.Position.Y);
                     if (level.Camera.Position.Y + 180 > level.Bounds.Bottom) level.Camera.Position = new Vector2(level.Camera.Position.X, level.Bounds.Bottom);
 
-                    
+
                     player.Facing = facing;
                     player.Hair.MoveHairBy(level.LevelOffset - levelOffset);
                     /*
@@ -159,26 +121,33 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         leader.PastPoints[i] += playerDelta;
                     }
                     leader.TransferFollowers();
-                    level.Session.SetFlag("bino_transition_assist", true);
                     player.Speed = Vector2.Zero;
                     level.DoScreenWipe(wipeIn: true);
-                    level.Add(new DelayedCameraRequest(player, true));
+                    level.Add(new DelayedCameraRequest(player, false));
                 };
-            }  
+            }
+        }
+        public override void Update()
+        {
+            if (!(Scene as Level).Paused)
+            {
+                base.Update();
+            }
+            fade = Calc.Approach(fade, (Scene as Level).Paused ? 1f : 0f, 8f * Engine.RawDeltaTime);
+            Player player = Scene.Tracker.GetEntity<Player>();
+            if (player == null)
+            {
+                sound.Stop();
+            }
         }
 
         public override void Render()
         {
             base.Render();
-            if (simple) return;
-            if(done)
-            {
-                open.DrawCentered(Center);
-            } 
-            else
-            {
-                closed.DrawCentered(Center);
-            }
+            Color color = Color.Lerp(Color.Lerp(Color.White, Color.Black, fade * 0.7f), Color.Black, fade2) * alpha;
+
+            texture.Draw(Vector2.Zero, Vector2.Zero, color);
         }
+
     }
 }
