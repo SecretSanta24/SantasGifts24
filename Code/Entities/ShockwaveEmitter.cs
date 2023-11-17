@@ -17,6 +17,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private float[] initialSize;
         private float[] shockwaveThickness;
         private float[] expandRate;
+        private float[] breakoutSpeeds;
         private Vector2[] normalizedFocalRatio;
         private int currentWave;
         
@@ -32,6 +33,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             var shockwaveThickness = data.Attr("shockwaveThickness", "3").Split(',');
             var timers = data.Attr("timers", "5").Split(',');
             var expandRate = data.Attr("expand", "30").Split(',');
+            var breakoutSpeeds = data.Attr("breakoutSpeeds", "1000").Split(',');
             normalizedFocalRatio = new Vector2[focalRatio.Length];
             for (int i = 0; i < focalRatio.Length; i++)
             {
@@ -59,6 +61,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 this.expandRate[i] = float.Parse(expandRate[i]);
             }
+            this.breakoutSpeeds = new float[breakoutSpeeds.Length];
+            for (int i = 0; i < breakoutSpeeds.Length; i++)
+            {
+                this.breakoutSpeeds[i] = float.Parse(breakoutSpeeds[i]);
+            }
             flag = data.Attr("flag", "");
             cycle = data.Bool("cycle", false);
         }
@@ -85,7 +92,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     var initialSize = InitialSize();
                     var shockwaveThickness = ShockwaveThickness();
                     var expandRate = ExpandRate();
-                    Scene.Add(new EllipticalShockwave(Position, focalRatio.X, focalRatio.Y, initialSize, expandRate, shockwaveThickness));
+                    var breakoutSpeed = BreakoutSpeed();
+                    Scene.Add(new EllipticalShockwave(Position, focalRatio.X, focalRatio.Y, initialSize, expandRate, shockwaveThickness, breakoutSpeed));
                     currentWave++;
                     if (cycle && currentWave >= timers.Length)
                     {
@@ -96,6 +104,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                 }
             }
+        }
+
+        private float BreakoutSpeed()
+        {
+            return breakoutSpeeds[Math.Min(currentWave, breakoutSpeeds.Length - 1)];
         }
 
         private float ExpandRate()
