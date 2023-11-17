@@ -10,8 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Celeste.Mod.Entities;
 
-namespace Celeste.Mod.SantasGifts24.Code.Entities
+namespace Celeste.Mod.SantasGifts24.Entities
 {
+    [Tracked]
     [CustomEntity("SS2024/TimeAnnouncer")]
     internal class TimeAnnouncer : Entity
     {
@@ -23,7 +24,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public SoundSource sound;
         public TimeAnnouncer(EntityData data, Vector2 offset) : base(data.Position + offset) 
         {
-            base.Tag = Tags.PauseUpdate | Tags.HUD;
+            base.Tag = Tags.PauseUpdate | Tags.HUD | Tags.Global;
 
             base.Collider = new Hitbox(data.Width, data.Height);
             Add(new PlayerCollider(OnPlayer));
@@ -31,6 +32,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             alpha = 0;
             fade2 = 0;
             sound = new SoundSource();
+        }
+
+        public override void Awake(Scene scene)
+        {
+            base.Awake(scene);
+            foreach(TimeAnnouncer t in Scene.Tracker.GetEntities<TimeAnnouncer>())
+            {
+                if (t != this) t.RemoveSelf();
+            }
         }
         public void OnPlayer(Player player)
         {
@@ -48,13 +58,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             yield return 0.5f;
             alpha = 1;
             player.StateMachine.state = 11;
-            yield return 2.0f;
-            for (float i = 0; i < 1; i += Engine.DeltaTime * 2)
-            {
-                fade2 = Ease.SineOut(i);
-                yield return null;
-            }
+            yield return 2f;
             tp(player);
+            yield return 0.25f;
+            RemoveSelf();
         }
 
         public void tp(Player player)
@@ -122,7 +129,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                     leader.TransferFollowers();
                     player.Speed = Vector2.Zero;
-                    level.DoScreenWipe(wipeIn: true);
                     level.Add(new DelayedCameraRequest(player, false));
                 };
             }
