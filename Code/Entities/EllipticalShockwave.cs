@@ -56,6 +56,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             
         }
         private int numPoints = 1000;
+        private bool killPlayer;
+
         public int NumVerteces
         {
             get { return numPoints * 3 ; }
@@ -149,12 +151,43 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            if (killPlayer)
+            {
+                player.Die(new Vector2(1, 0));
+            }
             UpdateShockwave();
             if (CheckPlayerMovingInShockwaveDirection(player))
             {
                 return;
             }
-            if (CheckPlayerPos(player)) player.Die(new Vector2(1,0));
+
+
+            Vector2 playerActualPosition = player.Position;
+            Collider playerActualHitbox = player.Collider;
+            float increment = (player.Speed.Length() * Engine.DeltaTime);
+            if (player.Speed != Vector2.Zero)
+            {
+                for (float i = 0; i <= increment; i+=0.25F)
+                {
+                    player.Position = player.Position + i * player.Speed.SafeNormalize();
+                    if (CheckPlayerPos(player))
+                    {
+                        killPlayer = true;
+                        player.Position = playerActualPosition;
+                        break;
+                    }
+                    player.Position = playerActualPosition;
+                }
+
+            }
+            else
+            {
+                if (CheckPlayerPos(player)) killPlayer = true;
+
+            }
+
+            player.Collider = playerActualHitbox;
+            player.Position = playerActualPosition;
         }
 
 
