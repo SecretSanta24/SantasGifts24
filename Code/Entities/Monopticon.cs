@@ -53,6 +53,7 @@ namespace Celeste.Mod.NeutronHelper
         public bool blockDash;
         public string intflag;
         public bool arbInteract;
+        public bool dashInputCancel;
 
         public bool blockWallKick;
         public bool WallKickCancel;
@@ -107,6 +108,7 @@ namespace Celeste.Mod.NeutronHelper
             blockDash = data.Bool("blockDash", true);
             blockWallKick = data.Bool("blockWallKicks", true);
             WallKickCancel = data.Bool("wallkicksCancelBino", true);
+            dashInputCancel = data.Bool("dashInputCancel", false);
             intflag = data.Attr("interactFlag", "lookout_interacting");
             DashDelayConfig = data.Float("dashCancelDelay", 0.15f);
             preOpenFrames = data.Float("preOpenFrames", 12f);
@@ -382,7 +384,7 @@ namespace Celeste.Mod.NeutronHelper
             Vector2 lastDir = Vector2.Zero;
             Vector2 camStart = level.Camera.Position;
             Vector2 camStartCenter = camStart + new Vector2(160f, 90f);
-            while (!Input.MenuCancel && !DashCancelCheck && !JumpCancelCheck && interacting && !player.Dead)
+            while (!(Input.MenuCancel || (dashInputCancel && Input.Dash)) && !DashCancelCheck && !JumpCancelCheck && interacting && !player.Dead)
             {
                 
                 Vector2 value = Input.Aim.Value;
@@ -574,6 +576,10 @@ namespace Celeste.Mod.NeutronHelper
             interacting = false;
             yield return closeFrames / 60f;
             canDashCoroutine = false;
+            if (dashInputCancel)
+            {
+                player.StateMachine.State = 0;
+            }
 
             bool atSummitTop = summit && node >= nodes.Count - 1 && nodePercent >= 0.95f;
             if (atSummitTop)

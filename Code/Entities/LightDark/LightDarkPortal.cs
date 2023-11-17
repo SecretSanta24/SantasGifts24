@@ -22,6 +22,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
         private bool cooldownSecondary = false;
         private Sprite spritePrimary;
         private Sprite spriteSecondary;
+        private bool persistent = false;
 
         private LightDarkMode currentMode;
 
@@ -38,6 +39,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
 		public LightDarkPortal(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
+            persistent = data.Bool("persistent", false);
             Depth = Depths.Player + 5;
             nodePos = data.Nodes.Length > 0 ? data.Nodes[0] + offset : Position;
             Vector2 secondaryPos = nodePos - Position;
@@ -96,7 +98,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             }
             if (Scene is Level level)
             {
-                level.LightDarkSet(mode);
+                level.LightDarkSet(mode, persistent);
             }
         }
 

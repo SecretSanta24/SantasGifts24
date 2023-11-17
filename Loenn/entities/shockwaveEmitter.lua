@@ -11,6 +11,7 @@ shockwaveEmitter.placements = {
             timers = "3,3,5",
             shockwaveThickness = "3",
             expand = "30",
+            breakoutSpeeds = "30",
             flag = "shockwaveStarter",
             cycle = false
         }
