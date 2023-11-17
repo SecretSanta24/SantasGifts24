@@ -20,7 +20,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public Holdable Hold;
 
-        private Image sprite;
+        private Sprite sprite;
 
         private Level Level;
 
@@ -61,8 +61,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             previousPosition = position;
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
-            Add(sprite = new Image(GFX.Game["objects/ss2024/smwKey/smwKey"]));
-            sprite.SetOrigin(10, 10);
+            Add(sprite = GFX.SpriteBank.Create("smwKey"));
+            sprite.Play("idle");
+            sprite.SetOrigin(18, 20);
             sprite.Visible = true;
             Add(Hold = new Holdable(0.1f));
             Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
@@ -87,16 +88,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             
         }
 
+        public SMWKey(EntityData e, Vector2 offset)
+            : this(e.Position + offset)
+        {
+        }
+
         public void OnDash(Vector2 direction)
         {
             bufferGrab = direction.X != 0 && direction.Y > 0;
         }
 
 
-        public SMWKey(EntityData e, Vector2 offset)
-            : this(e.Position + offset)
-        {
-        }
 
         public override void Added(Scene scene)
         {
@@ -168,8 +170,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     entity.Collidable = false;
                     if (num)
                     {
-                        destroyed = true;
-                        Collidable = false;
+
+                        Add(new Coroutine(DestroyKey()));
                         if (Hold.IsHeld)
                         {
                             Vector2 speed2 = Hold.Holder.Speed;
@@ -292,33 +294,37 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             else
             {
-                Position += Speed * Engine.DeltaTime;
+                
             }
 
             keySolid.Collidable = temp;
             Collidable = tempCollidableState;
         }
 
-        public IEnumerator Shatter()
+        private void StartDestroyKey()
         {
-            shattering = true;
-            BloomPoint bloom = new BloomPoint(0f, 32f);
-            VertexLight light = new VertexLight(Color.AliceBlue, 0f, 64, 200);
-            Add(bloom);
-            Add(light);
-            for (float p = 0f; p < 1f; p += Engine.DeltaTime)
+        }
+
+        private IEnumerator DestroyKey()
+        {
+            destroyed = true;
+            Collidable = false;
+            sprite.Play("destroyed");
+            Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
+
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 12f, 36f, 0.5f);
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 24f, 48f, 0.5f);
+            SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 36f, 60f, 0.5f);
+            while (sprite.CurrentAnimationFrame != sprite.CurrentAnimationTotalFrames - 1)
             {
-                Position += Speed * (1f - p) * Engine.DeltaTime;
-                Level.ZoomFocusPoint = TopCenter - Level.Camera.Position;
-                light.Alpha = p;
-                bloom.Alpha = p;
+                Position += Speed * Engine.DeltaTime;
+                Speed *= 0.95f;
                 yield return null;
             }
-            yield return 0.5f;
-            Level.Shake();
-            yield return 1f;
-            Level.Shake();
+            RemoveSelf();
+            yield return null;
         }
+
 
         public static void Load()
         {
@@ -443,7 +449,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallLeft && Speed.X <= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = 220f;
+                    Speed.X = 135f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;
@@ -451,7 +457,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (spring.Orientation == Spring.Orientations.WallRight && Speed.X >= 0f)
                 {
                     MoveTowardsY(spring.CenterY + 5f, 4f);
-                    Speed.X = -220f;
+                    Speed.X = -135f;
                     Speed.Y = -75f;
                     noGravityTimer = 0.1f;
                     return true;

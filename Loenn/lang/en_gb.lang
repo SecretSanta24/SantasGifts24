@@ -9,6 +9,10 @@ entities.SS2024/Thalassocardiologist.placements.name.right=Thalassocardiologist 
 # Monopticon
 entities.SS2024/Monopticon.placements.name.mono=Monopticon
 
+# Glorious Passage
+entities.SS2024/GloriousPassage.placements.name.passage=Glorious Passage
+entities.SS2024/GloriousPassage.placements.name.door=Monopticon Door
+
 # Gaseous Grand Control
 entities.SS2024/GaseousControl.placements.name.gaseous=Gaseous Grand Control
 

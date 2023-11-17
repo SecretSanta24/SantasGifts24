@@ -32,10 +32,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Depth = 10;
 
             flag = data.Attr("flag", "door_check");
-            roomName = data.Attr("room", "");
+            roomName = data.Attr("roomName", "");
             audio = data.Attr("audio", "event:/paeceful_sibs_chamber/smw_door_opens");
-            closed = GFX.Game[data.Attr("closedPath", "objects/SS2024/WatchtowerContest/Paeceful/door/closed")];
-            open = GFX.Game[data.Attr("closedPath", "objects/SS2024/WatchtowerContest/Paeceful/door/open")];
+            closed = GFX.Game[data.Attr("closedPath", "objects/ss2024/gloriousPassage/closed")];
+            open = GFX.Game[data.Attr("openPath", "objects/ss2024/gloriousPassage/open")];
             simple = data.Bool("simpleTrigger", false);
         }
 
@@ -82,7 +82,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Level level = Scene as Level;
             player.StateMachine.state = 11;
-            level.Session.SetFlag("bino_transition_assist", false);
+
             for(float i = 0; i < 1; i += Engine.RawDeltaTime * 4)
             {
                 Engine.TimeRate = Calc.Approach(Engine.TimeRate, 0, Engine.RawDeltaTime * 4);
@@ -95,12 +95,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void tp()
         {
-            
-            Engine.TimeRate = 1;
-            Level level = Scene as Level;
-            Player player = Scene.Tracker.GetEntity<Player>();
-            if (player != null)
+            if (player != null && Scene != null)
             {
+                Engine.TimeRate = 1;
+                Level level = Scene as Level;
+                level.Session.SetFlag("bino_transition_assist", false);
+                Player player = Scene.Tracker.GetEntity<Player>();
                 level.OnEndOfFrame += delegate
                 {
                     new Vector2(level.LevelOffset.X + (float)level.Bounds.Width - player.X, player.Y - level.LevelOffset.Y);
@@ -162,7 +162,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     level.Session.SetFlag("bino_transition_assist", true);
                     player.Speed = Vector2.Zero;
                     level.DoScreenWipe(wipeIn: true);
-                    level.Add(new DelayedCameraRequest(player));
+                    level.Add(new DelayedCameraRequest(player, true));
                 };
             }  
         }

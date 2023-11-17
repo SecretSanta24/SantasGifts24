@@ -17,6 +17,7 @@ SS2024Monopticon.placements = {
         blockDash = true,
         blockJump = true,
         dashCancelDelay = 9,
+        dashInputCancel = false,
         openFrames = 20,
         preOpenFrames = 12,
         closeFrames = 20,

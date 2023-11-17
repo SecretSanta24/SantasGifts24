@@ -17,16 +17,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private float expand;
 
         private float expandRate = 0.1F;
+        private float breakoutSpeed;
         private float thickness = 3;
 
         private MTexture shockwave;
         private Sprite sprite;
 
-        public EllipticalShockwave(Vector2 Position, float a, float b, float initialSize, float expandRate, float shockwaveThickness) : base(Position) {
+        public EllipticalShockwave(Vector2 Position, float a, float b, float initialSize, float expandRate, float shockwaveThickness, float breakoutSpeed) : base(Position) {
             this.b = b;
             this.a = a;
             this.expand = initialSize;
             this.expandRate = expandRate;
+            this.breakoutSpeed = breakoutSpeed;
             thickness = shockwaveThickness;
             Depth = Depths.Below;
 
@@ -58,7 +60,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void DebugRender(Camera camera)
         {
-            /**
             base.DebugRender(camera);
 
             Player player = Scene.Tracker.GetEntity<Player>();
@@ -101,7 +102,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             Position = shockwaveActualPos;
             Collidable = false;
-            Collider = null;*/
+            Collider = null;
 
         }
 
@@ -117,6 +118,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            expand += expandRate * Engine.DeltaTime;
+            if (CheckPlayerMovingInShockwaveDirection(player))
+            {
+                return;
+            }
+            if (CheckPlayerPos(player)) player.Die(new Vector2(1,0));
+        }
+
+        public bool CheckPlayerPos(Player player)
+        {
+           
+            bool toReturn = false;
+
             Vector2 playerPos = player.TopLeft;
             Vector2 playerSize = new Vector2(player.Width, player.Height);
 
@@ -137,7 +151,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveTransformedPosition;
             Collider = new Circle(expand);
             this.Collidable = true;
-            if(this.CollideCheck(player))
+            if (this.CollideCheck(player))
             {
                 //check if it's inside the smaller ellipse
                 if (expand - thickness > 0)
@@ -147,7 +161,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     {
 
 
-                    } else
+                    }
+                    else
                     {
 
                         player.Collider = playerActualHitbox;
@@ -156,7 +171,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         Position = shockwaveActualPos;
                         Collidable = false;
                         Collider = null;
-                        player.Die(Vector2.UnitY);
+                        toReturn = true;
                     }
                 }
                 else
@@ -168,7 +183,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Position = shockwaveActualPos;
                     Collidable = false;
                     Collider = null;
-                    player.Die(Vector2.UnitY);
+                    toReturn = true;
                 }
             }
 
@@ -178,10 +193,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveActualPos;
             Collidable = false;
             Collider = null;
-            
 
-            expand += expandRate * Engine.DeltaTime;
+            return toReturn;
+        }
 
+        private bool CheckPlayerMovingInShockwaveDirection(Player play)
+        {
+            if (play.Position == Position) return false;
+            if (play.Speed.Length() <= breakoutSpeed) return false;
+            Vector2 deltaPos = (play.Position - Position);
+            deltaPos = new Vector2(deltaPos.X / b, deltaPos.Y / a);
+            deltaPos.Normalize();   
+            Vector2 playerSpeed = play.Speed;
+            playerSpeed.Normalize();
+            return Math.Acos(Vector2.Dot(deltaPos, playerSpeed)) < Math.PI * 0.5F;
         }
     }
 }

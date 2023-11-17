@@ -6,13 +6,14 @@ shockwaveEmitter.placements = {
     {
         name = "Shockwave Emitter",
         data = {
-            focalRatio = 1.5,
-            frequency = 5,
-            initialSize = 1,
-            flag = "",
-            firstSpawn = 5,
-            shockwaveThickness = 3,
-            expandRate = 30
+            focalRatio = "1.5",
+            initialSize = "1",
+            timers = "3,3,5",
+            shockwaveThickness = "3",
+            expand = "30",
+            breakoutSpeeds = "30",
+            flag = "shockwaveStarter",
+            cycle = false
         }
 
     }
