@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,46 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private float thickness = 3;
 
         private MTexture shockwave;
-        private Sprite sprite;
+        private Vector2[] ellipsePoints;
+        private VertexPositionColor[] verteces;
+
+        private void UpdateShockwave()
+        {
+            expand += expandRate * Engine.DeltaTime;
+            if (verteces == null) verteces = new VertexPositionColor[NumVerteces];
+            for (int i = 0; i < ellipsePoints.Length; i++)
+            {
+                Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
+                Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
+                Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
+                float outerRingSize = expand;
+                float innerRingSize = Math.Max(expand - thickness, 0);
+                if (i % 2 == 1)
+                {
+                    v1 *= outerRingSize;
+                    v2 *= innerRingSize;
+                    v3 *= outerRingSize;
+                } 
+                else
+                {
+                    v1 *= innerRingSize;
+                    v2 *= outerRingSize;
+                    v3 *= innerRingSize;
+                }
+
+                verteces[3 * i + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
+                verteces[3 * i + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
+                verteces[3 * i + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
+            }
+            
+        }
+        private int numPoints = 1000;
+        private bool killPlayer;
+
+        public int NumVerteces
+        {
+            get { return numPoints * 3 ; }
+        }
 
         public EllipticalShockwave(Vector2 Position, float a, float b, float initialSize, float expandRate, float shockwaveThickness, float breakoutSpeed) : base(Position) {
             this.b = b;
@@ -31,30 +71,23 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             this.breakoutSpeed = breakoutSpeed;
             thickness = shockwaveThickness;
             Depth = Depths.Below;
-
             shockwave = GFX.Game["objects/ss2024/ellipticalShockwave/shockwave"];
 
-            sprite = new Sprite(GFX.Game, "objects/ss2024/ellipticalShockwave/shockwave");
-            Add(sprite);
-            sprite.AddLoop("idle", 0.1F, new MTexture[] { GFX.Game["objects/ss2024/ellipticalShockwave/shockwave"] });
-            sprite.Play("idle");
-            sprite.Scale = new Vector2(b * expand / 100, a * expand / 100);
-            sprite.CenterOrigin();
+            ellipsePoints = new Vector2[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                double angle = (float)(i / (float) numPoints * 2 * Math.PI);
+                ellipsePoints[i] = new Vector2((float)(b * Math.Cos(angle)), (float)(a * Math.Sin(angle)));
+            }
         }
 
         public override void Render()
         {
             base.Render();
-            sprite.Scale = new Vector2(b * expand / 100, a * expand / 100);
-            sprite.Color = Color.White;
-            sprite.CenterOrigin();
-            sprite.Render();
-            if (expand - thickness > 0)
+
+            if (verteces != null)
             {
-                sprite.Scale = new Vector2(b * (expand - thickness) / 100, a * (expand - thickness) / 100);
-                sprite.Color = Color.Blue;
-                sprite.CenterOrigin();
-                sprite.Render();
+                GFX.DrawVertices(Matrix.Identity, verteces, NumVerteces);
             }
         }
 
@@ -118,13 +151,45 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
-            expand += expandRate * Engine.DeltaTime;
+            if (killPlayer)
+            {
+                player.Die(new Vector2(1, 0));
+            }
+            UpdateShockwave();
             if (CheckPlayerMovingInShockwaveDirection(player))
             {
                 return;
             }
-            if (CheckPlayerPos(player)) player.Die(new Vector2(1,0));
+
+
+            Vector2 playerActualPosition = player.Position;
+            Collider playerActualHitbox = player.Collider;
+            float increment = (player.Speed.Length() * Engine.DeltaTime);
+            if (player.Speed != Vector2.Zero)
+            {
+                for (float i = 0; i <= increment; i+=0.25F)
+                {
+                    player.Position = player.Position + i * player.Speed.SafeNormalize();
+                    if (CheckPlayerPos(player))
+                    {
+                        killPlayer = true;
+                        player.Position = playerActualPosition;
+                        break;
+                    }
+                    player.Position = playerActualPosition;
+                }
+
+            }
+            else
+            {
+                if (CheckPlayerPos(player)) killPlayer = true;
+
+            }
+
+            player.Collider = playerActualHitbox;
+            player.Position = playerActualPosition;
         }
+
 
         public bool CheckPlayerPos(Player player)
         {
