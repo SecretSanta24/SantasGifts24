@@ -4,16 +4,17 @@ namespace Celeste.Mod.SantasGifts24
 {
     public class SantasGiftsSession : EverestModuleSession
     {
-		// Light/Dark Mode
-		public LightDarkMode LightDark { get; set; }
+        // Light/Dark Mode
+        public LightDarkMode LightDark { get; set; } = LightDarkMode.Normal;
+        public LightDarkMode LightDarkPersistent { get; set; } = LightDarkMode.Normal;
 
         // 
-		public bool DisableDeathSound { get; set; } = false;
+        public bool DisableDeathSound { get; set; } = false;
 
 
-        //cursed refill
-        public bool playerCursed = false;
-        public bool ignoreDash = false;
+		//cursed refill
+		public bool playerCursed = false;
+		public bool ignoreDash = false;
         public bool killPlayerWhenSafe = false;
 
         public void ResetCurse()

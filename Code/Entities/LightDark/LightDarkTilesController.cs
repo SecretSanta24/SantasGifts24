@@ -21,6 +21,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
         private VirtualMap<MTexture> newFgTexes;
         private LightDarkMode currentMode = LightDarkMode.Normal;
         private Rectangle? bounds = null;
+        private bool tilesGenerated = false;
 
 		public LightDarkTilesController(EntityData data, Vector2 offset) : base()
         {
@@ -61,6 +62,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private void GenerateTiles(Level level)
         {
+            if (tilesGenerated) return;
             // A lot of this code is closely modeled after Pandoras Box Tile Glitcher code
             GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
 
@@ -97,7 +99,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                     if (newFgTexes[x, y] == null) newFgTexes[x, y] = newFgTiles.TileGrid.Tiles[x, y];
                 }
             }
-        }
+
+            tilesGenerated = true;
+		}
 
         private void OnModeChange(LightDarkMode newMode)
         {
