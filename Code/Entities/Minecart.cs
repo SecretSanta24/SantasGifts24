@@ -423,6 +423,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			if (reentryTimer > 0f)
 				reentryTimer = Calc.Approach(reentryTimer, 0f, Engine.DeltaTime);
 
+			// Make sure the cart is not carrying an entity which has been removed
+			if (Carrying != null && Carrying.Scene == null)
+				Carrying = null;
+
 			if (!activated)
 				return;
 
