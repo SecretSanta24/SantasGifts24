@@ -1,5 +1,6 @@
 ﻿using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using System;
 using System.Collections.Generic;
@@ -88,11 +89,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 timers[currentWave] -= Engine.DeltaTime;
                 if (timers[currentWave] <= 0)
                 {
-                    var focalRatio = NormalizedFocalRatio();
-                    var initialSize = InitialSize();
-                    var shockwaveThickness = ShockwaveThickness();
-                    var expandRate = ExpandRate();
-                    var breakoutSpeed = BreakoutSpeed();
+                    var focalRatio = GetElementCapped(this.normalizedFocalRatio);
+                    var initialSize = GetElementCapped(this.initialSize);
+                    var shockwaveThickness = GetElementCapped(this.shockwaveThickness);
+                    var expandRate = GetElementCapped(this.expandRate);
+                    var breakoutSpeed = GetElementCapped(this.breakoutSpeeds);
                     Scene.Add(new EllipticalShockwave(Position, focalRatio.X, focalRatio.Y, initialSize, expandRate, shockwaveThickness, breakoutSpeed));
                     currentWave++;
                     if (cycle && currentWave >= timers.Length)
@@ -106,29 +107,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        private float BreakoutSpeed()
+        //im lazy dont @ me.
+        private T GetElementCapped<T>(T[] array)
         {
-            return breakoutSpeeds[Math.Min(currentWave, breakoutSpeeds.Length - 1)];
-        }
-
-        private float ExpandRate()
-        {
-            return expandRate[Math.Min(currentWave, expandRate.Length - 1)];
-        }
-
-        private float InitialSize()
-        {
-            return initialSize[Math.Min(currentWave, initialSize.Length - 1)];
-        }
-
-        private float ShockwaveThickness()
-        {
-            return shockwaveThickness[Math.Min(currentWave, shockwaveThickness.Length - 1)];
-        }
-
-        private Vector2 NormalizedFocalRatio()
-        {
-            return normalizedFocalRatio[Math.Min(currentWave, normalizedFocalRatio.Length - 1)];
+            return array[Math.Min(currentWave, array.Length - 1)];
         }
 
         private void ResetEmitter()
