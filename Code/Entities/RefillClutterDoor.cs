@@ -21,13 +21,25 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     public class RefillClutterDoor : ClutterDoor
     {
         private bool doubleDash = false;
-        public RefillClutterDoor(EntityData data, Vector2 offset) : base(data, offset, (Engine.Scene as LevelLoader).session)
+        public RefillClutterDoor(EntityData data, Vector2 offset) : base(data, offset, GetSession())
         {
             this.OnDashCollide = new DashCollision(this.OnDashed);
             this.doubleDash = data.Bool("doubleDash", false);
             this.sprite.Color = (this.doubleDash ? data.HexColor("TwoDashColor",Player.TwoDashesHairColor) : data.HexColor("OneDashColor", Player.NormalHairColor));
         }
 
+        private static Session GetSession()
+        {
+            Level lvl = Engine.Scene switch
+            {
+                Level level => level,
+                LevelLoader loader => loader.Level,
+                AssetReloadHelper => (Level)AssetReloadHelper.ReturnToScene,
+                _ => throw new Exception("RefillClutterDoor: GetSession called outside of a level... how did you manage that?")
+            };
+
+            return lvl.Session;
+        }
         private new DashCollisionResults OnDashed(Player player, Vector2 direction)
         {
             this.wiggler.Start();
