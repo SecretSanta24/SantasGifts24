@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
-    
+    [Tracked]
     public class EllipticalShockwave : Entity
     {
         private float b;
@@ -49,9 +49,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     v3 *= innerRingSize;
                 }
 
-                verteces[3 * i + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
-                verteces[3 * i + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
-                verteces[3 * i + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0), Color.White * 0.5F);
+                verteces[3 * i + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
+                verteces[3 * i + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
+                verteces[3 * i + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
             }
             
         }
@@ -70,7 +70,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             this.expandRate = expandRate;
             this.breakoutSpeed = breakoutSpeed;
             thickness = shockwaveThickness;
-            Depth = Depths.Below;
+            Depth = Depths.Above;
+            
             shockwave = GFX.Game["objects/ss2024/ellipticalShockwave/shockwave"];
 
             ellipsePoints = new Vector2[numPoints];
@@ -81,10 +82,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        public override void Render()
+        public override void Awake(Scene scene)
         {
-            base.Render();
+            base.Awake(scene);
+        }
 
+        public void RenderWave()
+        {
             if (verteces != null)
             {
                 GFX.DrawVertices(Matrix.Identity, verteces, NumVerteces);
