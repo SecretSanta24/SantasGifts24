@@ -16,14 +16,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 		private float cooldown = 0f;
 
 		public GunnerDude(EntityData data, Vector2 offset) : base(data.Position + offset - new Vector2(8, 12), 16, 28) {
-			facingLeft = data.Bool("faceLeft", false);
-			NormalSprite = GFX.SpriteBank.Create("corkr900SS24GunnerDudeNormal");
-			DarkSprite = GFX.SpriteBank.Create("corkr900SS24GunnerDudeDark");
+
+			NormalSprite = GFX.SpriteBank.Create("corkr900SS24GunnerDudeNormalFront");
+			DarkSprite = GFX.SpriteBank.Create("corkr900SS24GunnerDudeDarkFront");
+			NormalSpriteSecondary = GFX.SpriteBank.Create("corkr900SS24GunnerDudeNormalBack");
+			DarkSpriteSecondary = GFX.SpriteBank.Create("corkr900SS24GunnerDudeDarkBack");
+
 			NormalSprite.Position = new Vector2(8f, 12f);
 			DarkSprite.Position = new Vector2(8f, 12f);
+			NormalSpriteSecondary.Position = new Vector2(8f, 12f);
+			DarkSpriteSecondary.Position = new Vector2(8f, 12f);
+
+			facingLeft = data.Bool("faceLeft", false);
 			if (facingLeft) {
-				NormalSprite.FlipX = true;
-				DarkSprite.FlipX = true;
+				SetFlipX(true);
 			}
 			OnDashCollide = OnDashed;
 		}
@@ -52,6 +58,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
 		public void Fire() {
 			if (cooldown > 0) return;
+			PlayAnimation("shoot");
 			cooldown = 1.0f;
 			Scene.Add(new LightDarkProjectile(Position + new Vector2(facingLeft ? -10 : 10, 4), facingLeft));
 		}

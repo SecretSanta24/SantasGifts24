@@ -25,6 +25,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 		public bool Exploded { get; private set; } = false;
 
 		public LightDarkProjectile(Vector2 pos, bool left) : base(pos, 20, 16) {
+			Depth = Depths.Above;
 			goLeft = left;
 			NormalSprite = GFX.SpriteBank.Create("corkr900SS24LightDarkProjectileNormal");
 			DarkSprite = GFX.SpriteBank.Create("corkr900SS24LightDarkProjectileDark");

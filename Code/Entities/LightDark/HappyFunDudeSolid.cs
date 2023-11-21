@@ -14,6 +14,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
 		private Sprite _normalSprite;
 		private Sprite _darkSprite;
+		private Sprite _normalSpriteSecondary;
+		private Sprite _darkSpriteSecondary;
+		private Entity _secondarySpritesEntity;
 
 		public LightDarkMode CurrentMode { get; private set; } = LightDarkMode.Normal;
 
@@ -33,7 +36,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			}
 		}
 
+		protected Sprite NormalSpriteSecondary {
+			get { return _normalSpriteSecondary; }
+			set {
+				_normalSpriteSecondary = value;
+				UpdateSprite();
+			}
+		}
+
+		protected Sprite DarkSpriteSecondary {
+			get { return _darkSpriteSecondary; }
+			set {
+				_darkSpriteSecondary = value;
+				UpdateSprite();
+			}
+		}
+
 		private Sprite currentSprite;
+		private Sprite currentSpriteSecondary;
 
 		public bool SpriteVisible {
 			get {
@@ -42,6 +62,26 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			set {
 				NormalSprite.Visible = value;
 				DarkSprite.Visible = value;
+				if (NormalSpriteSecondary != null) {
+					NormalSpriteSecondary.Visible = value;
+					DarkSpriteSecondary.Visible = value;
+				}
+			}
+		}
+
+		public void PlayAnimation(string anim) {
+			NormalSprite.Play(anim);
+			DarkSprite.Play(anim);
+			NormalSpriteSecondary?.Play(anim);
+			DarkSpriteSecondary?.Play(anim);
+		}
+
+		public void SetFlipX(bool v) {
+			NormalSprite.FlipX = true;
+			DarkSprite.FlipX = true;
+			if (NormalSpriteSecondary != null) {
+				NormalSpriteSecondary.FlipX = true;
+				DarkSpriteSecondary.FlipX = true;
 			}
 		}
 
@@ -49,6 +89,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			: base(pos, width, height, false)
 		{
 			Add(new LightDarkListener(SetDarknessMode));
+			Depth = Depths.Solids;
 		}
 
 		public HappyFunDudeSolid(EntityData data, Vector2 offset)
@@ -60,6 +101,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			if (scene is Level level) {
 				SetDarknessMode(level.LightDarkGet());
 			}
+			CheckSecondarySpritesEntity(scene);
+		}
+
+		public override void Removed(Scene scene) {
+			base.Removed(scene);
+			_secondarySpritesEntity?.RemoveSelf();
 		}
 
 		public virtual void SetDarknessMode(LightDarkMode newMode) {
@@ -68,19 +115,57 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			UpdateSprite();
 		}
 
+		private void CheckSecondarySpritesEntity(Scene scene = null) {
+			scene ??= Scene;
+			if (_secondarySpritesEntity == null) {
+				_secondarySpritesEntity = new Entity();
+				_secondarySpritesEntity.Depth = Depths.Below;
+				_secondarySpritesEntity.Position = Position;
+			}
+			if (scene != null && _secondarySpritesEntity.Scene == null) {
+				scene.Add(_secondarySpritesEntity);
+			}
+		}
+
 		private void UpdateSprite() {
 			string anim = "";
 			int frame = 0;
+			string anim2 = "";
+			int frame2 = 0;
+			// Get current position in animations
 			if (currentSprite != null) {
 				anim = currentSprite.CurrentAnimationID;
 				frame = currentSprite.CurrentAnimationFrame;
 				currentSprite.RemoveSelf();
 			}
-			if (CurrentMode == LightDarkMode.Normal && NormalSprite != null) Add(currentSprite = NormalSprite);
-			if (CurrentMode == LightDarkMode.Dark && DarkSprite != null) Add(currentSprite = DarkSprite);
+			if (currentSpriteSecondary != null) {
+				anim2 = currentSpriteSecondary.CurrentAnimationID;
+				frame2 = currentSpriteSecondary.CurrentAnimationFrame;
+				currentSpriteSecondary.RemoveSelf();
+			}
+			// Swap in the sprites
+			if (CurrentMode == LightDarkMode.Normal && NormalSprite != null) {
+				Add(currentSprite = NormalSprite);
+				if (NormalSpriteSecondary != null) {
+					CheckSecondarySpritesEntity();
+					_secondarySpritesEntity.Add(currentSpriteSecondary = NormalSpriteSecondary);
+				}
+			}
+			if (CurrentMode == LightDarkMode.Dark && DarkSprite != null) {
+				Add(currentSprite = DarkSprite);
+				if (DarkSpriteSecondary != null) {
+					CheckSecondarySpritesEntity();
+					_secondarySpritesEntity.Add(currentSpriteSecondary = DarkSpriteSecondary);
+				}
+			}
+			// Play the same animation on the new sprite
 			if (!string.IsNullOrEmpty(anim)) {
-				currentSprite.Play(anim);
-				currentSprite.SetAnimationFrame(frame);
+				currentSprite?.Play(anim);
+				currentSprite?.SetAnimationFrame(frame);
+			}
+			if (!string.IsNullOrEmpty(anim2)) {
+				currentSpriteSecondary?.Play(anim2);
+				currentSpriteSecondary?.SetAnimationFrame(frame2);
 			}
 		}
 
@@ -96,7 +181,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			int num = (int)Math.Round(movementCounter.X);
 			if (num != 0) {
 				movementCounter.X -= num;
-				return MoveHExactCollideSolids(num, thruDashBlocks, onCollide);
+				bool ret = MoveHExactCollideSolids(num, thruDashBlocks, onCollide);
+				if (_secondarySpritesEntity != null) _secondarySpritesEntity.Position = Position;
+				return ret;
 			}
 			return false;
 		}
@@ -113,7 +200,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			int num = (int)Math.Round(movementCounter.Y);
 			if (num != 0) {
 				movementCounter.Y -= num;
-				return MoveVExactCollideSolids(num, thruDashBlocks, onCollide);
+				bool ret = MoveVExactCollideSolids(num, thruDashBlocks, onCollide);
+				if (_secondarySpritesEntity != null) _secondarySpritesEntity.Position = Position;
+				return ret;
 			}
 			return false;
 		}
