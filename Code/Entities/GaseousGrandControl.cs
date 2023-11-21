@@ -23,6 +23,11 @@ namespace Celeste.Mod.NeutronHelper
         public string StyleTagOut;
         public string ColorgradeA;
         public string ColorgradeB;
+        public string musicParamName;
+        public float musicParamMin;
+        public float musicParamMax;
+        public float anxiety;
+
         public GaseousGrandControl(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
             Tag = Tags.Persistent;
@@ -34,6 +39,10 @@ namespace Celeste.Mod.NeutronHelper
             StyleTagOut = data.Attr("fadeOutTag", "o2_out_tag");
             ColorgradeA = data.Attr("colorgradeA", "none");
             ColorgradeB = data.Attr("colorgradeB", "none");
+            musicParamName = data.Attr("musicParamName", "param_here");
+            musicParamMin = data.Float("musicParamMin", 0f);
+            musicParamMax = data.Float("musicParamMax", 1f);
+            anxiety = data.Float("anxiety", 0.3f);
             Oxygen = 500f;
         }
         public override void Added(Scene scene)
@@ -89,19 +98,29 @@ namespace Celeste.Mod.NeutronHelper
         {
             base.Update();
             Player player = Scene.Tracker.GetEntity<Player>();
-            if(player != null)
+            Level level = (Scene as Level);
+            if (player != null)
             {
+
                 if (!player.CollideCheck<GaseousTrigger>())
                 {
-                    (Scene as Level).Session.SetFlag(Flag, true);
+                    level.Session.SetFlag(Flag, true);
                     Oxygen = Math.Max(Oxygen - DrainRate * Engine.DeltaTime, 0f);
 
                 } 
                 else
                 {
-                    (Scene as Level).Session.SetFlag(Flag, false);
+                    level.Session.SetFlag(Flag, false);
                     Oxygen = Calc.Clamp(Oxygen + RecoverRate * Engine.DeltaTime, 0f, 500f);
                 }
+
+                float lerp = Calc.Clamp(Oxygen, 0f, 500f) / 500f;
+
+                Distort.AnxietyOrigin = new Vector2((player.Center.X - level.Camera.X) / 320f, (player.Center.Y - level.Camera.Y) / 180f);
+                Distort.Anxiety = 1 - lerp;
+
+                Audio.SetMusicParam(musicParamName, Calc.ClampedMap(lerp, 1, 0, musicParamMin, musicParamMax));
+
                 if (Oxygen <= 0f)
                 {
                     player.Die(FastDeath ? Vector2.Zero : Calc.AngleToVector(Calc.Random.NextFloat((float)Math.PI * 2f), 1), false, true);

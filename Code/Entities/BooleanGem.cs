@@ -120,7 +120,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             P_GlowTwo = new ParticleType(Refill.P_GlowTwo);
             flag = data.Attr("flag", "yeah");
             stopMomentum = data.Bool("stopMomentum", true);
-            
         }
 
         public override void Added(Scene scene)
