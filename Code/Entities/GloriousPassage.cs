@@ -62,7 +62,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         {
             base.Update();
             if (yeahforsure && !done) {
-                if (player.onGround)
+                if (player.OnGround())
                 {
                     if (Input.MoveY.Value == -1 && lastinput != -1)
                     {
