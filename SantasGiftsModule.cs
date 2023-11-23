@@ -51,6 +51,7 @@ namespace Celeste.Mod.SantasGifts24
             Minecart.Load();
             FastfallController.Load();
             RebindElytra.Load();
+            CrashLanding.Load();
 			
 			On.Celeste.Player.ctor += AddCustomStates;
         }
@@ -73,6 +74,7 @@ namespace Celeste.Mod.SantasGifts24
             Minecart.Unload();
             FastfallController.Unload();
             RebindElytra.Unload();
+            CrashLanding.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
