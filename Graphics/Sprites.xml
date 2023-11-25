@@ -53,4 +53,9 @@
 		<Loop id="idle" path="leafkey" delay="0.1" frames="0"/>
 		<Anim id="destroyed" path="leafkey" delay="0.05" frames="1-12"/>
 	</smwKey>
+	<electricGenerator path="objects/ss2024/electricity/" start="on">
+		<Center/>
+		<Loop id="on" path="on" delay="0.1" />
+		<Loop id = "off" path="off" delay = "0.05" />
+	</electricGenerator>
 </Sprites>
