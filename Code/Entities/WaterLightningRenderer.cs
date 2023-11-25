@@ -188,8 +188,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		private Color[] electricityColors = new Color[2]
 		{
-		Calc.HexToColor("fcf579") * 0.5f,
-		Calc.HexToColor("8cf7e2") * 0.5f
+		Calc.HexToColor("fcf579") * 0.1f,
+		Calc.HexToColor("8cf7e2") * 0.1f
 		};
 
 		private Color[] electricityColorsLerped;

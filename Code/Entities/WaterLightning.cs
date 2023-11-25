@@ -13,6 +13,7 @@ using Celeste.Mod.Entities;
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
 	[CustomEntity("SS2024/WaterLightning")]
+	[Tracked]
 	public class WaterLightning : Entity
 	{
 		public static ParticleType P_Shatter = Lightning.P_Shatter;
