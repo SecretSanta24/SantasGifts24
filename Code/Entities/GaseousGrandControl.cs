@@ -27,6 +27,7 @@ namespace Celeste.Mod.NeutronHelper
         public float musicParamMin;
         public float musicParamMax;
         public float anxiety;
+        public float cameraZoomTarget;
 
         public GaseousGrandControl(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
@@ -43,6 +44,7 @@ namespace Celeste.Mod.NeutronHelper
             musicParamMin = data.Float("musicParamMin", 0f);
             musicParamMax = data.Float("musicParamMax", 1f);
             anxiety = data.Float("anxiety", 0.3f);
+            cameraZoomTarget = data.Float("cameraZoomTarget", 1f);
             Oxygen = 500f;
         }
         public override void Added(Scene scene)
@@ -120,6 +122,8 @@ namespace Celeste.Mod.NeutronHelper
                 Distort.Anxiety = 1 - lerp;
 
                 Audio.SetMusicParam(musicParamName, Calc.ClampedMap(lerp, 1, 0, musicParamMin, musicParamMax));
+
+                level.ZoomSnap(new Vector2(160f, 90f), Calc.ClampedMap(Ease.SineInOut(lerp), 1, 0, 1, cameraZoomTarget));
 
                 if (Oxygen <= 0f)
                 {

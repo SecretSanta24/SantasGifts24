@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.Entities;
+using IL.MonoMod;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
@@ -25,6 +26,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         public MTexture open;
         public bool simple;
         public bool done;
+        public bool faceLeft;
         public GloriousPassage(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
             Collider = new Hitbox(data.Width, data.Height);
@@ -37,6 +39,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             closed = GFX.Game[data.Attr("closedPath", "objects/ss2024/gloriousPassage/closed")];
             open = GFX.Game[data.Attr("openPath", "objects/ss2024/gloriousPassage/open")];
             simple = data.Bool("simpleTrigger", false);
+            faceLeft = data.Bool("faceLeft", false);
         }
 
         public override void Awake(Scene scene)
@@ -106,7 +109,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     new Vector2(level.LevelOffset.X + (float)level.Bounds.Width - player.X, player.Y - level.LevelOffset.Y);
                     Vector2 levelOffset = level.LevelOffset;
                     Vector2 vector2 = level.Camera.Position - level.LevelOffset;
-                    Facings facing = player.Facing;
+                    Facings facing = faceLeft ? Facings.Left : Facings.Right;
                     Vector2 pos = player.Position;
 
                     Leader leader = player.Get<Leader>();
@@ -129,6 +132,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
 
                     player.Position = level.Session.RespawnPoint.Value;
+                    
                     Vector2 playerDelta = player.Position - pos;
                     level.Camera.Position = player.Position + cameraDelta;
                     if (level.Camera.Position.X < level.Bounds.Left) level.Camera.Position = new Vector2(level.Bounds.Left, level.Camera.Position.Y);

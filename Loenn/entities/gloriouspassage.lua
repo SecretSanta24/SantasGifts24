@@ -18,6 +18,7 @@ SS2024GloriousPassage.placements = {
             closedPath = "objects/ss2024/gloriousPassage/closed",
             openPath = "objects/ss2024/gloriousPassage/open",
             simpleTrigger = false,
+            faceLeft = false
         }
     }
 }

@@ -24,3 +24,4 @@ function shockwaveEmitter.texture(room, entity)
 end
 
 return nil
+--return shockwaveEmitter

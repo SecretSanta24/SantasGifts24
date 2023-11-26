@@ -17,7 +17,8 @@ SS2024GaseousControl.placements = {
         anxiety = 0.3,
         musicParamName = "param_here",
         musicParamMin = 0,
-        musicParamMax = 1
+        musicParamMax = 1,
+        cameraZoomTarget = 1,
     }
 }
 
