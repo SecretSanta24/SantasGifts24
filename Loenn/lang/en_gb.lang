@@ -64,6 +64,9 @@ entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_steer_fast=Move Blo
 entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_nosteer_slow=Move Block (Fixed Liftboost, Down, Slow)
 entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_steer_slow=Move Block (Fixed Liftboost, Down, Steerable, Slow)
 
+#Crash Landing
+entities.SS2024/CrashLanding.placements.name.crashland=Crash Landing Controller
+
 # ---------- Triggers ----------
 
 # Gaseous Trigger
@@ -76,3 +79,5 @@ triggers.SS2024/RocketTrigger.attributes.description.timeToStop=Time to 0 from m
 # Disable Death Sound Trigger
 triggers.SantasGifts24/DisableDeathSoundTrigger.placements.name.trigger=Disable Death Sound
 triggers.SantasGifts24/DisableDeathSoundTrigger.attributes.description.disable=If checked, disables sounds emitted on death and respawn.
+
+triggers.SS2024/NoCrashLand.placements.name.nocrash=Crash Landing Safe Zone

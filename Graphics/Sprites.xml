@@ -53,4 +53,19 @@
 		<Loop id="idle" path="leafkey" delay="0.1" frames="0"/>
 		<Anim id="destroyed" path="leafkey" delay="0.05" frames="1-12"/>
 	</smwKey>
+	<electricGenerator path="objects/ss2024/electricity/" start="on">
+		<Center/>
+		<Loop id="on" path="on" delay="0.1" />
+		<Loop id = "off" path="off" delay = "0.05" />
+	</electricGenerator>
+	<waterSplash path="objects/ss2024/waterSplash/" start="idle">
+		<Center/>
+		<Anim id="idle" path="splash" delay="0.016" frames="12"/>
+		<Anim id="splash" path="splash" delay="0.016" goto="idle"/>
+	</waterSplash>
+	<leak path="objects/ss2024/waterSplash/" start="idle">
+		<Center/>
+		<Anim id="idle" path="leak" delay="0.016" frames="0"/>
+		<Anim id="leak" path="leak" delay="0.03" goto="idle" />
+	</leak>
 </Sprites>

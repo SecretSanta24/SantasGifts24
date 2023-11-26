@@ -51,8 +51,11 @@ namespace Celeste.Mod.SantasGifts24
             Minecart.Load();
             FastfallController.Load();
             RebindElytra.Load();
-			
-			On.Celeste.Player.ctor += AddCustomStates;
+            CrashLanding.Load();
+            WaterLightningRenderer.Load();
+
+
+            On.Celeste.Player.ctor += AddCustomStates;
         }
 
 		public override void Unload()
@@ -73,6 +76,9 @@ namespace Celeste.Mod.SantasGifts24
             Minecart.Unload();
             FastfallController.Unload();
             RebindElytra.Unload();
+            CrashLanding.Unload();
+            WaterLightningRenderer.Unload();
+
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
