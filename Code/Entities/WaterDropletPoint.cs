@@ -22,8 +22,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public WaterDropletPoint(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
+            Depth = data.Bool("inBg") ? 1000 : -1000;
+            if(data.Bool("inBg"))
+            {
+                tint *= 0.3f;
+            }
             Add(sprite = GFX.SpriteBank.Create("leak"));
             sprite.Color = tint;
+            timeUntilDrop = (Calc.Random.NextFloat() * 4f + 3f) * 0.5f;
         }
 
         public override void Update()

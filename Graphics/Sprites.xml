@@ -62,6 +62,7 @@
 		<Center/>
 		<Anim id="idle" path="splash" delay="0.016" frames="12"/>
 		<Anim id="splash" path="splash" delay="0.016" goto="idle"/>
+		<Anim id="splashGround" path="splash_ground" delay="0.016" goto="idle"/>
 	</waterSplash>
 	<leak path="objects/ss2024/waterSplash/" start="idle">
 		<Center/>

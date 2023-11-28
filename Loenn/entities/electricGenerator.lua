@@ -8,4 +8,4 @@ electricGenerator.placements = {
 
 electricGenerator.texture = "objects/SS2024/electricity/off00"
 
-return nil
+return electricGenerator
