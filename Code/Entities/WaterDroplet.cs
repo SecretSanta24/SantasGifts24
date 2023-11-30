@@ -31,7 +31,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             droplet.FlipX = Calc.Random.NextDouble() > 0.5f;
 
             Add(splashSprite = GFX.SpriteBank.Create("waterSplash"));
-            splashSprite.Color = color * 0.5f;
+            splashSprite.Color = Calc.HexToColor("a5a7b9") * 0.3f;
             Collider = new Hitbox(4, 4, -2f, -2f);
 
             
@@ -54,15 +54,32 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (e.CollideCheck(this))
                 {
                     Position.Y = e.Top - 1;
-                    Add(new Coroutine(SplashRoutine()));
+                    Add(new Coroutine(SplashRoutine(true)));
+                }
+            }
+
+            foreach(Solid s in Scene.Tracker.GetEntities<Solid>())
+            {
+                if(s.CollideCheck(this))
+                {
+                    Add(new Coroutine(SplashRoutine(false)));
                 }
             }
         }
 
-        private IEnumerator SplashRoutine()
+        private IEnumerator SplashRoutine(bool onWater)
         {
-            droplet.Visible = false;
-            splashSprite.Play("splash");
+            if (onWater)
+            {
+                droplet.Visible = false;
+                splashSprite.Play("splash");
+            }
+            else
+            {
+                droplet.Visible = false;
+                splashSprite.Play("splashGround");
+            }
+            Audio.Play("event:/ricky06/SS2024/water_drip", Position);
             stopFalling = true;
             yield return 1f;
             RemoveSelf();

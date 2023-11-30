@@ -15,4 +15,4 @@ waterLightning.placements = {
 
 waterLightning.depth = 0
 
-return nil
+return waterLightning

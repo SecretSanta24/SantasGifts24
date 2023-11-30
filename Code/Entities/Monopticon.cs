@@ -8,6 +8,7 @@ using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.Entities;
+using Celeste.Mod.SantasGifts24.Code.Triggers;
 
 namespace Celeste.Mod.NeutronHelper
 {
@@ -470,7 +471,13 @@ namespace Celeste.Mod.NeutronHelper
                     cam.X = Calc.Clamp(cam.X, level.Bounds.Left, level.Bounds.Right - 320);
                     foreach (Entity item in entities)
                     {
-                        if (cam.X + 320f > item.Left && cam.Y + 180f > item.Top && cam.X < item.Right && cam.Y < item.Bottom)
+                        bool on = true;
+                        if (item is MonoBlocker)
+                        {
+                            var flag = (item as MonoBlocker).Flag;
+                            on = string.IsNullOrEmpty(flag) || (Scene as Level).Session.GetFlag(flag);
+                        }
+                        if (on && cam.X + 320f > item.Left && cam.Y + 180f > item.Top && cam.X < item.Right && cam.Y < item.Bottom)
                         {
                             cam.X = vector.X;
                             speed.X = 0f;
@@ -484,7 +491,13 @@ namespace Celeste.Mod.NeutronHelper
                     cam.Y = Calc.Clamp(cam.Y, level.Bounds.Top, level.Bounds.Bottom - 180);
                     foreach (Entity item2 in entities)
                     {
-                        if (cam.X + 320f > item2.Left && cam.Y + 180f > item2.Top && cam.X < item2.Right && cam.Y < item2.Bottom)
+                        bool on = true;
+                        if (item2 is MonoBlocker)
+                        {
+                            var flag = (item2 as MonoBlocker).Flag;
+                            on = string.IsNullOrEmpty(flag) || (Scene as Level).Session.GetFlag(flag);
+                        }
+                        if (on && cam.X + 320f > item2.Left && cam.Y + 180f > item2.Top && cam.X < item2.Right && cam.Y < item2.Bottom)
                         {
                             cam.Y = vector.Y;
                             speed.Y = 0f;

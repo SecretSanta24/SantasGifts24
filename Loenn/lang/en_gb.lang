@@ -81,3 +81,5 @@ triggers.SantasGifts24/DisableDeathSoundTrigger.placements.name.trigger=Disable 
 triggers.SantasGifts24/DisableDeathSoundTrigger.attributes.description.disable=If checked, disables sounds emitted on death and respawn.
 
 triggers.SS2024/NoCrashLand.placements.name.nocrash=Crash Landing Safe Zone
+
+triggers.SS2024/MonoBlocker.placements.name.blocker=Monopticon Blocker

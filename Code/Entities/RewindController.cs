@@ -161,10 +161,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Added(Scene scene)
         {
-            if (scene.Tracker.CountEntities<RewindController>() > 0)
+            List<Entity> rewinds = scene.Tracker.GetEntities<RewindController>();
+
+            if (rewinds != null && rewinds.Count > 0)
             {
-                RemoveSelf();
-                return;
+                foreach(var entity in rewinds)
+                {
+                    entity.RemoveSelf();
+                }
             }
             base.Added(scene);
         }
@@ -200,7 +204,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 && player != null && !player.Dead && (requiredFlag == "" || level.Session.GetFlag(requiredFlag)))
             {
                 if (coroutine != null) return;
-
+                
                 Vector2? lastPos = null;
                 foreach(RewindState state in states.ToArray())
                 {

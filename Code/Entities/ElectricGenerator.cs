@@ -33,6 +33,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private TalkComponent talker;
         private Sprite sprite;
         private float randomTime;
+        private SoundSource sfx;
 
         public ElectricGenerator(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -42,6 +43,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Vector2 drawAt = new Vector2(-20f, 0f);
 
             Add(talker = new TalkComponent(new Rectangle(-32, 8, 20, 8), drawAt, OnTalk));
+            Add(sfx = new SoundSource());
+            sfx.Position = Position;
             talker.PlayerMustBeFacing = false;
             randomTime = (Calc.Random.NextFloat() + 1f)*0.5f;
         }
@@ -55,7 +58,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             else
             {
-                sprite.Play("on");
+                changeMode(true);
             }
         }
 
@@ -77,12 +80,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (isElectricityOff())
             {
                 level.Session.SetFlag(flagName, false);
-                sprite.Play("on");
+                changeMode(true);
             }
             else
             {
                 level.Session.SetFlag(flagName, true);
-                sprite.Play("off");
+                changeMode(false);
             }
             yield return 0.2f;
             player.StateMachine.State = 0;
@@ -90,6 +93,21 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             talker.Enabled = true;
         }
 
+
+        private void changeMode(bool on)
+        {
+            if(on)
+            {
+                sprite.Play("on");
+                sfx.Play("event:/ricky06/SS2024/generator_start");
+            }
+            else
+            {
+                sprite.Play("off");
+                sfx.Stop();
+                Audio.Play("event:/ricky06/SS2024/generator_end", Position);
+            }
+        }
         public override void Render()
         {
             base.Render();
@@ -102,6 +120,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     float length = 15;
                     level.Particles.Emit(P_Electricity, 3, base.Center + Calc.AngleToVector(num, length) + new Vector2(4f, 4f), Vector2.One * 2f, num);
                 }
+                Audio.Play("event:/ricky06/SS2024/spark", Position);
                 randomTime = (Calc.Random.NextFloat() + 0.5f) * 0.5f;
             }
         }
