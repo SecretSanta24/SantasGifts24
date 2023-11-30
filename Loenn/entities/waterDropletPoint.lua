@@ -11,4 +11,4 @@ waterDropletPoint.placements = {
 
 waterDropletPoint.texture = "objects/SS2024/waterSplash/leak4"
 
-return waterDropletPoint
+return nil
