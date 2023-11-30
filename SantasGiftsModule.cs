@@ -35,6 +35,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            UpdogCarriable.Load();
             Monopticon.Load();
             GaseousGrandControl.Load();
             Thalassocardiologist.Load();
@@ -60,6 +61,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Unload()
         {
+            UpdogCarriable.Unload();
             Monopticon.Unload();
             GaseousGrandControl.Unload();
             Thalassocardiologist.Unload();
