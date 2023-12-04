@@ -58,7 +58,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             else
             {
-                changeMode(true);
+                changeMode(true, false);
             }
         }
 
@@ -94,18 +94,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
 
 
-        private void changeMode(bool on)
+        private void changeMode(bool on, bool playSound=true)
         {
             if(on)
             {
                 sprite.Play("on");
-                sfx.Play("event:/ricky06/SS2024/generator_start");
+                if (playSound)
+                {
+                    sfx.Play("event:/ricky06/SS2024/generator_start");
+                }
             }
             else
             {
                 sprite.Play("off");
                 sfx.Stop();
-                Audio.Play("event:/ricky06/SS2024/generator_end", Position);
+                if (playSound)
+                {
+                    Audio.Play("event:/ricky06/SS2024/generator_end", Position);
+                }
             }
         }
         public override void Render()

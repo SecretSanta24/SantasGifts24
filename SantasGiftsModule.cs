@@ -53,6 +53,7 @@ namespace Celeste.Mod.SantasGifts24
             RebindElytra.Load();
             CrashLanding.Load();
             WaterLightningRenderer.Load();
+            ElectricZipLine.Load();
 
 
             On.Celeste.Player.ctor += AddCustomStates;
@@ -78,6 +79,7 @@ namespace Celeste.Mod.SantasGifts24
             RebindElytra.Unload();
             CrashLanding.Unload();
             WaterLightningRenderer.Unload();
+            ElectricZipLine.Unload();
 
 
             On.Celeste.Player.ctor -= AddCustomStates;
@@ -87,6 +89,7 @@ namespace Celeste.Mod.SantasGifts24
         {
             orig.Invoke(self, position, spriteMode);
             RocketFly.StateNumber = self.StateMachine.AddState(RocketFly.Update, RocketFly.Coroutine, RocketFly.Begin, RocketFly.End);
+            ElectricZipLine.ZipLineState = self.StateMachine.AddState(ElectricZipLine.ZipLineUpdate, begin: ElectricZipLine.ZipLineBegin, end: ElectricZipLine.ZipLineEnd, coroutine: ElectricZipLine.ZipLineCoroutine);
             StMinecart.Id = self.StateMachine.AddState(self.MinecartUpdate);
         }
     }
