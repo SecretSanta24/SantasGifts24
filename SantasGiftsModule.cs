@@ -32,6 +32,12 @@ namespace Celeste.Mod.SantasGifts24
             public static Action<Entity, Player, int> GetHitMethod;
         }
 
+        [ModImportName("GravityHelper")]
+        public static class GravityHelperImports
+        {
+            public static Func<int> GetPlayerGravity;
+        }
+
         public static SantasGiftsModule Instance { get; private set; }
 
 		public override Type SettingsType => typeof(SantasGiftsSettings);
@@ -49,6 +55,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            TechialSeason.Load();
             UpdogCarriable.Load();
             Monopticon.Load();
             GaseousGrandControl.Load();
@@ -72,11 +79,14 @@ namespace Celeste.Mod.SantasGifts24
 
             typeof(FemtoHelperImports).ModInterop();
 
+            typeof(GravityHelperImports).ModInterop();
+
             On.Celeste.Player.ctor += AddCustomStates;
         }
 
 		public override void Unload()
         {
+            TechialSeason.Unload();
             UpdogCarriable.Unload();
             Monopticon.Unload();
             GaseousGrandControl.Unload();
