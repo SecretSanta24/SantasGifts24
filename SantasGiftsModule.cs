@@ -11,6 +11,9 @@ using Monocle;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
 using Celeste.Mod.NeutronHelper;
 using Celeste.Mod.SantasGifts24.Entities;
+using MonoMod.ModInterop;
+using System.Security.Policy;
+using static Celeste.Mod.SantasGifts24.SantasGiftsModule;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
@@ -18,7 +21,18 @@ namespace Celeste.Mod.SantasGifts24
     public class SantasGiftsModule : EverestModule
 	{
 
-		public static SantasGiftsModule Instance { get; private set; }
+        [ModImportName("FemtoHelper.SMWBlockInfo")]
+        public static class FemtoHelperImports
+        {
+            public static Func<Entity, bool> IsActive;
+            public static Func<Entity, bool> CanHitTop;
+            public static Func<Entity, bool> CanHitBottom;
+            public static Func<Entity, bool> CanHitLeft;
+            public static Func<Entity, bool> CanHitRight;
+            public static Action<Entity, Player, int> GetHitMethod;
+        }
+
+        public static SantasGiftsModule Instance { get; private set; }
 
 		public override Type SettingsType => typeof(SantasGiftsSettings);
 		public SantasGiftsSettings Settings => (SantasGiftsSettings)_Settings;
@@ -55,6 +69,7 @@ namespace Celeste.Mod.SantasGifts24
             CrashLanding.Load();
             WaterLightningRenderer.Load();
 
+            typeof(FemtoHelperImports).ModInterop();
 
             On.Celeste.Player.ctor += AddCustomStates;
         }

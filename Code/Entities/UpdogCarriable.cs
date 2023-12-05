@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
+using MonoMod.Utils;
+using static Celeste.GaussianBlur;
+using static Celeste.Mod.SantasGifts24.SantasGiftsModule;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
@@ -347,6 +350,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void OnCollideH(CollisionData data)
         {
+
+            if (data.Hit is CrushBlock)
+            {
+                if ((data.Hit as CrushBlock).CanActivate(-data.Direction))
+                {
+                    if (Math.Abs(Speed.X) >= 120) (data.Hit as CrushBlock).Attack(-data.Direction);
+                }
+            }
+
+            if (data.Hit is DashBlock)
+            {
+                if(Math.Abs(Speed.X) >= 120) (data.Hit as DashBlock).Break(Center, data.Direction, true, true);
+            }
+
             if (data.Hit is DashSwitch)
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
@@ -361,6 +378,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void OnCollideV(CollisionData data)
         {
+
+            if (data.Hit is CrushBlock)
+            {
+                if ((data.Hit as CrushBlock).CanActivate(-data.Direction))
+                {
+                    if (Math.Abs(Speed.Y) >= 120) (data.Hit as CrushBlock).Attack(-data.Direction);
+                }
+            }
+
+            if (data.Hit is DashBlock)
+            {
+                if (Math.Abs(Speed.Y) >= 120) (data.Hit as DashBlock).Break(Center, data.Direction, true, true);
+            }
+
             if (data.Hit is DashSwitch)
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
