@@ -69,4 +69,15 @@
 		<Anim id="idle" path="leak" delay="0.016" frames="0"/>
 		<Anim id="leak" path="leak" delay="0.03" goto="idle" />
 	</leak>
+	<elevatorLever path="objects/ss2024/elevator/" start="idle">
+		<Center/>
+        <Anim id="idle" path="switch_idle"/>
+        <Anim id="active" path="switch_active"/>
+	</elevatorLever>
+	<zipline path="objects/ss2024/zipline/" start="idle">
+		<Origin x="3" y="3"/>
+		<Anim id="idle" path="handle"/>
+		<Anim id="held_l" path="handle_l"/>
+		<Anim id="held_r" path="handle_r"/>
+  </zipline>
 </Sprites>

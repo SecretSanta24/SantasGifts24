@@ -394,16 +394,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 					Audio.Play("event:/game/general/wall_break_stone", Position);
 				}
 			}
-			for (int i = 0; (float)i < base.Width / 8f; i++)
-			{
-				for (int j = 0; (float)j < base.Height / 8f; j++)
-				{
-					base.Scene.Add(Engine.Pooler.Create<Debris>().Init(Position + new Vector2(4 + i * 8, 4 + j * 8), _tileType, playDebrisSound).BlastFrom(from));
-				}
-			}
+
 			Collidable = false;
 			foreach (GroupedFallingDashBlock blockToBreak in Group)
 			{
+				for (int i = 0; (float)i < blockToBreak.Width / 8f; i++)
+				{
+					for (int j = 0; (float)j < blockToBreak.Height / 8f; j++)
+					{
+						base.Scene.Add(Engine.Pooler.Create<Debris>().Init(blockToBreak.Position + new Vector2(4 + i * 8, 4 + j * 8), _tileType, playDebrisSound).BlastFrom(from));
+					}
+				}
 				blockToBreak.RemoveSelf();
 			}
 		}
