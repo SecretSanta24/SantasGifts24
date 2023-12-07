@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Celeste.Mod.Entities;
+using Celeste.Mod.SantasGifts24;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -29,6 +30,8 @@ namespace Celeste.Mod.NeutronHelper
         public float anxiety;
         public float cameraZoomTarget;
 
+        public Vector2 cameraPreviousDiff;
+
         public GaseousGrandControl(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
             Tag = Tags.Persistent;
@@ -51,7 +54,7 @@ namespace Celeste.Mod.NeutronHelper
         {
             base.Added(scene);
 
-            foreach(GaseousGrandControl gas in scene.Tracker.GetEntities<GaseousGrandControl>())
+            foreach (GaseousGrandControl gas in scene.Tracker.GetEntities<GaseousGrandControl>())
             {
                 if (gas != this)
                 {
@@ -75,7 +78,7 @@ namespace Celeste.Mod.NeutronHelper
         {
             orig(self);
             GaseousGrandControl gas = self.Tracker.GetEntity<GaseousGrandControl>();
-            if(gas != null)
+            if (gas != null)
             {
                 float lerp = Calc.Clamp(gas.Oxygen, 0f, 500f) / 500f;
                 if (lerp > 0.5f)
@@ -92,7 +95,7 @@ namespace Celeste.Mod.NeutronHelper
                 }
                 self.colorGradeEaseSpeed = 1f;
             }
-            
+
         }
 
 
@@ -109,7 +112,7 @@ namespace Celeste.Mod.NeutronHelper
                     level.Session.SetFlag(Flag, true);
                     Oxygen = Math.Max(Oxygen - DrainRate * Engine.DeltaTime, 0f);
 
-                } 
+                }
                 else
                 {
                     level.Session.SetFlag(Flag, false);
@@ -125,16 +128,20 @@ namespace Celeste.Mod.NeutronHelper
 
                 level.ZoomSnap(new Vector2(160f, 90f), Calc.ClampedMap(Ease.SineInOut(lerp), 1, 0, 1, cameraZoomTarget));
 
+
                 if (Oxygen <= 0f)
                 {
                     player.Die(FastDeath ? Vector2.Zero : Calc.AngleToVector(Calc.Random.NextFloat((float)Math.PI * 2f), 1), false, true);
                 }
             }
-            
 
-            
+
+
 
         }
+
+
+
         public override void Render()
         {
             base.Render();
@@ -168,7 +175,7 @@ namespace Celeste.Mod.NeutronHelper
                 }
                 yield return null;
             }
-            
+
         }
     }
 }

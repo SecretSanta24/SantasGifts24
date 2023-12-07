@@ -21,6 +21,7 @@ namespace Celeste.Mod.SantasGifts24
     public class SantasGiftsModule : EverestModule
 	{
 
+
         [ModImportName("FemtoHelper.SMWBlockInfo")]
         public static class FemtoHelperImports
         {

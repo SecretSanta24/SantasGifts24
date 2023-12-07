@@ -2,6 +2,9 @@ mods.SantasGifts24.name= Secret Santa Collab 2024
 
 # ---------- Entities ----------
 
+# Techial Season
+entities.SS2024/TechialSeason.placements.name.spring=Techial Season
+
 # Thalassocardiologist
 entities.SS2024/Thalassocardiologist.placements.name.left=Thalassocardiologist (Left)
 entities.SS2024/Thalassocardiologist.placements.name.right=Thalassocardiologist (Right)
