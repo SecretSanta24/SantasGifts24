@@ -48,6 +48,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             lines = new List<LineData>();
             target = data.Position+offset;
+            Depth = Depths.Top;
 
             base.Add(Blob = GFX.SpriteBank.Create("SS2024centerBlob"));
             Blob.Visible = false;
@@ -133,7 +134,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 Draw.Line(line.start, line.end, Color.White * 0.5f);
             }
 
-            Draw.HollowRect((Vector2)target-new Vector2(4, 4), 8, 8, Color.White * 0.1f);
             base.Render();
         }
         private IEnumerator Animation()
