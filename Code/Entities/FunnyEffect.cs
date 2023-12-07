@@ -35,12 +35,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         ParticleType blueParticle;
         Sprite Blob;
 
+        Session session;
+        string startFlag;
+        string endFlag;
+        string sound;
+
         public FunnyEffect(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
+            startFlag = data.Attr("startFlag", "");
+            endFlag = data.Attr("endFlag", "");
+            sound = data.Attr("sound", "event:/santas_gifts_funny_effect");
+
             lines = new List<LineData>();
-            target = data.FirstNodeNullable(offset);
-            base.Collider = new Hitbox(32, 32);
-            base.Add(new PlayerCollider(new Action<Player>(OnPlayer)));
+            target = data.Position+offset;
 
             base.Add(Blob = GFX.SpriteBank.Create("SS2024centerBlob"));
             Blob.Visible = false;
@@ -83,9 +90,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        public void OnPlayer(Player player)
+        public override void Removed(Scene scene)
         {
-            if (coroutine == null)
+            base.Removed(scene);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (session == null)
+            {
+                session = (Engine.Scene as Level)?.Session;
+                session?.SetFlag(startFlag, false);
+            }
+
+            if(coroutine == null && (session?.GetFlag(startFlag) ?? false))
             {
                 Add(coroutine = new Coroutine(Animation(), true));
             }
@@ -136,20 +156,21 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                 }
             }
+            Audio.Play(sound);
 
-            for(int i = 0; i < 60; i++)
+            for (int i = 0; i < 50; i++)
             {
                 advanceAllEnumerators();
 
-                if (i == 28)
+                if (i == 18)
                 {
                     Blob.Visible = true;
                     Blob.Play("boom");
                 }
-                if (i == 0)  enumerators.Add(ShrinkingHexagon(realTarget, Color.Red, 30));
-                if (i == 20) enumerators.Add(ShrinkingHexagon(realTarget, Color.Green, 30));
-                if (i == 40) enumerators.Add(ShrinkingHexagon(realTarget, Color.Blue, 30));
-                if (i == 57) enumerators.Add(ShrinkingHexagon(realTarget, Color.Red, 20));
+                if (i == 10) enumerators.Add(ShrinkingHexagon(realTarget, Color.Red, 25));
+                if (i == 20) enumerators.Add(ShrinkingHexagon(realTarget, Color.Green, 25));
+                if (i == 30) enumerators.Add(ShrinkingHexagon(realTarget, Color.Blue, 25));
+                if (i == 47) enumerators.Add(ShrinkingHexagon(realTarget, Color.Red, 20));
                 yield return 0.016f;
             }
             enumerators.Add(RotatingLine(realTarget, 90, Color.Green, 15));
@@ -188,6 +209,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             //Blob.Visible = false;
             coroutine = null;
+            (Engine.Scene as Level)?.Session?.SetFlag(endFlag, true);
+            RemoveSelf();
             yield break;
         }
 

@@ -17,4 +17,5 @@ groupedFallingBlock.placements = {
 groupedFallingBlock.sprite = fakeTilesHelper.getEntitySpriteFunction("tiletype", false)
 groupedFallingBlock.fieldInformation = fakeTilesHelper.getFieldInformation("tiletype")
 
-return groupedFallingBlock
+--return groupedFallingBlock
+return nil
