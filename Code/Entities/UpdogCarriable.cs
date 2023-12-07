@@ -16,9 +16,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     [TrackedAs(typeof(TheoCrystal))]
     public class UpdogCarriable : TheoCrystal
     {
-        public static ParticleType P_Impact = new ParticleType(TheoCrystal.P_Impact);
-
-
 
         public UpdogCarriable(Vector2 position)
             : base(position)
