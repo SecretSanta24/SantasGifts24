@@ -48,6 +48,7 @@
       <Folder Include="Ahorn\entities\" />
       <Folder Include="Loenn\effects\" />
       <Folder Include="Lua\" />
+      <Folder Include="Audio\" />
     </ItemGroup>
 
     <Choose>
