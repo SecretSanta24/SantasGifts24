@@ -25,8 +25,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool invertTriggerFlag;
         private float maxSpeed;
         private float fallingAcceleration;
-        private bool climbFall;
-        private char TileType;
+        private new bool climbFall;
+        private new char TileType;
         private float restartTimer;
         private bool goingUp;
         private Orientation orientation;
@@ -192,11 +192,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     StopShaking();
                     break;
                 }
-                float impactTimer = 0.4f;
+                float impactTimer = restartDelay;
 
                 Vector2 crashPosition = Position;
 
-                while (impactTimer > 0f && PlayerWaitCheck())
+                while (impactTimer > 0f)
                 {
                     yield return null;
                     impactTimer -= Engine.DeltaTime;
@@ -210,9 +210,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
 
                     yield return 0.2f;
-                    float timer = restartDelay;
+                    float timer = 0.4F;
 
-                    while (timer > 0f && PlayerWaitCheck())
+                    while (timer > 0f)
                     {
                         yield return null;
                         timer -= Engine.DeltaTime;
@@ -360,7 +360,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             return flag != "" && SceneAs<Level>().Session.GetFlag(flag) ^ invert;
         }
 
-        private void ShakeSfx()
+        private new void ShakeSfx()
         {
             if (shakeSound != "")
             {
@@ -434,7 +434,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
-        private bool PlayerFallCheck()
+        private new bool PlayerFallCheck()
         {
             if (climbFall)
             {
@@ -444,7 +444,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             return HasPlayerOnTop();
         }
 
-        private bool PlayerWaitCheck()
+        private new bool PlayerWaitCheck()
         {
             if (Triggered)
             {
@@ -470,7 +470,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
 
 
-        private void LandParticles()
+        private new void LandParticles()
         {
             Vector2 pos1;
             float pos2;
