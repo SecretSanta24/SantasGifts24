@@ -167,11 +167,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
                 float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 200, float.MaxValue));
                 keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter + JUMPTHROUGH_OFFSET : Position + JUMPTHROUGH_OFFSET), f1));
-            }
-            //teleport catchup code code
-            if ((Position - previousPosition).Length() > Speed.Length() * 3)
-            {
-                keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+
+                //teleport catchup code code
+                if ((Position - previousPosition).Length() > Speed.Length() * 2 && Speed.Length() != 0)
+                {
+                    keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                }
             }
             //glider code
 
