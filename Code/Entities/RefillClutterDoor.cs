@@ -44,7 +44,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             this.wiggler.Start();
             Audio.Play("event:/game/03_resort/forcefield_bump", this.Position);
-            player.UseRefill(this.doubleDash);
+            if(player.UseRefill(this.doubleDash))
+            {
+                Audio.Play(this.doubleDash ? "event:/new_content/game/10_farewell/pinkdiamond_touch" : "event:/game/general/diamond_touch", this.Position);
+                Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+            }
             return DashCollisionResults.Bounce;
         }
     }
