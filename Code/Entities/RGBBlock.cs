@@ -12,13 +12,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 	[Tracked]
     public class RGBBlock : Solid
     {
-		private static MTexture[,] nineSliceTexture;
+        private static MTexture[,] nineSliceTexture;
+        private static MTexture[,] nineSliceTextureOff;
         private static MTexture[,] nineSliceTextureInverse;
+        private static MTexture[,] nineSliceTextureOffInverse;
+
         private Color ActiveColor;
 		private Color DisabledColor;
+        private LightOcclude occluder;
 
         private int colorIndex;
-		private Color[] colors = { Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Magenta, Color.Cyan, Color.White, new Color(50, 50, 50)};
+		private Color[] colors = { Color.DarkRed, Color.DarkGreen, Color.DarkBlue, Color.Goldenrod, Color.DarkMagenta, Color.DarkCyan, Color.LightGray, new Color(50, 50, 50)};
 		private int[] flags = { 0b100, 0b010, 0b001, 0b110, 0b101, 0b011, 0b111, 0b1000};
         private string[] textureName = { "red", "green", "blue", "yellow", "magenta", "cyan", "white", "black" };
 		private Image onTexture;
@@ -28,10 +32,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool lastCollideState = false;
         public RGBBlock(EntityData data, Vector2 offset) : base(data.Position + offset, (float) data.Width, (float) data.Height, false)
         {
+            base.Add(occluder = new LightOcclude(1));
             inverse = data.Bool("Inverse", false);
             colorIndex = data.Int("ActiveColor", 0);
 			ActiveColor = colors[colorIndex];
-            Color color = Calc.HexToColor("667da5");
+            Color color = Calc.HexToColor("a5b3ca");//"667da5");
             DisabledColor = new Color((float)color.R / 255f * ((float)ActiveColor.R / 255f), (float)color.G / 255f * ((float)ActiveColor.G / 255f), (float)color.B / 255f * ((float)ActiveColor.B / 255f), 1f);
             if(colorIndex == 7)
 			{
@@ -50,6 +55,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                 }
             }
+            if (nineSliceTextureOff == null)
+            {
+                MTexture mtexture = GFX.Game["objects/ss2024/rgbblock/off"];
+                nineSliceTextureOff = new MTexture[3, 3];
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        nineSliceTextureOff[i, j] = mtexture.GetSubtexture(new Rectangle(i * 8, j * 8, 8, 8));
+                    }
+                }
+            }
             if (nineSliceTextureInverse == null)
             {
                 MTexture mtexture = GFX.Game["objects/ss2024/rgbblock/block_inverse"];
@@ -59,6 +76,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     for (int j = 0; j < 3; j++)
                     {
                         nineSliceTextureInverse[i, j] = mtexture.GetSubtexture(new Rectangle(i * 8, j * 8, 8, 8));
+                    }
+                }
+            }
+            if (nineSliceTextureOffInverse == null)
+            {
+                MTexture mtexture = GFX.Game["objects/ss2024/rgbblock/off_inverse"];
+                nineSliceTextureOffInverse = new MTexture[3, 3];
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        nineSliceTextureOffInverse[i, j] = mtexture.GetSubtexture(new Rectangle(i * 8, j * 8, 8, 8));
                     }
                 }
             }
@@ -144,6 +173,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             offTexture.Visible = !this.Collidable;
             onTexture.Visible = this.Collidable;
             lastCollideState = this.Collidable;
+            occluder.Visible = this.Collidable;
         }
 
         public override void Update()
@@ -185,6 +215,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			offTexture.Visible = !this.Collidable;
             onTexture.Visible = this.Collidable;
             lastCollideState = this.Collidable;
+            occluder.Visible = this.Collidable;
         }
 
         public override void Render()
@@ -195,7 +226,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			Color color = ActiveColor;
 			if (!this.Collidable) color = DisabledColor;
 
-			MTexture[,] nineSliceTexture = (inverse ? RGBBlock.nineSliceTextureInverse : RGBBlock.nineSliceTexture);
+			MTexture[,] nineSliceTexture = (!this.Collidable ? (inverse ? RGBBlock.nineSliceTextureOffInverse : RGBBlock.nineSliceTextureOff)
+                                                             : (inverse ? RGBBlock.nineSliceTextureInverse : RGBBlock.nineSliceTexture));
 
             int num = (int)(width / 8f);
 			int num2 = (int)(height / 8f);

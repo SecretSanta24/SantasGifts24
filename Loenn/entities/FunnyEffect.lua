@@ -26,5 +26,5 @@ function entity.sprite(room, entity, viewport)
     return drawableSprite
 end
 
-return entity
---return nil
+--return entity
+return nil

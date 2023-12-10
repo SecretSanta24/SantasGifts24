@@ -26,6 +26,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private static string flagStateLevel;
         public RGBBlockSwitch(EntityData data, Vector2 offset) : base(data.Position + offset, (float) data.Width, (float) data.Height, false)
         {
+            base.Add(new LightOcclude(1));
             colorIndex = data.Int("ActiveColor", 0);
             ResetOnDeath = data.Bool("ResetColorsOnDeath", true);
 			ActiveColor = colors[colorIndex];
