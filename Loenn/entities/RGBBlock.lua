@@ -53,4 +53,4 @@ function entity.sprite(room, entity, viewport)
 end
 
 return nil
---return entity
+-- return entity
