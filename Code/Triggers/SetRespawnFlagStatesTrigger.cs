@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Celeste.GaussianBlur;
 
 namespace Celeste.Mod.SantasGifts24.Code.Triggers
 {
@@ -26,19 +27,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Triggers
 
         public static void Load()
         {
-            On.Celeste.Player.Die += Player_Die;
+            On.Celeste.Level.LoadLevel += Level_LoadLevel;
         }
+
+        private static void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerIntro, bool isFromLoader)
+        {
+            orig.Invoke(self, playerIntro, isFromLoader);
+            foreach (KeyValuePair<string, bool> kvp in session.respawnFlagMonitor)
+                self.Session.SetFlag(kvp.Key, kvp.Value);
+        }
+
+
         public static void Unload()
         {
-            On.Celeste.Player.Die -= Player_Die;
-        }
-
-        private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
-        {
-
-            foreach (KeyValuePair<string, bool> kvp in session.respawnFlagMonitor)
-                self.SceneAs<Level>().Session.SetFlag(kvp.Key, kvp.Value);
-            return orig.Invoke(self, direction, evenIfInvincible, registerDeathInStats);
+            On.Celeste.Level.LoadLevel -= Level_LoadLevel;
         }
     }
 }
