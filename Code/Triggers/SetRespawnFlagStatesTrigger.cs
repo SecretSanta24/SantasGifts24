@@ -23,5 +23,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Triggers
                 session.respawnFlagMonitor[flag] = SceneAs<Level>().Session.GetFlag(flag);
             }
         }
+
+        public static void Load()
+        {
+            On.Celeste.Player.Die += Player_Die;
+        }
+        public static void Unload()
+        {
+            On.Celeste.Player.Die -= Player_Die;
+        }
+
+        private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
+        {
+
+            foreach (KeyValuePair<string, bool> kvp in session.respawnFlagMonitor)
+                self.SceneAs<Level>().Session.SetFlag(kvp.Key, kvp.Value);
+            return orig.Invoke(self, direction, evenIfInvincible, registerDeathInStats);
+        }
     }
 }
