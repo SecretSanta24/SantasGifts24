@@ -36,5 +36,7 @@ namespace Celeste.Mod.SantasGifts24
 
         //fastfallcontroller
         public bool fastfallActive { get; set; } = true;
+
+        public Dictionary<string, bool> respawnFlagMonitor = new();
     }
 }
