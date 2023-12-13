@@ -45,10 +45,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             };
             lockTexture = GFX.Game["objects/ss2024/smwDoor/locktexture"];
             Add(new ClimbBlocker(false));
+            AllowStaticMovers = true;
         }
 
         public SMWDoor(EntityData data, Vector2 offset) : this(data, offset, Orientations.Vertical)
         {
+        }
+
+        public override void Removed(Scene scene)
+        {
+            base.Removed(scene);
+            foreach (StaticMover sm in staticMovers)
+            {
+                sm?.Entity?.RemoveSelf();
+            }
         }
 
         public override void Render()

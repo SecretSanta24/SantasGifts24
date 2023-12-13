@@ -439,16 +439,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void HitSpinner(Entity spinner)
         {
-            if (!Hold.IsHeld && Speed.Length() < 0.01f && base.LiftSpeed.Length() < 0.01f && (previousPosition - base.ExactPosition).Length() < 0.01f && OnGround())
-            {
-                int num = Math.Sign(base.X - spinner.X);
-                if (num == 0)
-                {
-                    num = 1;
-                }
-                Speed.X = (float)num * 120f;
-                Speed.Y = -30f;
-            }
         }
 
         public bool HitSpring(Spring spring)
@@ -604,6 +594,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public void Die()
         {
             SceneAs<Level>().Remove(this);
+            
         }
         public override void DebugRender(Camera camera)
         {
