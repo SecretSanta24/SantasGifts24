@@ -16,6 +16,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     [TrackedAs(typeof(TheoCrystal))]
     public class UpdogCarriable : TheoCrystal
     {
+        public float springTimer;
 
         public UpdogCarriable(Vector2 position)
             : base(position)
@@ -25,6 +26,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public UpdogCarriable(EntityData e, Vector2 offset)
             : this(e.Position + offset)
         {
+            springTimer = 0f;
         }
 
         public override void Added(Scene scene)
@@ -35,6 +37,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public override void Update()
         {
             base.Update();
+            springTimer = Math.Max(springTimer - Engine.DeltaTime, 0f);
         }
 
 
@@ -60,13 +63,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             UpdogCarriable c = self as UpdogCarriable;
             if (c != null)
             {
-                if (!self.Hold.IsHeld)
+                if (!self.Hold.IsHeld && c.springTimer <= 0)
                 {
                     if (spring.Orientation == Spring.Orientations.Floor && self.Speed.Y >= 0f)
                     {
                         self.Speed.X *= 0.5f;
                         self.Speed.Y = -160f;
                         self.noGravityTimer = 0.15f;
+                        c.springTimer = 0.1f;
                         return true;
                     }
                     if (spring.Orientation == Spring.Orientations.WallLeft)
@@ -75,6 +79,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         self.Speed.X = 220f;
                         self.Speed.Y = -80f;
                         self.noGravityTimer = 0.1f;
+                        c.springTimer = 0.1f;
                         return true;
                     }
                     if (spring.Orientation == Spring.Orientations.WallRight)
@@ -83,6 +88,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         self.Speed.X = -220f;
                         self.Speed.Y = -80f;
                         self.noGravityTimer = 0.1f;
+                        c.springTimer = 0.1f;
                         return true;
                     }
                 }
