@@ -2,7 +2,7 @@ local gunnerDude = {}
 
 gunnerDude.name = "SS2024/GunnerDude"
 gunnerDude.depth = -2000000
-gunnerDude.texture = "SS2024/corkr900/GunnerDude/normal00"
+gunnerDude.texture = "objects/ss2024/gunnerDude/normal_front00"
 gunnerDude.placements = {
     name = "gunnerDude",
     data = {

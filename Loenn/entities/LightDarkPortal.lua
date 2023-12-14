@@ -14,8 +14,8 @@ portal.placements = {
         persistent = false,
     }
 }
-portal.texture = "SS2024/corkr900/LightDarkPortal/normal00"
-portal.nodeTexture = "SS2024/corkr900/LightDarkPortal/dark00"
+portal.texture = "objects/ss2024/lightDarkPortal/normal00"
+portal.nodeTexture = "objects/ss2024/lightDarkPortal/dark00"
 
 return nil
 --return portal
