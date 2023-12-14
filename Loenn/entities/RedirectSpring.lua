@@ -32,7 +32,7 @@ springRight.justification = {0.5, 1.0}
 springRight.texture = springTexture
 springRight.rotation = math.pi / 2
 springRight.placements = {
-    name = "redirectSpringRight",
+    name = "redirectSpringLeft",
     data = {
     }
 }
@@ -61,7 +61,7 @@ springLeft.justification = {0.5, 1.0}
 springLeft.texture = springTexture
 springLeft.rotation = -math.pi / 2
 springLeft.placements = {
-    name = "redirectSpringLeft",
+    name = "redirectSpringRight",
     data = {
     }
 }
