@@ -70,6 +70,23 @@ entities.SS2024/FixedLiftboostMoveBlock.placements.name.down_steer_slow=Move Blo
 #Crash Landing
 entities.SS2024/CrashLanding.placements.name.crashland=Crash Landing Controller
 
+# Gunner Dude
+entities.SS2024/GunnerDude.placements.name.gunnerDude=Gunner Dude
+
+# Bouncy Dude
+entities.SS2024/BouncyDude.placements.name.bouncyDude=Bouncy Dude
+
+# Light/Dark Portal
+entities.SS2024/LightDarkPortal.placements.name.lightDarkPortal=Light / Dark Portal
+
+# Light/Dark Tiles Controlleer
+entities.SS2024/LightDarkTilesController.placements.name.lightDarkTilesController=Light / Dark Tiles Controller
+
+# Redirect Spring
+entities.SS2024/RedirectSpringUp.placements.name.redirectSpringUp=Redirect Spring (Up)
+entities.SS2024/RedirectSpringLeft.placements.name.redirectSpringLeft=Redirect Spring (Left)
+entities.SS2024/RedirectSpringRight.placements.name.redirectSpringRight=Redirect Spring (Right)
+
 # ---------- Triggers ----------
 
 # Gaseous Trigger
@@ -86,3 +103,6 @@ triggers.SantasGifts24/DisableDeathSoundTrigger.attributes.description.disable=I
 triggers.SS2024/NoCrashLand.placements.name.nocrash=Crash Landing Safe Zone
 
 triggers.SS2024/MonoBlocker.placements.name.blocker=Monopticon Blocker
+
+# Light/Dark Trigger
+triggers.SS2024/LightDarkTrigger.placements.name.lightDarkTrigger=Light / Dark Trigger
