@@ -111,13 +111,13 @@ namespace Celeste.Mod.NeutronHelper
                 {
                     level.Session.SetFlag(Flag, true);
                     Oxygen = Math.Max(Oxygen - DrainRate * Engine.DeltaTime, 0f);
-
                 }
                 else
                 {
                     level.Session.SetFlag(Flag, false);
                     Oxygen = Calc.Clamp(Oxygen + RecoverRate * Engine.DeltaTime, 0f, 500f);
                 }
+
 
                 float lerp = Calc.Clamp(Oxygen, 0f, 500f) / 500f;
 
@@ -133,6 +133,9 @@ namespace Celeste.Mod.NeutronHelper
                 {
                     player.Die(FastDeath ? Vector2.Zero : Calc.AngleToVector(Calc.Random.NextFloat((float)Math.PI * 2f), 1), false, true);
                 }
+                
+                level.Session.SetFlag("o2_flag_hcd", !(Oxygen >= 500));
+
             }
 
 
