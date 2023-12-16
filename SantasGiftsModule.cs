@@ -78,6 +78,7 @@ namespace Celeste.Mod.SantasGifts24
             WaterLightningRenderer.Load();
             ElectricZipLine.Load();
             HoldableLiftBoostCancelController.Load();
+            SetRespawnFlagStatesTrigger.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -110,7 +111,7 @@ namespace Celeste.Mod.SantasGifts24
             WaterLightningRenderer.Unload();
             ElectricZipLine.Unload();
             HoldableLiftBoostCancelController.Unload();
-
+            SetRespawnFlagStatesTrigger.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
