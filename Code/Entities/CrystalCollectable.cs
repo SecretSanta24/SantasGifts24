@@ -1,12 +1,9 @@
 ﻿using Celeste.Mod.Entities;
-using FMOD;
 using Microsoft.Xna.Framework;
-using Mono.Cecil;
 using Monocle;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
@@ -36,17 +33,23 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             };
             public Sprite flash;
             public bool flashPlaying = false;
+            VertexLight vx;
             public CompleteCrystal(Vector2 pos) : base(pos)
             {
+                Tag |= Tags.HUD;
                 for (int i = 0; i < 9; i++)
                 {
                     base.Add(crystalPieces[i] = new Image(GFX.Game["objects/ss2024/crystalCollectible/Crystal_Piece_" + (i + 1)]));
                     crystalPieces[i].CenterOrigin();
-                    crystalPieces[i].Position = crystalOffsets[i];
+                    crystalPieces[i].Position = crystalOffsets[i]*6;
                     crystalPieces[i].Visible = false;
                 }
                 base.Add(crystalImage = new Image(GFX.Game["objects/ss2024/crystalCollectible/Big_Crystal_Complete"]));
                 crystalImage.CenterOrigin();
+                crystalImage.Visible = false;
+
+                base.Add(new BloomPoint(0.8f, this.crystalImage.Width));
+                base.Add(vx = new VertexLight(Color.Cyan, 1f, 16, 48));
 
                 base.Add(this.flash = new Sprite(GFX.Game, "objects/ss2024/crystalCollectible/Big_Crystal_Complete_flash"));
                 this.flash.Add("flash", "", 0.05f);
@@ -81,9 +84,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 this.crystal.Scale = Vector2.One * (1f + v * 0.3f);
             }, false, false));
-            base.Add(new MirrorReflection());
+            //base.Add(new MirrorReflection());
             base.Add(this.bloom = new BloomPoint(0.8f, this.crystal.Width));
-            base.Add(this.light = new VertexLight(Color.White, 1f, 16, 48));
+            base.Add(this.light = new VertexLight(Color.Cyan, 1f, 16, 48));
             base.Add(this.sine = new SineWave(0.6f, 0f));
             this.sine.Randomize();
             this.UpdateY();
@@ -99,6 +102,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             base.Add(new Coroutine(this.SmashRoutine(player, level), true));
         }
+
+        private Vector2 HudPos(Vector2 pos, Camera camera)
+        {
+            return (pos-camera.Position)*6;
+        }
+        private Vector2 worldPos(Vector2 pos, Camera camera)
+        {
+            return pos/6 + camera.Position;
+        }
         private IEnumerator SmashRoutine(Player player, Level level)
         {
             CrystalsCollected = SantasGiftsModule.Instance.Session.CrystalsCollected;
@@ -109,11 +121,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             SoundEmitter.Play("event:/game/07_summit/gem_get", this, null);
             Session session = level.Session;
             CompleteCrystal completeCrystal;
-            Vector2 centerCamera = (Engine.Scene as Level).Camera.Position;
-            centerCamera.X = Center.X;
-            centerCamera.Y += 70f;
-            level.Add(completeCrystal = new CompleteCrystal(centerCamera));
-            for(int i = 1; i <= 9; i++)
+            Camera camera = level.Camera;
+            level.Add(completeCrystal = new CompleteCrystal(new Vector2(1920/2, 1080/3)));
+            Vector2 cPos = worldPos(completeCrystal.Position, camera);
+            for (int i = 1; i <= 9; i++)
             {
                 if(NrCollected(i))
                 {
@@ -134,37 +145,43 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             List<AbsorbOrb> orbs = new List<AbsorbOrb>();
             for (int i = 0; i < 10; i++)
             {
-                AbsorbOrb orb = new AbsorbOrb(this.Position, completeCrystal, null);
+                AbsorbOrb orb = new AbsorbOrb(this.Position, null, cPos);
                 orbs.Add(orb);
                 base.Scene.Add(orb);
             }
+
             level.Flash(Color.White, true);
             base.Scene.Add(new SummitGem.BgFlash());
             Engine.TimeRate = 0.5f;
             while (Engine.TimeRate < 1f)
             {
                 Engine.TimeRate += Engine.RawDeltaTime * 0.5f;
-                completeCrystal.crystalImage.Color = Color.White * (Engine.TimeRate-0.5f);
+                //completeCrystal.crystalImage.Color = Color.White * (Engine.TimeRate-0.5f);
                 for (int i = 1; i <= 9; i++)
                 {
                     completeCrystal.crystalPieces[i - 1].Color = Color.White * (Engine.TimeRate-0.5f);
                 }
                 yield return null;
             }
-
+            
             while(orbs.Any((orb) => orb.percent < 1))
             {
+                foreach(AbsorbOrb orb in orbs)
+                {
+                    orb.AbsorbTarget = worldPos(completeCrystal.Position, camera);
+                }
                 yield return null;
             }
 
             if(CrystalsCollected == 511)
             {
+                completeCrystal.crystalImage.Visible = true;
                 session.SetFlag("SS24/CC/all");
                 float timer = 0.5f;
                 while(timer > 0f)
                 {
                     timer -= Engine.RawDeltaTime;
-                    completeCrystal.crystalImage.Color = Color.White * ((0.5f - timer) + 0.5f);
+                    completeCrystal.crystalImage.Color = Color.White * (1f-(timer*2));
                     yield return null;
                 }
 
@@ -194,7 +211,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 {
                     timer -= Engine.RawDeltaTime;
                     completeCrystal.crystalImage.Scale = Vector2.One*timer;
-                    completeCrystal.Position = new SimpleCurve(completeCrystal.Position, player.Position - new Vector2(0, 16f), player.Position - new Vector2(0, 32f)).GetPoint(Ease.CubeIn(1f -timer));
+                    Vector2 ppos = HudPos(player.Position, camera);
+                    completeCrystal.Position = new SimpleCurve(completeCrystal.Position, ppos - new Vector2(0, 16f*6), ppos - new Vector2(0, 32f*6)).GetPoint(Ease.CubeIn(1f -timer));
                     yield return null;
                 }
 
@@ -205,7 +223,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 while (timer > 0f)
                 {
                     timer -= Engine.RawDeltaTime;
-                    completeCrystal.crystalImage.Color = Color.White * (timer);
+                    //completeCrystal.crystalImage.Color = Color.White * (timer);
                     for (int i = 1; i <= 9; i++)
                     {
                         completeCrystal.crystalPieces[i - 1].Color = Color.White * (timer);
@@ -232,15 +250,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Update();
             UpdateY();
-        }
-        public override void Render()
-        {
-            if (crystal.Visible)
-            {
-                crystal.DrawOutline(1);
-            }
-
-            base.Render();
         }
 
 
