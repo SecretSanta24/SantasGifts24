@@ -20,6 +20,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Orientations orientation;
         private MTexture[] doorTextures;
         private MTexture lockTexture;
+        public bool despawning;
 
         public static Entity LoadVertical(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Vertical);
         public static Entity LoadHorizontal(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Horizontal);
