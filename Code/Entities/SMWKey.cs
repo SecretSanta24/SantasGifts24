@@ -55,6 +55,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private float leniencyGrabTimer;
         private bool canLeniency;
 
+
         public SMWKey(Vector2 position)
             : base(position)
         {
@@ -158,32 +159,30 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (leniencyGrabTimer > 0)
                 {
                     leniencyGrabTimer -= Engine.DeltaTime;
-                    bool alreadyHeld = false;
+                    SMWKey currentHolder = null;
                     foreach(SMWKey smwKey in Scene.Tracker.GetEntities<SMWKey>())
                     {
-                        if (alreadyHeld = smwKey.Hold.IsHeld) break;
-                    }
-                    if (alreadyHeld)
-                    {
-                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
+                        if (smwKey.Hold.IsHeld)
                         {
-                            key.leniencyGrabTimer = 0;
-                            key.bufferGrab = false;
+                            currentHolder = smwKey;
+                            break;
+                        }
+                    }
+                    if (currentHolder == null)
+                    {
+                        if (Input.GrabCheck && player.Holding == null)
+                        {
+                            Position = player.Position;
+                            keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                            Hold.Pickup(player);
+                            foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
+                            {
+                                key.leniencyGrabTimer = 0;
+                                key.bufferGrab = false;
 
+                            }
                         }
                     } 
-                    else if (Input.GrabCheck && player.Holding == null)
-                    {
-                        Position = player.Position;
-                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                        Hold.Pickup(player);
-                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                        {
-                            key.leniencyGrabTimer = 0;
-                            key.bufferGrab = false;
-
-                        }
-                    }
                 }
                 //keysolid handling
                 keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
@@ -394,9 +393,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private static bool Holdable_Pickup(On.Celeste.Holdable.orig_Pickup orig, Holdable self, Player player)
         {
+
             if (self.Entity is SMWKey key)
             {
-                if (key.bufferGrab) return false;
+                bool grabbed = false;
+
+                foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
+                {
+                    if (grabbed = (smwKey.Hold.IsHeld && self.Entity != smwKey)) break;
+                }
+                if (grabbed || key.bufferGrab)
+                {
+                    return false;
+                }
             }
             return orig.Invoke(self, player);
         }
