@@ -143,61 +143,69 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collider tempHolder = Collider;
             HandleDoors();
             
-            //player handling
+            //player handling//////////
             Player player = Scene.Tracker.GetEntity<Player>();
-            if (player != null)
+
+            //buffer grab)
+            if (bufferGrab && player!= null)
             {
-                //buffer grab)
-                if (bufferGrab)
+                Collidable = true;
+                Collider = Hold?.PickupCollider;
+                grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
+                Collider = tempHolder;
+            }
+            //post jump grab code
+            if (leniencyGrabTimer > 0)
+            {
+                leniencyGrabTimer -= Engine.DeltaTime;
+                SMWKey currentHolder = null;
+                foreach (SMWKey smwKey in Scene.Tracker.GetEntities<SMWKey>())
                 {
-                    Collidable = true;
-                    Collider = Hold?.PickupCollider;
-                    grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
-                    Collider = tempHolder;
-                }
-                //post jump grab code
-                if (leniencyGrabTimer > 0)
-                {
-                    leniencyGrabTimer -= Engine.DeltaTime;
-                    SMWKey currentHolder = null;
-                    foreach(SMWKey smwKey in Scene.Tracker.GetEntities<SMWKey>())
+                    if (smwKey.Hold.IsHeld)
                     {
-                        if (smwKey.Hold.IsHeld)
+                        currentHolder = smwKey;
+                        break;
+                    }
+                }
+                if (currentHolder == null)
+                {
+                    if (Input.GrabCheck && player != null && player.Holding == null)
+                    {
+                        Position = player.Position;
+                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+                        Hold.Pickup(player);
+                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
                         {
-                            currentHolder = smwKey;
-                            break;
+                            key.leniencyGrabTimer = 0;
+                            key.bufferGrab = false;
+
                         }
                     }
-                    if (currentHolder == null)
-                    {
-                        if (Input.GrabCheck && player.Holding == null)
-                        {
-                            Position = player.Position;
-                            keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                            Hold.Pickup(player);
-                            foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                            {
-                                key.leniencyGrabTimer = 0;
-                                key.bufferGrab = false;
-
-                            }
-                        }
-                    } 
-                }
-                //keysolid handling
-                keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
-
-                //teleport catchup code code
-                if ((Position - previousPosition).Length() > Speed.Length() * 3 && Speed.Length() != 0 && !Hold.IsHeld)
-                {
-                    keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                } else
-                {
-
-                    float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 10000, float.MaxValue));
-                    keySolid.MoveTo(Calc.Approach(keySolid.Position, (Hold.IsHeld ? player.TopCenter + player.ExactPosition - player.Position + JUMPTHROUGH_OFFSET - new Vector2(0, 2) : this.ExactPosition + JUMPTHROUGH_OFFSET), f1), LiftSpeed.SafeNormalize() * 100 );
                 }
             }
+            //keysolid handling
+            keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
+
+            //teleport catchup code code
+            if ((Position - previousPosition).Length() > Speed.Length() * 3 && Speed.Length() != 0 && !Hold.IsHeld)
+            {
+                keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+            }
+            else
+            {
+
+                float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 10000, float.MaxValue));
+                var approach = this.ExactPosition + JUMPTHROUGH_OFFSET;
+                if (Hold.IsHeld && player != null)
+                {
+                    approach = player.TopCenter + player.ExactPosition - player.Position + JUMPTHROUGH_OFFSET - new Vector2(0, 2);
+                }
+                keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), LiftSpeed.SafeNormalize() * 100);
+            }
+
+
+
+
             //glider code
 
             bool temp = keySolid.Collidable;
@@ -210,8 +218,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                 {
                     barrier.Collidable = true;
+                    bool collided = CollideCheck(barrier);
                     barrier.Collidable = false;
-                    if (CollideCheck(barrier))
+                    if (collided)
                     {
 
                         Add(new Coroutine(DestroyKey()));
