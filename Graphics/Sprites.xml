@@ -83,21 +83,19 @@
 
 	<corkr900SS24BouncyDudeNormal path="objects/ss2024/bouncyDude/" start="idle">
 		<Center />
-		<Loop id="idle" path="normal" delay=".1" frames="0" />
-		<Anim id="bounced" path="normal" delay=".1" frames="0" goto="jump"/>
-		<Loop id="jump" path="normal" delay=".1" frames="0" />
-		<Anim id="explode" path="normal" delay=".1" frames="0" goto="afterexplode" />
-		<Loop id="afterexplode" path="normal" delay=".1" frames="0" />
-		<Anim id="respawn" path="normal" delay=".1" frames="0" />
+		<Loop id="idle" path="idle" delay=".12" frames="0-7" />
+		<Anim id="bounced" path="bonk" delay=".07" frames="0-7" goto="jump"/>
+		<Anim id="jump" path="jump" delay=".07" frames="0-1" goto="jumploop"/>
+		<Loop id="jumploop" path="jump" delay=".07" frames="2-5" />
+		<Anim id="respawn" path="respawn" delay=".07" frames="0-2" />
 	</corkr900SS24BouncyDudeNormal>
 	<corkr900SS24BouncyDudeDark path="objects/ss2024/bouncyDude/" start="idle">
 		<Center />
-		<Loop id="idle" path="dark" delay=".1" frames="0" />
-		<Anim id="bounced" path="dark" delay=".1" frames="0" />
-		<Anim id="jump" path="dark" delay=".1" frames="0" />
-		<Anim id="explode" path="dark" delay=".1" frames="0" goto="afterexplode" />
-		<Loop id="afterexplode" path="dark" delay=".1" frames="0" />
-		<Anim id="respawn" path="dark" delay=".1" frames="0" />
+		<Loop id="idle" path="idle_dark" delay=".12" frames="0-7" />
+		<Anim id="bounced" path="bonk_dark" delay=".07" frames="0-7" goto="jump"/>
+		<Anim id="jump" path="jump_dark" delay=".07" frames="0-1" goto="jumploop"/>
+		<Loop id="jumploop" path="jump_dark" delay=".07" frames="2-5" />
+		<Anim id="respawn" path="respawn_dark" delay=".07" frames="0-2" />
 	</corkr900SS24BouncyDudeDark>
 
 	<corkr900SS24LightDarkPortalNormal path="objects/ss2024/lightDarkPortal/" start="enabled">
