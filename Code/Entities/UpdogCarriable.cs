@@ -18,6 +18,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     {
         public float springTimer;
 
+        public bool dontspawnflag;
+
         public UpdogCarriable(Vector2 position)
             : base(position)
         {
@@ -27,11 +29,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             : this(e.Position + offset)
         {
             springTimer = 0f;
+            dontspawnflag = e.Bool("dontspawnflag", false);
         }
 
         public override void Added(Scene scene)
         {
             base.Added(scene);
+            if (dontspawnflag && !(scene as Level).Session.GetFlag("SS2024_Sunsetquasar_updog"))
+            {
+                RemoveSelf();
+            }
         }
 
         public override void Update()

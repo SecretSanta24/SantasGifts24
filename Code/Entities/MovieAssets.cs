@@ -102,4 +102,174 @@ namespace Celeste.Mod.SantasGifts24.Entities
             }
         }
     }
+
+    public class DoctorDummy : Entity
+    {
+        public Sprite doctorSprite;
+        public DoctorDummy(Vector2 pos) : base(pos)
+        {
+            Add(doctorSprite = new Sprite(GFX.Game, "characters/SS2024/SunsetQuasar/74shiro/oshiro"));
+            Add(new VertexLight(Color.White, 1, 24, 40));
+            doctorSprite.AddLoop("idle", "", 0.09f);
+            doctorSprite.Play("idle");
+            doctorSprite.CenterOrigin();
+        }
+
+        public void Flip()
+        {
+            doctorSprite.FlipX = !doctorSprite.FlipX;
+        }
+    }
+    [CustomEntity("SS2024/QueerEventTrigger")]
+    public class QueerEventTrigger : Trigger
+    {
+        string ev;
+        public QueerEventTrigger(EntityData data, Vector2 offset) : base(data, offset)
+        {
+            ev = data.Attr("event", "");
+        }
+        public override void OnEnter(Player player)
+        {
+            switch (ev)
+            {
+                case "endmeplease":
+                    base.Scene.Add(new CS01_Ending(player));
+                    break;
+                default:
+                    RemoveSelf();
+                    break;
+            }
+        }
+    }
+
+    public class CS01_Ending : CutsceneEntity
+    {
+        private Player player;
+
+        private PrologueEndingTextButGroceries endingText;
+
+        public CS01_Ending(Player player)
+            : base(fadeInOnSkip: false, endingChapterAfter: true)
+        {
+            this.player = player;
+        }
+
+        public override void OnBegin(Level level)
+        {
+            level.RegisterAreaComplete();
+            Add(new Coroutine(Cutscene(level)));
+        }
+
+        private IEnumerator Cutscene(Level level)
+        {
+            player.StateMachine.State = 11;
+            player.Dashes = 1;
+            yield return 0.7f;
+            yield return player.DummyWalkTo(level.Bounds.Center.X);
+            yield return 0.4f;
+            player.DummyAutoAnimate = false;
+            player.Sprite.Play("sleep");
+            yield return 1.5f;
+            float ease = 0f;
+            endingText = new PrologueEndingTextButGroceries(instant: false);
+            base.Scene.Add(endingText);
+            level.Add(level.HiresSnow = new HiresSnow());
+            level.HiresSnow.Alpha = 0f;
+            while (ease < 1f)
+            {
+                ease += Engine.DeltaTime * 0.25f;
+                float num = Ease.CubeInOut(ease);
+                level.HiresSnow.Alpha = Calc.Approach(level.HiresSnow.Alpha, 1f, Engine.DeltaTime * 0.5f);
+                endingText.Position = new Vector2(960f, 540f - 1080f * (1f - num));
+                level.Camera.Y = (float)level.Bounds.Top - 2900f * num;
+                yield return null;
+            }
+            yield return 2.5f;
+            player.Add(new Coroutine(fadestuff(level, level.HiresSnow, endingText)));
+            yield return 0.5f;
+            EndCutscene(level);
+        }
+
+        public IEnumerator fadestuff(Level level, HiresSnow hr, PrologueEndingTextButGroceries pl)
+        {
+            float ease = 0f;
+            while (ease < 1f)
+            {
+                ease += Engine.DeltaTime * 1f;
+                float num = 1 - Ease.CubeInOut(ease);
+                hr.Alpha = num;
+                pl.alpha = num;
+                yield return null;
+            }
+        }
+
+        public override void OnEnd(Level level)
+        {
+            if (WasSkipped)
+            {
+
+                if (player != null)
+                {
+                    player.Position = new Vector2(level.Bounds.Center.X, -328f);
+                    player.StateMachine.State = 11;
+                    player.DummyAutoAnimate = false;
+                    player.Speed = Vector2.Zero;
+                }
+                if (level.HiresSnow == null)
+                {
+                    level.Add(level.HiresSnow = new HiresSnow());
+                }
+                level.HiresSnow.Alpha = 1f;
+                if (endingText != null)
+                {
+                    level.Remove(endingText);
+                }
+                level.Add(endingText = new PrologueEndingTextButGroceries(instant: true));
+                endingText.Position = new Vector2(960f, 540f);
+                level.Camera.Y = level.Bounds.Top - 2900;
+            }
+            Engine.TimeRate = 1f;
+            level.PauseLock = true;
+            level.Session.SetFlag("SS2024_SunsetQuasar_endmeplease");
+        }
+    }
+    [Tracked]
+    public class PrologueEndingTextButGroceries : Entity
+    {
+        private FancyText.Text text;
+
+        public float alpha;
+
+        public PrologueEndingTextButGroceries(bool instant)
+        {
+            base.Tag = Tags.HUD;
+            text = FancyText.Parse(Dialog.Clean("SecretSanta2024_2_Medium_sunsetquasar_end"), 960, 4, 0f);
+            Add(new Coroutine(Routine(instant)));
+            alpha = 1f;
+        }
+
+        private IEnumerator Routine(bool instant)
+        {
+            if (!instant)
+            {
+                yield return 4f;
+            }
+            for (int i = 0; i < text.Count; i++)
+            {
+                if (text[i] is FancyText.Char c)
+                {
+                    while ((c.Fade += Engine.DeltaTime * 20f) < 1f)
+                    {
+                        yield return null;
+                    }
+                    c.Fade = 1f;
+                }
+            }
+        }
+
+        public override void Render()
+        {
+            text.Draw(Position, new Vector2(0.5f, 0.5f), Vector2.One, alpha);
+        }
+    }
 }

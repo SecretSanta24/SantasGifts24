@@ -5,6 +5,9 @@ namespace Celeste.Mod.SantasGifts24
 {
     public class SantasGiftsSession : EverestModuleSession
     {
+        // Crystal
+        public int CrystalsCollected = 0;
+
         // Light/Dark Mode
         public LightDarkMode LightDark { get; set; } = LightDarkMode.Normal;
         public LightDarkMode LightDarkPersistent { get; set; } = LightDarkMode.Normal;

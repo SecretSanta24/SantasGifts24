@@ -56,6 +56,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            NoShadowClutterController.Load();
             TechialSeason.Load();
             UpdogCarriable.Load();
             Monopticon.Load();
@@ -89,6 +90,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Unload()
         {
+            NoShadowClutterController.Unload();
             TechialSeason.Unload();
             UpdogCarriable.Unload();
             Monopticon.Unload();
