@@ -50,12 +50,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		public Vector2 GroupPosition => new Vector2(GroupBoundsMin.X, GroupBoundsMin.Y);
 
+		public bool persistent;
 
-		public GroupedFallingDashBlock(Vector2 position, float width, float height, char tileType, bool climbFall)
+		private string persFlag = "SS2024_grouped_falling_dash_block_";
+
+		public string thisPersFlag;
+
+		private Vector2[] nodes;
+
+		private Vector2 offset;
+
+		public EntityID eid;
+
+		public GroupedFallingDashBlock(Vector2 position, float width, float height, char tileType, bool climbFall, bool persistent)
 			: base(position, width, height, safe: true)
 		{
 			_climbFall = climbFall;
 			_tileType = tileType;
+			this.persistent = persistent;
 			base.Depth = -9000;
 			Add(new LightOcclude());
 			SurfaceSoundIndex = SurfaceIndex.TileToIndex[tileType];
@@ -63,14 +75,25 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			OnDashCollide = OnDashed;
 		}
 
-		public GroupedFallingDashBlock(EntityData data, Vector2 offset)
-			: this(data.Position + offset, data.Width, data.Height, data.Char("tiletype", '3'), data.Bool("climbFall", defaultValue: true))
+		public GroupedFallingDashBlock(EntityData data, Vector2 offset, EntityID id)
+			: this(data.Position + offset, data.Width, data.Height, data.Char("tiletype", '3'), data.Bool("climbFall", defaultValue: true), data.Bool("persistent"))
 		{
+			this.eid = id;
+			thisPersFlag = persFlag + eid.Key;
+			nodes = data.Nodes;
+			this.offset = offset;
+
+		}
+
+		public void moveToNode()
+        {
+			Position = nodes[0] + offset;
 		}
 
 		public override void Awake(Scene scene)
 		{
 			base.Awake(scene);
+
 			_awake = true;
 			if (!HasGroup)
 			{
@@ -107,8 +130,25 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			}
 			if (MasterOfGroup)
 			{
+				if (persistent && SceneAs<Level>().Session.GetFlag(thisPersFlag))
+				{
+					foreach(GroupedFallingDashBlock gfdb in Group)
+                    {
+						gfdb.moveToNode();
+                    }
+				}
 				Add(new Coroutine(Sequence()));
 				Group.Sort((GroupedFallingDashBlock block, GroupedFallingDashBlock otherBlock) => otherBlock.Bottom.CompareTo(block.Bottom));
+
+			}
+			if (CollideCheck<Player>())
+			{
+				Collidable = false;
+				foreach (GroupedFallingDashBlock blockToBreak in Group)
+				{
+					blockToBreak.DestroyStaticMovers();
+					blockToBreak.RemoveSelf();
+				}
 			}
 		}
 
@@ -217,6 +257,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		private IEnumerator Sequence()
 		{
+			if (persistent && SceneAs<Level>().Session.GetFlag(thisPersFlag))
+            {
+				yield break;
+            }
 			while (!Triggered && !PlayerFallCheck())
 			{
 				yield return null;
@@ -227,6 +271,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 				yield return null;
 			}
 			HasStartedFalling = true;
+			if(persistent)
+            {
+				foreach (GroupedFallingDashBlock gfdb in Group)
+				{
+					SceneAs<Level>().Session.SetFlag(gfdb.thisPersFlag, true);
+				}
+            }
 			while (true)
 			{
 				ShakeSfx();
@@ -405,7 +456,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 						base.Scene.Add(Engine.Pooler.Create<Debris>().Init(blockToBreak.Position + new Vector2(4 + i * 8, 4 + j * 8), _tileType, playDebrisSound).BlastFrom(from));
 					}
 				}
+				blockToBreak.DestroyStaticMovers();
 				blockToBreak.RemoveSelf();
+				//if (persistent)
+				//{
+				//	SceneAs<Level>().Session.SetFlag(blockToBreak.thisPersFlag, true);
+				//}
 			}
 		}
 

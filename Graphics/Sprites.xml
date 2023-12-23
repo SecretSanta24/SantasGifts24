@@ -58,6 +58,11 @@
 		<Loop id="on" path="on" delay="0.1" />
 		<Loop id = "off" path="off" delay = "0.05" />
 	</electricGenerator>
+	<backupGenerator path="objects/ss2024/electricity/" start="on">
+		<Center/>
+		<Loop id="on" path="backup_on" delay="0.1" />
+		<Loop id = "off" path="backup_off" delay = "0.05" />
+	</backupGenerator>
 	<waterSplash path="objects/ss2024/waterSplash/" start="idle">
 		<Center/>
 		<Anim id="idle" path="splash" delay="0.016" frames="12"/>

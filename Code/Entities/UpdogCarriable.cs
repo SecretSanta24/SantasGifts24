@@ -13,7 +13,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     [Tracked(false)]
     public class UpdogCarriable : Actor
     {
-        public static ParticleType P_Impact = new ParticleType(TheoCrystal.P_Impact);
+        //public static ParticleType P_Impact = new ParticleType(TheoCrystal.P_Impact);
 
         public Vector2 Speed;
 
@@ -420,7 +420,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 position = new Vector2(base.X, base.Top);
                 positionRange = Vector2.UnitX * 6f;
             }
-            Level.Particles.Emit(P_Impact, 12, position, positionRange, direction);
+            //Level.Particles.Emit(P_Impact, 12, position, positionRange, direction);
         }
 
         public override bool IsRiding(Solid solid)
