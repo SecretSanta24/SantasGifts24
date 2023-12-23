@@ -57,7 +57,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             Add(new LightDarkListener(SetDarknessMode));
         }
 
-        public override void Added(Scene scene)
+		public void PlayAnimation(string anim) {
+			NormalSprite.Play(anim);
+			DarkSprite.Play(anim);
+		}
+
+		public override void Added(Scene scene)
         {
             base.Added(scene);
             if (scene is Level level)

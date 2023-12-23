@@ -42,7 +42,7 @@ namespace Celeste.Mod.SantasGifts24
         public static SantasGiftsModule Instance { get; private set; }
 
 		public override Type SettingsType => typeof(SantasGiftsSettings);
-		public SantasGiftsSettings Settings => (SantasGiftsSettings)_Settings;
+		public static SantasGiftsSettings Settings => (SantasGiftsSettings)Instance._Settings;
 
 		public override Type SessionType => typeof(SantasGiftsSession);
 		public SantasGiftsSession Session => (SantasGiftsSession)_Session;
@@ -78,6 +78,7 @@ namespace Celeste.Mod.SantasGifts24
             CrashLanding.Load();
             WaterLightningRenderer.Load();
             ElectricZipLine.Load();
+            LevelMapManager.Load();
             HoldableLiftBoostCancelController.Load();
             SetRespawnFlagStatesTrigger.Load();
 
@@ -112,6 +113,8 @@ namespace Celeste.Mod.SantasGifts24
             CrashLanding.Unload();
             WaterLightningRenderer.Unload();
             ElectricZipLine.Unload();
+            LevelMapManager.Unload();
+
             HoldableLiftBoostCancelController.Unload();
             SetRespawnFlagStatesTrigger.Unload();
 

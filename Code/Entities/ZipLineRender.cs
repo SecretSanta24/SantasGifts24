@@ -12,10 +12,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 	public class ZipLineRender : Entity
 	{
 		private ElectricZipLine zipline;
-		public ZipLineRender(ElectricZipLine instance)
+        private bool bright;
+		public ZipLineRender(ElectricZipLine instance, bool bright)
 		{
 			this.zipline = instance;
-		}
+            base.Depth = -100;
+            this.bright = bright;
+
+        }
 
         public static ParticleType P_ZiplineElectricity = new ParticleType
         {
@@ -50,10 +54,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public override void Render()
 		{
 			base.Render();
-			Draw.Line(zipline.left - 2*Vector2.UnitY, zipline.right - 2*Vector2.UnitY, Calc.HexToColor("000000"));
-			Draw.Line(zipline.left - 1*Vector2.UnitY, zipline.right - 1*Vector2.UnitY, Calc.HexToColor("3b3734"));
-			Draw.Line(zipline.left, zipline.right, Calc.HexToColor("0d0c0c"));
-			Draw.Line(zipline.left + Vector2.UnitY, zipline.right + Vector2.UnitY, Calc.HexToColor("0d0c0c"));
+            Color lightColor = Calc.HexToColor("e3cf81");
+            Color darkColor = Calc.HexToColor("59433c");
+            Draw.Line(zipline.left - 2*Vector2.UnitY, zipline.right - 2*Vector2.UnitY, Calc.HexToColor("000000"));
+			Draw.Line(zipline.left - 1*Vector2.UnitY, zipline.right - 1*Vector2.UnitY, lightColor);
+			Draw.Line(zipline.left, zipline.right, darkColor);
+			Draw.Line(zipline.left + Vector2.UnitY, zipline.right + Vector2.UnitY, darkColor);
 			Draw.Line(zipline.left + 2 * Vector2.UnitY, zipline.right + 2 * Vector2.UnitY, Calc.HexToColor("000000"));
 		}
 	}

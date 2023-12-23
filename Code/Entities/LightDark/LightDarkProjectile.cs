@@ -171,6 +171,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			if (player != null && !player.Dead) {
 				player.ExplodeLaunch(Position, false, sideOnly);
 				player.dashCooldownTimer = 0.02f;
+				Celeste.Freeze(0.05f);
 			}
 			Collider = null;
 
