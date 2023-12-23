@@ -84,5 +84,69 @@
 		<Anim id="idle" path="handle"/>
 		<Anim id="held_l" path="handle_l"/>
 		<Anim id="held_r" path="handle_r"/>
-  </zipline>
+	</zipline>
+
+	<corkr900SS24BouncyDudeNormal path="objects/ss2024/bouncyDude/" start="idle">
+		<Center />
+		<Loop id="idle" path="idle" delay=".12" frames="0-7" />
+		<Anim id="bounced" path="bonk" delay=".07" frames="0-7" goto="jump"/>
+		<Anim id="jump" path="jump" delay=".07" frames="0-1" goto="jumploop"/>
+		<Loop id="jumploop" path="jump" delay=".07" frames="2-5" />
+		<Anim id="respawn" path="respawn" delay=".07" frames="0-2" />
+	</corkr900SS24BouncyDudeNormal>
+	<corkr900SS24BouncyDudeDark path="objects/ss2024/bouncyDude/" start="idle">
+		<Center />
+		<Loop id="idle" path="idle_dark" delay=".12" frames="0-7" />
+		<Anim id="bounced" path="bonk_dark" delay=".07" frames="0-7" goto="jump"/>
+		<Anim id="jump" path="jump_dark" delay=".07" frames="0-1" goto="jumploop"/>
+		<Loop id="jumploop" path="jump_dark" delay=".07" frames="2-5" />
+		<Anim id="respawn" path="respawn_dark" delay=".07" frames="0-2" />
+	</corkr900SS24BouncyDudeDark>
+
+	<corkr900SS24LightDarkPortalNormal path="objects/ss2024/lightDarkPortal/" start="enabled">
+		<Center />
+		<Loop id="enabled" path="normal" delay=".1" frames="0" />
+		<Anim id="disable" path="normal" delay=".1" frames="0" goto="disabled" />
+		<Loop id="disabled" path="normal" delay=".1" frames="0" />
+		<Anim id="reenable" path="normal" delay=".1" frames="0" goto="enabled" />
+	</corkr900SS24LightDarkPortalNormal>
+	<corkr900SS24LightDarkPortalDark path="objects/ss2024/lightDarkPortal/" start="enabled">
+		<Center />
+		<Loop id="enabled" path="dark" delay=".1" frames="0" />
+		<Anim id="disable" path="dark" delay=".1" frames="0" goto="disabled" />
+		<Loop id="disabled" path="dark" delay=".1" frames="0" />
+		<Anim id="reenable" path="dark" delay=".1" frames="0" goto="enabled" />
+	</corkr900SS24LightDarkPortalDark>
+
+	<corkr900SS24LightDarkProjectileNormal path="objects/ss2024/projectile/" start="fly">
+		<Center />
+		<Loop id="fly" path="normal" delay=".1" frames="0" />
+		<Loop id="booped" path="normal" delay=".1" frames="0" goto="disabled" />
+	</corkr900SS24LightDarkProjectileNormal>
+	<corkr900SS24LightDarkProjectileDark path="objects/ss2024/projectile/" start="fly">
+		<Center />
+		<Loop id="fly" path="dark" delay=".1" frames="0" />
+		<Loop id="booped" path="dark" delay=".1" frames="0" goto="disabled" />
+	</corkr900SS24LightDarkProjectileDark>
+
+	<corkr900SS24GunnerDudeNormalFront path="objects/ss2024/gunnerDude/normal_front" start="idle">
+		<Center />
+		<Loop id="idle" delay=".3" frames="0-3" />
+		<Anim id="shoot" delay=".15" frames="4-7" goto="idle" />
+	</corkr900SS24GunnerDudeNormalFront>
+	<corkr900SS24GunnerDudeNormalBack path="objects/ss2024/gunnerDude/normal_back" start="idle">
+		<Center />
+		<Loop id="idle" delay=".3" frames="0-3" />
+		<Anim id="shoot" delay=".15" frames="4-7" goto="idle" />
+	</corkr900SS24GunnerDudeNormalBack>
+	<corkr900SS24GunnerDudeDarkFront path="objects/ss2024/gunnerDude/dark_front" start="idle">
+		<Center />
+		<Loop id="idle" delay=".3" frames="0-3" />
+		<Anim id="shoot" delay=".15" frames="4-7" goto="idle" />
+	</corkr900SS24GunnerDudeDarkFront>
+	<corkr900SS24GunnerDudeDarkBack path="objects/ss2024/gunnerDude/dark_back" start="idle">
+		<Center />
+		<Loop id="idle" delay=".3" frames="0-3" />
+		<Anim id="shoot" delay=".15" frames="4-7" goto="idle" />
+	</corkr900SS24GunnerDudeDarkBack>
 </Sprites>

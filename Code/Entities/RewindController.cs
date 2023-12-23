@@ -245,6 +245,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (player == null || level == null || player.Dead) yield break;
 
             Audio.ResumeSnapshot(underwater);
+            Audio.SetMusicParam("Ticking", 1);
             reversing = true;
             level.Session.SetFlag("rewinding_time", true);
             string currColorGrade = level.Session.ColorGrade;
@@ -297,6 +298,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             reversing = false;
             level.Session.SetFlag("rewinding_time", false);
+            Audio.SetMusicParam("Ticking", 0);
             coroutine = null;
             yield break;
         }

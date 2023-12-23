@@ -15,11 +15,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
     internal class LightDarkTilesController : Entity
     {
         private Dictionary<char, char> tileChanges = new Dictionary<char, char>();
+
         private VirtualMap<char> oldFgData;
         private VirtualMap<MTexture> oldFgTexes;
-        private VirtualMap<char> newFgData;
+        private VirtualMap<List<AnimatedTiles.Tile>> oldAnimatedTiles;
+		private VirtualMap<char> newFgData;
         private VirtualMap<MTexture> newFgTexes;
-        private LightDarkMode currentMode = LightDarkMode.Normal;
+		private VirtualMap<List<AnimatedTiles.Tile>> newAnimatedTiles;
+
+		private LightDarkMode currentMode = LightDarkMode.Normal;
         private Rectangle? bounds = null;
         private bool tilesGenerated = false;
 
@@ -44,7 +48,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 			OnModeChange(level.LightDarkGet());
 		}
 
-        private void GetData(Level level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes) {
+        private void GetData(Level level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes, out VirtualMap<List<AnimatedTiles.Tile>> animatedTiles) {
             if (bounds == null) {
                 bounds = new Rectangle(
 					level.LevelSolidOffset.X,
@@ -58,25 +62,29 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             oy = (int)Math.Round((double)bounds.Value.Y);
             fgData = level.SolidsData;
             fgTexes = level.SolidTiles.Tiles.Tiles;
+            animatedTiles = level.SolidTiles.AnimatedTiles.tiles;
         }
 
         private void GenerateTiles(Level level)
         {
             if (tilesGenerated) return;
             // A lot of this code is closely modeled after Pandoras Box Tile Glitcher code
-            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
+            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes, out VirtualMap<List<AnimatedTiles.Tile>> animatedTiles);
 
 			oldFgData = new VirtualMap<char>(tw, th, '0');
             oldFgTexes = new VirtualMap<MTexture>(tw, th, null);
+            oldAnimatedTiles = new VirtualMap<List<AnimatedTiles.Tile>>(tw, th, null);
             newFgData = new VirtualMap<char>(tw, th, '0');
             newFgTexes = new VirtualMap<MTexture>(tw, th, null);
+			newAnimatedTiles = new VirtualMap<List<AnimatedTiles.Tile>>(tw, th, null);
 
-            for (int x = 0; x < tw; x++)
+			for (int x = 0; x < tw; x++)
             {
                 for (int y = 0; y < th; y++)
                 {
                     char tile = fgData[x + ox, y + oy];
                     oldFgData[x, y] = tile;
+                    oldAnimatedTiles[x, y] = animatedTiles[x + ox, y + oy];
                     if (tileChanges.ContainsKey(tile))
                     {
                         newFgData[x, y] = tileChanges[tile];
@@ -85,7 +93,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                     {
                         newFgData[x, y] = tile;
                         newFgTexes[x, y] = fgTexes[x + ox, y + oy];
-                    }
+                        newAnimatedTiles[x, y] = animatedTiles[x, y];
+					}
                 }
             }
 
@@ -97,6 +106,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                 {
                     oldFgTexes[x, y] = fgTexes[x + ox, y + oy];
                     if (newFgTexes[x, y] == null) newFgTexes[x, y] = newFgTiles.TileGrid.Tiles[x, y];
+                    if (newAnimatedTiles[x, y] == null) newAnimatedTiles[x, y] = newFgTiles.SpriteOverlay.tiles[x, y];
                 }
             }
 
@@ -114,7 +124,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
         private void ApplyAlteredTiles(Level level)
         {
             if (newFgData == null || newFgTexes == null) return;
-            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
+            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes, out VirtualMap<List<AnimatedTiles.Tile>> animatedTiles);
 
             for (int x = 0; x < tw; x++)
             {
@@ -122,6 +132,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
                 {
                     fgData[x + ox, y + oy] = newFgData[x, y];
                     fgTexes[x + ox, y + oy] = newFgTexes[x, y];
+                    animatedTiles[x + ox, y + oy] = newAnimatedTiles[x, y];
                 }
             }
             foreach (var handler in level.Tracker.GetComponents<LightDarkTilesHandler>().Cast<LightDarkTilesHandler>()) {
@@ -135,14 +146,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private void RestoreOriginalTiles(Level level, bool skipTileEntities = false)
         {
-            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes);
+            GetData(level, out int tw, out int th, out int ox, out int oy, out VirtualMap<char> fgData, out VirtualMap<MTexture> fgTexes, out VirtualMap<List<AnimatedTiles.Tile>> animatedTiles);
             for (int x = 0; x < tw; x++)
             {
                 for (int y = 0; y < th; y++)
                 {
                     fgData[x + ox, y + oy] = oldFgData[x, y];
                     fgTexes[x + ox, y + oy] = oldFgTexes[x, y];
-                }
+					animatedTiles[x + ox, y + oy] = oldAnimatedTiles[x, y];
+				}
 			}
             if (!skipTileEntities) {
 				foreach (var handler in level.Tracker.GetComponents<LightDarkTilesHandler>().Cast<LightDarkTilesHandler>()) {

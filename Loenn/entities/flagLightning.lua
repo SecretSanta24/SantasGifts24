@@ -15,4 +15,5 @@ flagLightning.placements = {
 
 flagLightning.depth = -1000000
 
-return flagLightning
+--return flagLightning
+return nil

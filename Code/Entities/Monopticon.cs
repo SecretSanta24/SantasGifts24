@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.Entities;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
+using Celeste.Mod.SantasGifts24;
 
 namespace Celeste.Mod.NeutronHelper
 {
@@ -30,9 +31,6 @@ namespace Celeste.Mod.NeutronHelper
             {
             }
         }
-
-
-        private Sprite sprite;
 
         private Tween lightTween;
 
@@ -85,7 +83,6 @@ namespace Celeste.Mod.NeutronHelper
             Add(vertexLight);
             lightTween = vertexLight.CreatePulseTween();
             Add(lightTween);
-            Add(sprite = GFX.SpriteBank.Create("lookout"));
             sprite.OnFrameChange = delegate (string s)
             {
                 switch (s)
@@ -303,6 +300,18 @@ namespace Celeste.Mod.NeutronHelper
         public override void Update()
         {
             base.Update();
+
+            if(SantasGiftsModule.GravityHelperImports.GetPlayerGravity?.Invoke() == 1)
+            {
+                talk.Bounds.Y = 0;
+                sprite.Scale.Y = -1;
+
+            } else
+            {
+                talk.Bounds.Y = -8;
+                sprite.Scale.Y = 1;
+            }
+
             if (!arbInteract)
             {
                 Player player = Scene.Tracker.GetEntity<Player>();

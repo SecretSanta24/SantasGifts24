@@ -11,6 +11,9 @@ using Monocle;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
 using Celeste.Mod.NeutronHelper;
 using Celeste.Mod.SantasGifts24.Entities;
+using MonoMod.ModInterop;
+using System.Security.Policy;
+using static Celeste.Mod.SantasGifts24.SantasGiftsModule;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
 namespace Celeste.Mod.SantasGifts24
@@ -18,7 +21,25 @@ namespace Celeste.Mod.SantasGifts24
     public class SantasGiftsModule : EverestModule
 	{
 
-		public static SantasGiftsModule Instance { get; private set; }
+
+        [ModImportName("FemtoHelper.SMWBlockInfo")]
+        public static class FemtoHelperImports
+        {
+            public static Func<Entity, bool> IsActive;
+            public static Func<Entity, bool> CanHitTop;
+            public static Func<Entity, bool> CanHitBottom;
+            public static Func<Entity, bool> CanHitLeft;
+            public static Func<Entity, bool> CanHitRight;
+            public static Action<Entity, Player, int> GetHitMethod;
+        }
+
+        [ModImportName("GravityHelper")]
+        public static class GravityHelperImports
+        {
+            public static Func<int> GetPlayerGravity;
+        }
+
+        public static SantasGiftsModule Instance { get; private set; }
 
 		public override Type SettingsType => typeof(SantasGiftsSettings);
 		public static SantasGiftsSettings Settings => (SantasGiftsSettings)Instance._Settings;
@@ -35,6 +56,8 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            NoShadowClutterController.Load();
+            TechialSeason.Load();
             UpdogCarriable.Load();
             Monopticon.Load();
             GaseousGrandControl.Load();
@@ -56,13 +79,20 @@ namespace Celeste.Mod.SantasGifts24
             WaterLightningRenderer.Load();
             ElectricZipLine.Load();
             LevelMapManager.Load();
+            HoldableLiftBoostCancelController.Load();
+            SetRespawnFlagStatesTrigger.Load();
 
+            typeof(FemtoHelperImports).ModInterop();
+
+            typeof(GravityHelperImports).ModInterop();
 
             On.Celeste.Player.ctor += AddCustomStates;
         }
 
 		public override void Unload()
         {
+            NoShadowClutterController.Unload();
+            TechialSeason.Unload();
             UpdogCarriable.Unload();
             Monopticon.Unload();
             GaseousGrandControl.Unload();
@@ -85,6 +115,8 @@ namespace Celeste.Mod.SantasGifts24
             ElectricZipLine.Unload();
             LevelMapManager.Unload();
 
+            HoldableLiftBoostCancelController.Unload();
+            SetRespawnFlagStatesTrigger.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }

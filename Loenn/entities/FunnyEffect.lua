@@ -4,13 +4,15 @@ local entity = {}
 
 
 entity.name = "SantasGifts24/FunnyEffect"
-entity.nodeLimits = {1, 1}
 entity.resizable = {true, true}
 entity.placements = {
     name = "FunnyEffect",
     data = {
         Width = 8,
-        Height = 8
+        Height = 8,
+        startFlag = "funnyEffect_start",
+        endFlag = "funnyEffect_end",
+        sound = "event:/santas_gifts_funny_effect",
     }
 }
 

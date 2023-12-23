@@ -1,9 +1,13 @@
+using System.Collections.Generic;
 using Celeste.Mod.SantasGifts24.Code.Mechanics;
 
 namespace Celeste.Mod.SantasGifts24
 {
     public class SantasGiftsSession : EverestModuleSession
     {
+        // Crystal
+        public int CrystalsCollected = 0;
+
         // Light/Dark Mode
         public LightDarkMode LightDark { get; set; } = LightDarkMode.Normal;
         public LightDarkMode LightDarkPersistent { get; set; } = LightDarkMode.Normal;
@@ -16,6 +20,9 @@ namespace Celeste.Mod.SantasGifts24
 		public bool playerCursed = false;
 		public bool ignoreDash = false;
         public bool killPlayerWhenSafe = false;
+
+        // in-map journal
+        public List<string> JournalPages { get; set; } = new();
 
         public void ResetCurse()
         {
@@ -32,5 +39,7 @@ namespace Celeste.Mod.SantasGifts24
 
         //fastfallcontroller
         public bool fastfallActive { get; set; } = true;
+
+        public Dictionary<string, bool> respawnFlagMonitor = new();
     }
 }
