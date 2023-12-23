@@ -80,7 +80,7 @@ namespace Celeste.Mod.SantasGifts24
             ElectricZipLine.Load();
             LevelMapManager.Load();
             HoldableLiftBoostCancelController.Load();
-            SetRespawnFlagStatesTrigger.Load();
+            //SetRespawnFlagStatesTrigger.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -116,7 +116,7 @@ namespace Celeste.Mod.SantasGifts24
             LevelMapManager.Unload();
 
             HoldableLiftBoostCancelController.Unload();
-            SetRespawnFlagStatesTrigger.Unload();
+            //SetRespawnFlagStatesTrigger.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
