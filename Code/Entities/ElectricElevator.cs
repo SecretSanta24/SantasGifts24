@@ -157,7 +157,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 {
                     elevator = this
                 });
-                backImg = new Image(GFX.Game["objects/elevator/activeBG"]);
+                backImg = new Image(GFX.Game["objects/ss2024/elevator/activeBG"]);
                 backImg.CenterOrigin();
                 back.Add(backImg);
 
