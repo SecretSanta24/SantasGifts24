@@ -85,6 +85,16 @@
 		<Anim id="held_l" path="handle_l"/>
 		<Anim id="held_r" path="handle_r"/>
 	</zipline>
+	<electricDoorFG path="objects/ss2024/electricity/" start="close">
+		<Center/>
+		<Loop id="close" path="door_close_fg" delay="1" />
+		<Anim id="open" path="door_open_fg"/>
+	</electricDoorFG>
+	<electricDoorBG path="objects/ss2024/electricity/" start="close">
+		<Center/>
+		<Loop id="close" path="door_close_bg" delay="1" />
+		<Anim id="open" path="door_open_bg"/>
+	</electricDoorBG>
 
 	<corkr900SS24BouncyDudeNormal path="objects/ss2024/bouncyDude/" start="idle">
 		<Center />
