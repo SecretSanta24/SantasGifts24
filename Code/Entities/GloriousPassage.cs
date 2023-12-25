@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Celeste.Mod.SantasGifts24.Entities
 {
@@ -31,7 +32,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         {
             Collider = new Hitbox(data.Width, data.Height);
             Add(new PlayerCollider(onPlayer, Collider));
-            Depth = 10;
+            Depth = 120;
 
             flag = data.Attr("flag", "door_check");
             roomName = data.Attr("roomName", "");
@@ -122,7 +123,20 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     Vector2 cameraDelta = level.Camera.Position - pos;
                     level.Remove(player);
                     level.UnloadLevel();
-                    level.Session.Level = roomName;
+                    if (level.Session.MapData.levelsByName.ContainsKey(roomName.Trim()))
+                    {
+                        level.Session.Level = roomName.Trim();
+                    } 
+                    else
+                    {
+                        foreach (LevelData d in level.Session.MapData.Levels)
+                        {
+                            if (d.Name.Trim() == roomName.Trim()) level.Session.Level = d.Name;
+                        }
+                    }
+                    
+                    
+                    
                     level.Session.RespawnPoint = level.GetSpawnPoint(new Vector2(level.Bounds.Left, level.Bounds.Top));
 
                     level.Session.FirstLevel = false;

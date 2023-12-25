@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.Entities;
+using Celeste.Mod.SantasGifts24.Code.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
@@ -135,6 +136,13 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 case "endmeplease":
                     base.Scene.Add(new CS01_Ending(player));
                     break;
+                case "thehellfire":
+                    if ((Scene as Level).Session.GetFlag("SS2024_TheLargeArtifact0") && (Scene as Level).Session.GetFlag("SS2024_TheLargeArtifact1"))
+                    {
+                        base.Scene.Add(new CS01_OwieExplode(player));
+                        RemoveSelf();
+                    }
+                    break;
                 default:
                     RemoveSelf();
                     break;
@@ -184,6 +192,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 level.Camera.Y = (float)level.Bounds.Top - 2900f * num;
                 yield return null;
             }
+            level.PauseLock = true;
             yield return 2.5f;
             player.Add(new Coroutine(fadestuff(level, level.HiresSnow, endingText)));
             yield return 0.5f;
@@ -201,6 +210,14 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 pl.alpha = num;
                 yield return null;
             }
+        }
+
+        public IEnumerator waitthenfade(Level level, HiresSnow hr, PrologueEndingTextButGroceries pl)
+        {
+            yield return 2.5f;
+            player.Add(new Coroutine(fadestuff(level, level.HiresSnow, endingText)));
+            yield return 0.5f;
+            level.Session.SetFlag("SS2024_SunsetQuasar_endmeplease");
         }
 
         public override void OnEnd(Level level)
@@ -227,12 +244,248 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 level.Add(endingText = new PrologueEndingTextButGroceries(instant: true));
                 endingText.Position = new Vector2(960f, 540f);
                 level.Camera.Y = level.Bounds.Top - 2900;
+                if (player != null)
+                {
+                    player.Add(new Coroutine(waitthenfade(level, level.HiresSnow, endingText)));
+                }
+            } else
+            {
+                level.Session.SetFlag("SS2024_SunsetQuasar_endmeplease");
             }
             Engine.TimeRate = 1f;
             level.PauseLock = true;
-            level.Session.SetFlag("SS2024_SunsetQuasar_endmeplease");
+
         }
     }
+
+    public class OrbEffect : Entity
+    {
+        public float percent = 1f;
+        public float size = 1f;
+        public MTexture texture;
+        public OrbEffect(Vector2 pos, float size) : base(pos)
+        {
+            percent = 1f;
+            this.size = size;
+            texture = GFX.Game["objects/SS2024/SunsetQuasar/ball"];
+            Depth = -21500;
+        }
+        public override void Update()
+        {
+            base.Update();
+            if(percent > 0)
+            {
+                percent = (float)Math.Max(percent - Engine.DeltaTime * 1.25, 0f);
+            }
+        }
+
+        public override void Render()
+        {
+            base.Render();
+            Color col = Color.White * percent;
+            col.A = 0;
+            texture.DrawCentered(Position, col, size * Ease.CubeOut(percent));
+        }
+    }
+
+    public class CS01_OwieExplode : CutsceneEntity
+    {
+        private Player player;
+
+        private PrologueEndingTextButGroceries endingText;
+
+        public SoundSource sound;
+
+        public float red;
+
+        public float dist;
+
+        public float angle;
+
+        public bool ohshit = false;
+
+        public float angleSpeed = 0f;
+
+        public CS01_OwieExplode(Player player)
+            : base(fadeInOnSkip: false, endingChapterAfter: true)
+        {
+            this.player = player;
+            Depth = -22000;
+            red = 0;
+            dist = 24;
+        }
+
+        public override void OnBegin(Level level)
+        {
+            Add(new Coroutine(Cutscene(level)));
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            angle += angleSpeed * Engine.DeltaTime;
+        }
+
+        private IEnumerator Cutscene(Level level)
+        {
+            player.StateMachine.State = 11;
+            player.Dashes = 1;
+            player.Drop();
+            player.ForceCameraUpdate = true;
+            Vector2 madpos = player.Position;
+            yield return 1.5f;
+
+            UpdogCarriable updog = Scene.Tracker.GetEntity<TheoCrystal>() as UpdogCarriable;
+            if(updog != null)
+            {
+                Vector2 origpos = updog.Position;
+                float percent = 0;
+                updog.Collidable = false;
+                updog.fg = true;
+                updog.noGravityTimer = 999999999; // i am seriously so done with this collab i do not care anymore
+                while (percent < 1)
+                {
+                    percent += Engine.DeltaTime / 1.25f;
+                    yield return null;
+                    updog.X = Calc.LerpClamp(origpos.X, 1759, Ease.CubeIn(percent));
+                    updog.Y = Calc.LerpClamp(origpos.Y, 170, Ease.CubeIn(percent));
+                }
+                Audio.Play("event:/sunset_secretsanta/snap", updog.Position);
+                Celeste.Freeze(0.08f);
+                level.Shake();
+                Input.Rumble(RumbleStrength.Light, RumbleLength.Medium);
+
+            }
+            else
+            {
+                EndCutscene(level);
+            }
+            yield return 1f;
+            TheLargeArtifact art0 = new TheLargeArtifact(updog.Position + new Vector2(24, -10), 0, true);
+            TheLargeArtifact art1 = new TheLargeArtifact(updog.Position + new Vector2(-24, -10), 1, true);
+            Scene.Add(art1);
+            Scene.Add(art0);
+            Scene.Add(new OrbEffect(art0.Center, 0.2f));
+            Scene.Add(new OrbEffect(art1.Center, 0.2f));
+            Audio.Play("event:/sunset_secretsanta/crystal", updog.Position);
+            yield return 0.5f;
+            Add(new Coroutine(spinnnn(updog, art0, art1)));
+            yield return 1.5f;
+            Add(sound = new SoundSource());
+            sound.Play("event:/sunset_secretsanta/impending");
+            Add(new Coroutine(redflash()));
+            yield return 6f;
+            sound.Param("death", 1f);
+            ohshit = true;
+            (Scene as Level).NextColorGrade("SS2024/SunsetQuasar/white", 0.5f);
+            while (true)
+            {
+                dist = Math.Max(dist - Engine.DeltaTime * 10, 0);
+                if (dist == 0) break;
+                yield return null;
+            }
+            yield return 0.5f;
+
+            EndCutscene(level);
+        }
+
+        public IEnumerator redflash()
+        {
+            float num = 0;
+            while (true)
+            {
+                num += Engine.DeltaTime * 1.7f;
+                red = (float)Math.Sin(num) * (float)Math.Sin(num);
+                yield return null;
+                
+                if(Distort.Anxiety < 0.5f)
+                {
+                    Distort.Anxiety = Math.Min(Distort.Anxiety + Engine.DeltaTime / 10, 0.5f);
+                }
+            }
+        }
+
+        public IEnumerator spinnnn(UpdogCarriable c, TheLargeArtifact a0, TheLargeArtifact a1)
+        {
+            while (true)
+            {
+                angleSpeed = Calc.Approach(angleSpeed, ohshit ? 100 : 13, Engine.DeltaTime * (ohshit ? 8 : 5));
+
+                a0.Position = c.Position + Calc.AngleToVector(angle, 24 * Ease.CubeInOut(dist / 24)) - (Vector2.UnitY * 10);
+                a1.Position = c.Position + Calc.AngleToVector(angle, -24 * Ease.CubeInOut(dist / 24)) - (Vector2.UnitY * 10);
+                yield return null;
+            }
+        }
+
+        public override void OnEnd(Level level)
+        {
+            if (WasSkipped)
+            {
+
+
+            }
+            UpdogCarriable updog = Scene.Tracker.GetEntity<TheoCrystal>() as UpdogCarriable;
+            if (updog != null)
+            {
+                updog.Collidable = false;
+                updog.fg = true;
+                updog.noGravityTimer = 999999999;
+                updog.Position = new Vector2(1759, 170);
+            }
+            player.ForceCameraUpdate = false;
+            player.StateMachine.State = 0;
+            level.Session.SetFlag("SS2024_SunsetQuasar_thehellfire");
+        }
+
+        public override void Render()
+        {
+            base.Render();
+            Level level = Scene as Level;
+            Color col = Color.Red * red * 0.25f;
+            col.A = 0;
+            Draw.Rect(level.Camera.Position, 320, 180, col);
+        }
+    }
+
+    public class CS01_Conflict1 : CutsceneEntity
+    {
+        private Player player;
+
+        private PrologueEndingTextButGroceries endingText;
+
+        public CS01_Conflict1(Player player)
+            : base(fadeInOnSkip: false, endingChapterAfter: true)
+        {
+            this.player = player;
+        }
+
+        public override void OnBegin(Level level)
+        {
+            Add(new Coroutine(Cutscene(level)));
+        }
+
+        private IEnumerator Cutscene(Level level)
+        {
+            player.StateMachine.State = 11;
+            player.Dashes = 1;
+            yield return 1.5f;
+
+            EndCutscene(level);
+        }
+
+        public override void OnEnd(Level level)
+        {
+            if (WasSkipped)
+            {
+
+
+            }
+            level.SnapColorGrade("SS2024/SunsetQuasar/white");
+            player.StateMachine.State = 11;
+            level.Session.SetFlag("SS2024_SunsetQuasar_thehellfire");
+        }
+    }
+
     [Tracked]
     public class PrologueEndingTextButGroceries : Entity
     {

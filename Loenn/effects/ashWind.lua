@@ -37,4 +37,5 @@ ashWind.defaultData = {
     transparency = 0.3,
     hsvBlending = true
 }
-return nil
+--return nil
+return ashWind

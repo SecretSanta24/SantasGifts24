@@ -56,6 +56,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            NoBillboardBloom.Load();
             NoShadowClutterController.Load();
             TechialSeason.Load();
             UpdogCarriable.Load();
@@ -90,6 +91,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Unload()
         {
+            NoBillboardBloom.Unload();
             NoShadowClutterController.Unload();
             TechialSeason.Unload();
             UpdogCarriable.Unload();

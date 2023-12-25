@@ -20,6 +20,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public bool dontspawnflag;
 
+        public bool fg;
+
         public UpdogCarriable(Vector2 position)
             : base(position)
         {
@@ -30,6 +32,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             springTimer = 0f;
             dontspawnflag = e.Bool("dontspawnflag", false);
+            fg = false;
         }
 
         public override void Added(Scene scene)
@@ -45,6 +48,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Update();
             springTimer = Math.Max(springTimer - Engine.DeltaTime, 0f);
+            if (fg)
+            {
+                (Scene as Level).OnEndOfFrame += delegate
+                {
+                    Depth = -20000;
+                };
+            }
         }
 
 

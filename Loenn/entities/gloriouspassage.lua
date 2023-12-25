@@ -47,5 +47,5 @@ function SS2024GloriousPassage.sprite(room, entity)
 
     return sprites
 end
-return nil
---return SS2024GloriousPassage
+--return nil
+return SS2024GloriousPassage
