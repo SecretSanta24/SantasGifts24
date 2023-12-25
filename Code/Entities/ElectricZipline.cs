@@ -38,6 +38,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		public SoundSource moveSfx;
 
+		private bool bright;
+
         public static ParticleType P_ZiplineFriction = new ParticleType
         {
             Color = Calc.HexToColor("756e65"),
@@ -73,6 +75,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		private bool CanGrabZip(ElectricZipLine line)
 		{
+			if (!SceneAs<Level>().Session.GetFlag("SS2024_ricky06_haveZipline"))
+            {
+				return false;
+            }
 			if (lastGrabbed != line)
 			{
 				return true;
@@ -267,19 +273,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 			height = (_data.Position + offset).Y;
 			base.Collider = new Hitbox(20f, 16f, -10f, 1f);
 			currentGrabbed = null;
-			base.Depth = -500;
+			base.Depth = -110;
 			sprite = GFX.SpriteBank.Create("zipline");
 			sprite.Play("idle");
 			sprite.JustifyOrigin(new Vector2(0.5f, 0.25f));
 			Add(moveSfx = new SoundSource());
 			Add(sprite);
 			P_ZiplineFriction.Source = GFX.Game["particles/rect"];
+			this.bright = _data.Bool("bright");
 		}
 
 		public override void Added(Scene scene)
 		{
 			base.Added(scene);
-			scene.Add(new ZipLineRender(this));
+			scene.Add(new ZipLineRender(this, bright));
 		}
 
 		public override void Update()
@@ -340,13 +347,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
 		private bool ziplineCollideCheck()
         {
-			Player player = Scene.CollideFirst<Player>(left, right);
+			Player player = Scene.CollideFirst<Player>(left + Vector2.UnitY * 4, right + Vector2.UnitY * 4);
 			return player != null;
         }
 
 		public bool ElectricityIsOn()
         {
-			return !SceneAs<Level>().Session.GetFlag("SS2024_level_electricity_flag");
+			return SceneAs<Level>().Session.GetFlag("SS2024_level_electricity_flag") && !SceneAs<Level>().Session.GetFlag("SS2024_level_electricity_backup_flag");
 		}
 	}
 }

@@ -12,7 +12,7 @@ public class InMapJournalController : Entity{
 	public override void Update(){
 		base.Update();
 
-		if(SantasGiftsModule.Instance.Settings.InMapJournalBind.Pressed){
+		if(SantasGiftsModule.Settings.InMapJournalBind.Pressed){
 			var existingJournal = Scene.Tracker.GetEntity<InMapJournal>();
 			var player = Scene.Tracker.GetEntity<Player>();
 			if(existingJournal == null && player != null && player.StateMachine == Player.StNormal && player.OnSafeGround){

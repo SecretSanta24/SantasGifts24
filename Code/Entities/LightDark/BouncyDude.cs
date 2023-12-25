@@ -51,7 +51,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             stateMachine = new StateMachine(5);
             stateMachine.SetCallbacks(stIdle, null, null, BeginIdle);
             stateMachine.SetCallbacks(stBounced, BouncedUpdate, null, BouncedBegin);
-            stateMachine.SetCallbacks(stJumping, JumpingUpdate);
+            stateMachine.SetCallbacks(stJumping, JumpingUpdate, null, JumpingBegin);
             stateMachine.SetCallbacks(stExplode, ExplodeUpdate, ExplodeCoroutine);
             stateMachine.SetCallbacks(stRespawn, null, RespawnCoroutine);
             Add(stateMachine);
@@ -86,19 +86,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             player.SuperBounce(Position.Y + headHitbox.Top);
             player.Speed.X = speedX * 1.2f;
             stateMachine.State = stBounced;
-
         }
 
-        private void BeginIdle()
-        {
-            SpriteVisible = true;
+        private void BeginIdle() {
+			PlayAnimation("idle");
+			SpriteVisible = true;
             Collidable = true;
             Position = startingPosition;
         }
 
-        private void BouncedBegin()
-        {
-            timeUntilBoom = jumpDelay + jumpTime;
+        private void BouncedBegin() {
+			PlayAnimation("bounced");
+			timeUntilBoom = jumpDelay + jumpTime;
         }
 
         private int BouncedUpdate()
@@ -107,7 +106,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             return timeUntilBoom < jumpDelay + 0.001f ? stJumping : stBounced;
         }
 
-        private int JumpingUpdate()
+		private void JumpingBegin() {
+			PlayAnimation("jump");
+		}
+
+		private int JumpingUpdate()
         {
             timeUntilBoom = Calc.Approach(timeUntilBoom, 0, Engine.DeltaTime);
             float a = -jumpHeight / (jumpTime * jumpTime);
@@ -138,21 +141,23 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
             };
             sprite.Play("shockwave", restart: true);
             sprite.SetAnimationFrame(3);
-            SceneAs<Level>().Shake(0.15f);
+            Level level = SceneAs<Level>();
+            level.Shake(0.15f);
 
             // Explode physics stuff
             if (CurrentMode == LightDarkMode.Normal) {
 				Collider = explodeEffectZone;
 				Player player = CollideFirst<Player>();
-				if (player != null && !Scene.CollideCheck<Solid>(Position, player.Center)) {
+				if (player != null && !level.CollideCheck<Solid>(Position, player.Center)) {
 					player.ExplodeLaunch(Position, false, true);
 					player.dashCooldownTimer = 0.02f;
+					Celeste.Freeze(0.05f);
 				}
 				Collider = null;
 			}
             else {
-                Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * 10, false));
-				Scene.Add(new LightDarkProjectile(Position + Vector2.UnitX * -10, true));
+				level.Add(new LightDarkProjectile(Position + Vector2.UnitX * 10, false));
+				level.Add(new LightDarkProjectile(Position + Vector2.UnitX * -10, true));
 			}
 
             Collidable = false;
@@ -169,6 +174,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities.LightDark {
 
         private IEnumerator RespawnCoroutine()
         {
+            PlayAnimation("respawn");
             Position = startingPosition;
             SpriteVisible = true;
             yield return 0.2f;
