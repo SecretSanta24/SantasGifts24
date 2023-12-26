@@ -1,5 +1,6 @@
 ﻿using Celeste;
 using Celeste.Mod.Entities;
+using Celeste.Mod.SantasGifts24.Code.Triggers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -36,25 +37,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private HoldableCollider hitSeeker;
 
-        private float swatTimer;
-
-        private bool shattering;
-
         private float hardVerticalHitSoundCooldown;
 
         private JumpThru keySolid;
 
-        private float tutorialTimer;
-        private Vector2 scissorSpawnDirection;
         private Vector2 JUMPTHROUGH_OFFSET = new Vector2(-10,-8);
-        private bool destroyed;
-        private bool bufferGrab;
-        private bool ultraBufferGrab;
-        private bool grabOnDashEnd;
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
-        private bool canLeniency;
 
+        private enum State
+        {
+            Ungrabbed, Despawn, PreGrab, Buffered, Primed, Grabbed, PostDashLeniency
+        }
+        private State state = State.Ungrabbed;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -73,7 +68,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Hold.OnPickup = OnPickup;
             Hold.OnRelease = OnRelease;
             Hold.DangerousCheck = Dangerous;
-            Hold.OnHitSeeker = HitSeeker;
             Hold.OnSwat = Swat;
             Hold.OnHitSpring = HitSpring;
             Hold.OnHitSpinner = HitSpinner;
@@ -85,8 +79,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             base.Tag = Tags.TransitionUpdate;
             Add(new MirrorReflection());
             Add(new DashListener(OnDash));
-
-            
         }
 
         public SMWKey(EntityData e, Vector2 offset)
@@ -96,7 +88,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void OnDash(Vector2 direction)
         {
-            bufferGrab = direction.X != 0 && direction.Y > 0;
+            if (direction.X != 0 && direction.Y > 0) SetState(State.Buffered);
         }
 
 
@@ -112,14 +104,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public void HandleDoors()
         {
+            bool tempCollidableState = Collidable;
+            Collidable = true;
+
             Collider tempHolder = Collider;
             Collider = doorCollider;
+
             List<Entity> doors = CollideAll<SMWDoor>();
             if (doors.Count > 0)
             {
                 foreach (SMWDoor door in doors)
                 {
-                    if (door.despawning) { continue; }
+                    if (door.despawning) continue;
                     door.despawning = true;
                     Scene.Remove(door);
                     break;
@@ -130,6 +126,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
                 return;
             }
+            Collidable = tempCollidableState;
             Collider = tempHolder;
         }
 
@@ -138,220 +135,319 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             base.Update();
 
+            switch (state)
+            {
+                case State.Ungrabbed:
+                    UngrabbedUpdate();
+                    break;
+                case State.Despawn:
+
+                    UngrabbedUpdate();
+                    DespawnUpdate();
+                    break;
+
+                case State.PreGrab:
+                    PreGrabUpdate();
+                    break;
+                case State.Buffered:
+                    UngrabbedUpdate();
+                    BufferedUpdate();
+                    break;
+
+                case State.Primed:
+                    UngrabbedUpdate();
+                    PrimedUpdate();
+                    break;
+                case State.Grabbed:
+                    GrabbedUpdate();
+                    break;
+                case State.PostDashLeniency:
+                    UngrabbedUpdate();
+                    PostDashLeniencyUpdate();
+                    break;
+            }
+
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
             HandleDoors();
-            
-            //player handling//////////
-            Player player = Scene.Tracker.GetEntity<Player>();
-
-            //buffer grab)
-            if (bufferGrab && player!= null)
-            {
-                Collidable = true;
-                Collider = Hold?.PickupCollider;
-                grabOnDashEnd = CollideCheck<Player>() && player.Holding != null;
-                Collider = tempHolder;
-            }
-            //post jump grab code
-            if (leniencyGrabTimer > 0)
-            {
-                leniencyGrabTimer -= Engine.DeltaTime;
-                SMWKey currentHolder = null;
-                foreach (SMWKey smwKey in Scene.Tracker.GetEntities<SMWKey>())
-                {
-                    if (smwKey.Hold.IsHeld)
-                    {
-                        currentHolder = smwKey;
-                        break;
-                    }
-                }
-                if (currentHolder == null)
-                {
-                    if (Input.GrabCheck && player != null && player.Holding == null)
-                    {
-                        Position = player.Position;
-                        keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-                        Hold.Pickup(player);
-                        foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
-                        {
-                            key.leniencyGrabTimer = 0;
-                            key.bufferGrab = false;
-
-                        }
-                    }
-                }
-            }
-            //keysolid handling
-            keySolid.Collidable = !Hold.IsHeld || Hold.Holder.Top > keySolid.Bottom;
-
-            //teleport catchup code code
-            if ((Position - previousPosition).Length() > Speed.Length() * 3 && Speed.Length() != 0 && !Hold.IsHeld)
-            {
-                keySolid.Position = Position + JUMPTHROUGH_OFFSET;
-            }
-            else
-            {
-
-                float f1 = Engine.DeltaTime * (Calc.Clamp(Hold.IsHeld ? player.Speed.Length() : Speed.Length(), 10000, float.MaxValue));
-                var approach = this.ExactPosition + JUMPTHROUGH_OFFSET;
-                if (Hold.IsHeld && player != null)
-                {
-                    approach = player.TopCenter + player.ExactPosition - player.Position + JUMPTHROUGH_OFFSET - new Vector2(0, 2);
-                }
-                keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), LiftSpeed.SafeNormalize() * 100);
-            }
-
-
-
-
-            //glider code
-
-            bool temp = keySolid.Collidable;
-            keySolid.Collidable = false;
-
-            //movement code
-            if (!destroyed)
-            {
-                //barrier collide code
-                foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
-                {
-                    barrier.Collidable = true;
-                    bool collided = CollideCheck(barrier);
-                    barrier.Collidable = false;
-                    if (collided)
-                    {
-
-                        Add(new Coroutine(DestroyKey()));
-                        if (Hold.IsHeld)
-                        {
-                            Vector2 speed2 = Hold.Holder.Speed;
-                            Hold.Holder.Drop();
-                            Speed = speed2 * 0.333f;
-                            Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
-                        }
-                        return;
-                    }
-                }
-                if (Hold.IsHeld)
-                {
-                    prevLiftSpeed = Vector2.Zero;
-                }
-                else
-                {
-                    if (OnGround())
-                    {
-                        float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
-                        Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
-                        Vector2 liftSpeed = base.LiftSpeed;
-                        if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
-                        {
-                            Speed = prevLiftSpeed;
-                            prevLiftSpeed = Vector2.Zero;
-                            Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
-                            if (Speed.X != 0f && Speed.Y == 0f)
-                            {
-                                Speed.Y = -60f;
-                            }
-                            if (Speed.Y < 0f)
-                            {
-                                noGravityTimer = 0.15f;
-                            }
-                        }
-                        else
-                        {
-                            prevLiftSpeed = liftSpeed;
-                            if (liftSpeed.Y < 0f && Speed.Y < 0f)
-                            {
-                                Speed.Y = 0f;
-                            }
-                        }
-                    }
-                    else if (Hold.ShouldHaveGravity)
-                    {
-                        float num2 = 300F;
-                        if (Speed.Y >= -90F)
-                        {
-                            num2 *= 0.5f;
-                        }
-                        float num3 = (Speed.Y < 0f) ? 80F : 80f;
-                        Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
-                        if (noGravityTimer > 0f)
-                        {
-                            noGravityTimer -= Engine.DeltaTime;
-                        }
-                        else if (Level.Wind.Y < 0f)
-                        {
-                            Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
-                        }
-                        else
-                        {
-                            Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
-                        }
-                    }
-                    MoveH(Speed.X * Engine.DeltaTime, onCollideH);
-                    MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-                    if (tempCollidableState)
-                    {
-                        if (base.Left < (float)Level.Bounds.Left)
-                        {
-                            base.Left = Level.Bounds.Left;
-                            OnCollideH(new CollisionData
-                            {
-                                Direction = -Vector2.UnitX
-                            });
-                        }
-                        else if (base.Right > (float)Level.Bounds.Right)
-                        {
-                            base.Right = Level.Bounds.Right;
-                            OnCollideH(new CollisionData
-                            {
-                                Direction = Vector2.UnitX
-                            });
-                        }
-                        else if (base.Top > (float)(Level.Bounds.Bottom + 16))
-                        {
-                            RemoveSelf();
-                            return;
-                        }
-                    }
-
-                    Hold.CheckAgainstColliders();
-
-                }
-                Vector2 one = Vector2.One;
-                if (!Hold.IsHeld)
-                {
-                }
-                else if (Hold.Holder.Speed.Y > 20f || Level.Wind.Y < 0f)
-                {
-                    if (Input.GliderMoveY.Value > 0)
-                    {
-                        one.X = 0.7f;
-                        one.Y = 1.4f;
-                    }
-                    else if (Input.GliderMoveY.Value < 0)
-                    {
-                        one.X = 1.2f;
-                        one.Y = 0.8f;
-                    }
-                    Input.Rumble(RumbleStrength.Climb, RumbleLength.Short);
-                }
-            }
-
-            keySolid.Collidable = temp;
             Collidable = tempCollidableState;
+            //keeping here in case this is still a thing
+            /*if (player != null)
+            {
+                //are we actually still held? key has a habit of detatching under weird circumstances
+                if (Hold.IsHeld && player.Holding != Hold) Hold.Release(new Vector2(0));
+            }
+
+            */
+            //universal checks and rules here
+
+            if (state != State.Despawn) foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
+            {
+                barrier.Collidable = true;
+                bool collided = CollideCheck(barrier);
+                barrier.Collidable = false;
+                if (collided)
+                {
+                    SetState(State.Despawn);
+                    break;
+                }
+            }
+
             previousPosition = Position;
         }
 
-        private void StartDestroyKey()
+        private void PostDashLeniencyUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>();
+            leniencyGrabTimer -= Engine.DeltaTime;
+            SMWKey currentHolder = null;
+            foreach (SMWKey smwKey in Scene.Tracker.GetEntities<SMWKey>())
+            {
+                if (smwKey.Hold.IsHeld)
+                {
+                    currentHolder = smwKey;
+                    break;
+                }
+            }
+            if (currentHolder == null)
+            {
+                if (Input.GrabCheck && player != null && player.Holding == null)
+                {
+                    Pickup(player);
+                    return;
+                }
+            }
+            if (leniencyGrabTimer <= 0)
+            {
+                SetState(State.Ungrabbed);
+            }
+        }
+
+        private void GrabbedUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>();
+            prevLiftSpeed = Vector2.Zero;
+
+            float f1 = Engine.DeltaTime * Calc.Clamp(player != null ? player.Speed.Length() : Speed.Length(), 1000, float.MaxValue);
+            var approach = this.Position + JUMPTHROUGH_OFFSET;
+            if (player != null)
+            {
+                approach = player.TopCenter + JUMPTHROUGH_OFFSET - new Vector2(0, 2);
+            }
+            if (Hold.Holder == null || (player != null && player.Holding != Hold))
+            {
+                SetState(State.Ungrabbed);
+            }
+            keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), new Vector2(0));
+
+        }
+
+        private void PrimedUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>();
+        }
+
+        private void BufferedUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>(); 
+            bool tempCollidableState = Collidable;
+
+            Collider tempHolder = Collider;
+            Collidable = true;
+            Collider = Hold?.PickupCollider;
+            if (CollideCheck<Player>() && player.Holding == null) SetState(State.Primed);
+            Collider = tempHolder; 
+            Collidable = tempCollidableState;
+
+        }
+
+        private void PreGrabUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>();
+            prevLiftSpeed = Vector2.Zero;
+
+            float f1 = Engine.DeltaTime * Calc.Clamp(player != null ? player.Speed.Length() : Speed.Length(), 1000, float.MaxValue);
+            var approach = this.Position + JUMPTHROUGH_OFFSET;
+            Collidable = false;
+            keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), new Vector2(0));
+            Collidable = true;
+            if (Hold.Holder == null || (player != null && player.Holding != Hold))
+            {
+                SetState(State.Ungrabbed);
+            }
+            else if (Hold.Holder.Top > keySolid.Bottom)
+            {
+                SetState(State.Grabbed);
+            }
+        }
+
+        private void DespawnUpdate()
         {
         }
 
+        private void UngrabbedUpdate()
+        {
+            Player player = Scene.Tracker.GetEntity<Player>();
+
+            bool tempCollidableState = Collidable; //key should be considered 
+            Collidable = true;
+
+            //keysolid move code
+            float f1 = Engine.DeltaTime * Calc.Clamp(Speed.Length(), 10000, float.MaxValue);
+            var approach = this.ExactPosition + JUMPTHROUGH_OFFSET;
+            keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), LiftSpeed.SafeNormalize() * 100);
+
+            //teleport catchup code code
+            if ((Position - previousPosition).Length() > Speed.Length() * 3 && Speed.Length() != 0)
+            {
+                keySolid.Position = Position + JUMPTHROUGH_OFFSET;
+            }
+
+
+            //barrier collide code
+
+            if (false)
+            {
+            }
+            else
+            {
+                if (OnGround())
+                {
+                    float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
+                    Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
+                    Vector2 liftSpeed = base.LiftSpeed;
+                    if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
+                    {
+                        Speed = prevLiftSpeed;
+                        prevLiftSpeed = Vector2.Zero;
+                        Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
+                        if (Speed.X != 0f && Speed.Y == 0f)
+                        {
+                            Speed.Y = -60f;
+                        }
+                        if (Speed.Y < 0f)
+                        {
+                            noGravityTimer = 0.15f;
+                        }
+                    }
+                    else
+                    {
+                        prevLiftSpeed = liftSpeed;
+                        if (liftSpeed.Y < 0f && Speed.Y < 0f)
+                        {
+                            Speed.Y = 0f;
+                        }
+                    }
+                }
+                else if (Hold.ShouldHaveGravity)
+                {
+                    float num2 = 300F;
+                    if (Speed.Y >= -90F)
+                    {
+                        num2 *= 0.5f;
+                    }
+                    float num3 = (Speed.Y < 0f) ? 80F : 80f;
+                    Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
+                    if (noGravityTimer > 0f)
+                    {
+                        noGravityTimer -= Engine.DeltaTime;
+                    }
+                    else if (Level.Wind.Y < 0f)
+                    {
+                        Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
+                    }
+                    else
+                    {
+                        Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
+                    }
+                }
+                MoveH(Speed.X * Engine.DeltaTime, onCollideH);
+                MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
+
+                if (base.Top > (float)(Level.Bounds.Bottom + 16))
+                {
+                    RemoveSelf();
+                    return;
+                }
+
+                Hold.CheckAgainstColliders();
+
+            }
+            Collidable = tempCollidableState;
+        }
+
+        private void SetState(State toSet)
+        {
+            if (toSet == state) return;
+            if (state == State.Despawn) return;
+            //state setup rules
+            //univeral rules
+            leniencyGrabTimer = 0;
+
+            //case by case rules
+            switch (toSet)
+            {
+                case State.Ungrabbed:
+                    keySolid.Collidable = true;
+                    Hold.Holder = null;
+                    break;
+
+                case State.Despawn:
+                    keySolid.Collidable = true;
+                    Add(new Coroutine(DestroyKey(), true));
+                    if (Hold.IsHeld)
+                    {
+                        Vector2 speed2 = Hold.Holder.Speed;
+                        Hold.Holder.Drop();
+                        Speed = speed2 * 0.333f;
+                        Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+                    }
+                    break;
+
+                case State.PreGrab:
+
+                    foreach (SMWKey key in Scene.Tracker.GetEntities<SMWKey>())
+                    {
+                        key.leniencyGrabTimer = 0;
+                        if (key != this && key.state != State.Despawn)
+                        {
+                            key.SetState(State.Ungrabbed);
+                        }
+                    }
+                    if (Hold?.Holder?.Top > keySolid.Bottom)
+                    {
+                        SetState(State.Grabbed);
+                    } else
+                    {
+                        keySolid.Collidable = false;
+                    }
+                    break;
+
+                case State.Buffered:
+                    keySolid.Collidable = true;
+                    break;
+
+                case State.Primed:
+                    keySolid.Collidable = true;
+                    break;
+
+                case State.Grabbed:
+                    keySolid.Collidable = true;
+                    break;
+                case State.PostDashLeniency:
+                    keySolid.Collidable = true;
+                    leniencyGrabTimer = Engine.DeltaTime * 6;
+                    break;
+            }
+            state = toSet;
+        }
+
+
+
+
         private IEnumerator DestroyKey()
         {
-            destroyed = true;
             Collidable = false;
             sprite.Play("destroyed");
             Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
@@ -373,31 +469,77 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public static void Load()
         {
             On.Celeste.Player.DashEnd += Player_DashEnd;
+            On.Celeste.Player.RedDashEnd += Player_RedDashEnd;
             On.Celeste.Holdable.Pickup += Holdable_Pickup;
-            On.Celeste.Level.NextLevel += Level_NextLevel;
         }
 
-        private static void Level_NextLevel(On.Celeste.Level.orig_NextLevel orig, Level self, Vector2 at, Vector2 dir)
+        private static void Player_RedDashEnd(On.Celeste.Player.orig_RedDashEnd orig, Player self)
         {
 
-            foreach (SMWKey key in self.Tracker.GetEntities<SMWKey>())
-            {
-                if (!key.Hold.IsHeld)
-                {
-                    key.Collidable = false;
-                    key.keySolid.Collidable = false;
-                }
-            }
-            orig.Invoke(self, at, dir);
+            orig.Invoke(self);
+            OnDashEnd(self);
+
+
         }
 
+        private static void OnDashEnd(Player self)
+        {
+            SMWKey grabbed = null;
+            //check key already held
+            foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
+            {
+                if (smwKey.Hold.IsHeld)
+                {
+                    grabbed = smwKey;
+                    break;
+                }
+            }
+            //check if another key can be picked up
+            if (grabbed == null && Input.GrabCheck)
+                foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
+                {
+                    if (key.state == State.Primed)
+                    {
+                        key.Pickup(self);
+                        grabbed = key;
+                        break;
+                    }
+                }
+            //reset key states, if a key was grabbed, reset others to ungrabbed. if a key was not grabbed, make buffered keys post dash keys
+            if (grabbed == null)
+            {
+                foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
+                {
+                        if (key.state == State.Primed)
+                        {
+                            key.SetState(State.PostDashLeniency);
+                        }
+                        else
+                        {
+                            key.SetState(State.Ungrabbed);
+
+                        }
+                }
+            }
+            else
+            {
+                self.Scene.CollideDo<SMWKey>(new Rectangle((int)self.Left, (int)self.Top, (int)self.Width, (int)self.Height), (smwkey) =>
+                {
+                    if (smwkey != grabbed)
+                    {
+                        smwkey.SetState(State.Ungrabbed);
+                    }
+
+                });
+            }
+        }
 
 
         public static void Unload()
         {
             On.Celeste.Player.DashEnd -= Player_DashEnd;
+            On.Celeste.Player.RedDashEnd -= Player_RedDashEnd;
             On.Celeste.Holdable.Pickup -= Holdable_Pickup;
-            On.Celeste.Level.NextLevel -= Level_NextLevel;
         }
 
         private static bool Holdable_Pickup(On.Celeste.Holdable.orig_Pickup orig, Holdable self, Player player)
@@ -406,12 +548,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (self.Entity is SMWKey key)
             {
                 bool grabbed = false;
-
+                
                 foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
                 {
                     if (grabbed = (smwKey.Hold.IsHeld && self.Entity != smwKey)) break;
                 }
-                if (grabbed || key.bufferGrab)
+                if (grabbed || key.state == State.Buffered || key.state == State.Primed)
                 {
                     return false;
                 }
@@ -427,44 +569,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private static void Player_DashEnd(On.Celeste.Player.orig_DashEnd orig, Player self)
         {
             orig.Invoke(self);
-            bool grabbed = false;
-            
-            foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
-            {
-                if (grabbed = smwKey.Hold.IsHeld) break;
-            }
-            foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
-            {
-                key.bufferGrab = false;
-                key.Hold.Visible = true;
-                key.Collidable = true;
-                if (key.grabOnDashEnd && !grabbed)
-                {
-                    key.Pickup(self);
-                    grabbed = true;
-
-                } else
-                {
-
-                    key.grabOnDashEnd = false;
-                }
-            }
-            //add leniency to keys colliding
-            if (!grabbed)
-            {
-                self.Scene.CollideDo<SMWKey>(new Rectangle((int)self.Left, (int)self.Top, (int)self.Width, (int)self.Height), (smwkey) => 
-                {
-                    smwkey.leniencyGrabTimer = Engine.DeltaTime * 6;
-                });
-            }
+            OnDashEnd(self);
         }
 
         private void Pickup(Player player)
         {
-
-            leniencyGrabTimer = 0;
-            grabOnDashEnd = false;
-            Position = player.Position + player.Speed.SafeNormalize();
+            keySolid.Collidable = false;
+            Position = keySolid.Position = player.Center;
+            previousPosition = Position;
+            SetState(State.PreGrab);
             Hold.Pickup(player);
         }
 
@@ -481,7 +594,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             if (Hold.IsHeld && hitSeeker == null)
             {
-                swatTimer = 0.1f;
                 hitSeeker = hc;
                 Hold.Holder.Swat(dir);
             }
@@ -502,14 +614,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if(keySolid != null) scene.Remove(keySolid);
         }
 
-        public void HitSeeker(Seeker seeker)
-        {
-            if (!Hold.IsHeld)
-            {
-                Speed = (base.Center - seeker.Center).SafeNormalize(120f);
-            }
-            Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_side", Position);
-        }
 
         public void HitSpinner(Entity spinner)
         {
@@ -647,7 +751,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             Speed = Vector2.Zero;
             AddTag(Tags.Persistent);
-
+            SetState(State.PreGrab);
             this.keySolid.AddTag(Tags.Persistent);
         }
 
@@ -658,6 +762,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 force.Y = -0.4f;
             }
+            SetState(State.Ungrabbed);
             Speed = new Vector2(force.X * 120F, force.Y * 120f);
             if (Speed != Vector2.Zero)
             {
