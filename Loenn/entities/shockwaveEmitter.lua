@@ -13,14 +13,16 @@ shockwaveEmitter.placements = {
             expand = "30",
             breakoutSpeeds = "30",
             flag = "shockwaveStarter",
-            cycle = false
+            cycle = false,
+            absoluteMaxGlobs = "4000",
+            renderPointsOnMesh = "2000"
         }
 
     }
 }
 
 function shockwaveEmitter.texture(room, entity)
-    return "objects/ss2024/ellipticalShockwave/loennspriteplaceholder"
+    return "objects/ss2024/ellipticalShockwave/hydro_ancientgenerator00"
 end
 
 return nil

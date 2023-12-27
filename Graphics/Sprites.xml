@@ -159,4 +159,11 @@
 		<Loop id="idle" delay=".3" frames="0-3" />
 		<Anim id="shoot" delay=".15" frames="4-7" goto="idle" />
 	</corkr900SS24GunnerDudeDarkBack>
+
+
+	<shockwaveEmitter path="objects/ss2024/ellipticalShockwave/" start="idle">
+		<Center/>
+		<Loop id="idle" path="hydro_ancientgenerator" delay="0.1" />
+		<Anim id="explode" path="hydro_ancientgenerator_explosion" delay="0.1"/>
+	</shockwaveEmitter>
 </Sprites>
