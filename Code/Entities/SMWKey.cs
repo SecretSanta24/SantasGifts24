@@ -130,6 +130,35 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collider = tempHolder;
         }
 
+        public void HandleBarriers()
+        {
+            bool tempCollidableState = Collidable;
+            Collidable = true;
+
+            Collider tempHolder = Collider;
+            Collider = doorCollider;
+
+            foreach(TreeKeyBarrier tkb in Level.Tracker.GetEntities<TreeKeyBarrier>())
+            {
+                tkb.Collidable = true;
+                if (tkb != null && CollideCheck(tkb))
+                {
+                    tkb.Collidable = false;
+                    tkb.HandleKey();
+
+                    Scene.Remove(this);
+                    Collider = tempHolder;
+
+                    Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
+                    return;
+                }
+                tkb.Collidable = false;
+            }
+
+            Collidable = tempCollidableState;
+            Collider = tempHolder;
+        }
+
         public override void Update()
         {
 
@@ -171,6 +200,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collidable = true;
             Collider tempHolder = Collider;
             HandleDoors();
+            HandleBarriers();
             Collidable = tempCollidableState;
             //keeping here in case this is still a thing
             /*if (player != null)

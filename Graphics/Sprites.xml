@@ -166,4 +166,23 @@
 		<Loop id="idle" path="hydro_ancientgenerator" delay="0.1" />
 		<Anim id="explode" path="hydro_ancientgenerator_explosion" delay="0.1"/>
 	</shockwaveEmitter>
+
+	<mysteriousTree path="objects/ss2024/tree/" start="idle">
+		<Loop id="idle" path="idle" />
+	</mysteriousTree>
+	<tree_beam path="objects/ss2024/tree/beam/" start="charge">
+		<Justify x="0" y=".5"/>
+		<Loop id="charge" path="beam" delay="0.06" frames="0-13"/>
+		<Anim id="lock" path="beam" delay="0.03" frames="14-25"/>
+		<Anim id="shoot" path="beam" delay="0.04" frames="26-36"/>
+	</tree_beam>
+	<tree_beam_start path="objects/ss2024/tree/beam/" start="shoot">
+		<Justify x="0" y=".5"/>
+		<Anim id="shoot" path="beamStart" delay="0.06"/>
+	</tree_beam_start>
+	<tree_projectile path="objects/ss2024/tree/shot/" start="charge">
+		<Justify x=".5" y=".5"/>
+		<Anim id="charge" path="projectile" delay="0.06" frames="0-3" goto="loop"/>
+		<Loop id="loop" path="projectile" delay="0.06" frames="4-12"/>
+	</tree_projectile>
 </Sprites>
