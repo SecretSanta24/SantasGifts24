@@ -198,6 +198,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool killPlayer;
         private int outerRingTriangleCounter;
         private int innerRingTriangleCounter;
+        private Vector2 previousPlayerPos;
 
         public int NumVerteces
         {
@@ -227,7 +228,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Awake(Scene scene)
         {
-            base.Awake(scene);
+            base.Awake(scene); 
+            
+            Player player = Scene.Tracker.GetEntity<Player>();
+
+            previousPlayerPos = player.Position;
         }
         /// <summary>
         /// 
@@ -336,27 +341,30 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             if (player.Dead)
             {
+                previousPlayerPos = player.Position;
                 return;
             }
             if (killPlayer)
             {
                 player.Die(new Vector2(1, 0));
+                previousPlayerPos = player.Position;
             }
             UpdateShockwave();
             if (CheckPlayerMovingInShockwaveDirection(player))
             {
+                previousPlayerPos = player.Position;
                 return;
             }
 
 
             Vector2 playerActualPosition = player.Position;
             Collider playerActualHitbox = player.Collider;
-            float increment = (player.Speed.Length() * Engine.DeltaTime);
+            float increment = (float)((player.Position - previousPlayerPos).Length() == 0 ? 1 : Math.Max(0.001, 1 / (player.Position - previousPlayerPos).Length()));
             if (player.Speed != Vector2.Zero)
             {
-                for (float i = 0; i <= increment; i+=0.25F)
+                for (float i = 0; i <= 1; i+= increment)
                 {
-                    player.Position = player.Position + i * player.Speed.SafeNormalize();
+                    player.Position = player.Position * (1 - i)+ i * previousPlayerPos;
                     if (CheckPlayerPos(player) && !SaveData.Instance.Assists.Invincible)
                     {
                         killPlayer = true;
@@ -375,6 +383,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             player.Collider = playerActualHitbox;
             player.Position = playerActualPosition;
+            previousPlayerPos = player.Position;
         }
 
 
