@@ -1,6 +1,7 @@
 ﻿using Celeste.Mod.Backdrops;
 using Celeste.Mod.SantasGifts24.Code.Entities;
 using Monocle;
+using System.Runtime.InteropServices.Expando;
 
 namespace Celeste.Mod.SantasGifts24.Code.Effects
 {
@@ -19,7 +20,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Effects
             foreach (EllipticalShockwave shockwave in scene.Tracker.GetEntities<EllipticalShockwave>())
             {
                 shockwave.RenderWave();
+                //this makes the debug hitbox more visible in debug
+                if (Engine.Commands.Open)
+                {
+                    shockwave.DebugRenderWave(((Level)scene).Camera);
+                }
             }
+            
         }
     }
 }

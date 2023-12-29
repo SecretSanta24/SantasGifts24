@@ -229,7 +229,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Awake(scene);
         }
-
+        /// <summary>
+        /// 
+        /// We use an alternate render method because we need to be on top of everything render wise, but we're using GFX.DrawVertices,
+        /// which will execute instantly. as such we use a FG Backdrop to execute these calls after the main gameworld has been drawn
+        /// </summary>
         public void RenderWave()
         {
             if (innerShockwaveVertecies != null)
@@ -239,6 +243,32 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
+        /// <summary>
+        /// 
+        /// We use an alternate debug render method because we need to be on top of everything render wise, but we're using GFX.DrawVertices,
+        /// which will execute instantly. as such we use a FG Backdrop to execute these calls after the main gameworld has been drawn
+        /// </summary>
+        public void DebugRenderWave(Camera camera)
+        {
+
+            Player player = Scene.Tracker.GetEntity<Player>();
+            if (player == null)
+            {
+                return;
+            }
+            if (player.Dead)
+            {
+                return;
+            }
+            for (int i = 0; i < numPoints; i++)
+            {
+
+                Draw.Line(ellipsePoints[i] * expand + Position - camera.Position, ellipsePoints[(i + 1) % numPoints] * expand + Position - camera.Position, Color.Red);
+                Draw.Line(ellipsePoints[i] * (expand - thickness) + Position - camera.Position, ellipsePoints[(i + 1) % numPoints] * (expand - thickness) + Position - camera.Position, Color.Red);
+
+            }
+
+        }
         public override void DebugRender(Camera camera)
         {
             base.DebugRender(camera);
@@ -252,6 +282,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            for (int i = 0; i < numPoints; i++)
+            {
+
+                Draw.Line(ellipsePoints[i] * expand + Position, ellipsePoints[(i + 1) % numPoints] * expand + Position, Color.Red);
+                Draw.Line(ellipsePoints[i] * (expand - thickness) + Position, ellipsePoints[(i + 1) % numPoints] * (expand - thickness) + Position, Color.Red);
+
+            }
+            /** I said show me the REAL Debug Hitbox (this hitbox is used for warped transformation calculations
             Vector2 playerPos = player.TopLeft;
             Vector2 playerSize = new Vector2(player.Width, player.Height);
 
@@ -284,6 +322,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveActualPos;
             Collidable = false;
             Collider = null;
+            */
 
         }
 
@@ -318,7 +357,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 for (float i = 0; i <= increment; i+=0.25F)
                 {
                     player.Position = player.Position + i * player.Speed.SafeNormalize();
-                    if (CheckPlayerPos(player))
+                    if (CheckPlayerPos(player) && !SaveData.Instance.Assists.Invincible)
                     {
                         killPlayer = true;
                         player.Position = playerActualPosition;
