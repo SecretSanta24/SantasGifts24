@@ -185,4 +185,11 @@
 		<Anim id="charge" path="projectile" delay="0.06" frames="0-3" goto="loop"/>
 		<Loop id="loop" path="projectile" delay="0.06" frames="4-12"/>
 	</tree_projectile>
+
+	<smwDoorLock path="objects/ss2024/smwDoor/" start="idle">
+		<Center/>
+		<Loop id="idle" path="pomf" delay="0.1" frames="0"/>
+		<Anim id="open" path="pomf" delay="0.1" frames="1-5" goto="postopen"/>
+		<Anim id="postopen" path="pomf" delay="0.1" frames="6-12"/>
+	</smwDoorLock>
 </Sprites>

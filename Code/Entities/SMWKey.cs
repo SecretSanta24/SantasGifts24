@@ -113,18 +113,23 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             List<Entity> doors = CollideAll<SMWDoor>();
             if (doors.Count > 0)
             {
+                bool opennedDoor = Collidable;
                 foreach (SMWDoor door in doors)
                 {
                     if (door.despawning) continue;
-                    door.despawning = true;
-                    Scene.Remove(door);
+                    door.Open();
+                    opennedDoor = true;
                     break;
                 }
-                Scene.Remove(this);
-                Collider = tempHolder;
+                if(opennedDoor)
+                {
 
-                Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
-                return;
+                    Scene.Remove(this);
+                    Collider = tempHolder;
+
+                    Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
+                    return;
+                }
             }
             Collidable = tempCollidableState;
             Collider = tempHolder;
