@@ -23,6 +23,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Sprite doorLock;
         public bool despawning;
         private bool renderChain = true;
+        private Sprite[] chainSprites;
 
         public static Entity LoadVertical(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Vertical);
         public static Entity LoadHorizontal(Level level, LevelData levelData, Vector2 offset, EntityData data) => new SMWDoor(data, offset, Orientations.Horizontal);
@@ -42,10 +43,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 false)
         {
             orientation = ori;
-            doorTextures = new MTexture[] {
-                GFX.Game["objects/ss2024/smwDoor/chainTexture1" + (ori == Orientations.Horizontal ? "h" : "")],
-                GFX.Game["objects/ss2024/smwDoor/chainTexture2" + (ori == Orientations.Horizontal ? "h" : "")]
-            };
+            chainSprites = new Sprite[(int)Math.Max(Width / 8, Height / 8)];
+            string string0 = ori == Orientations.Horizontal ? "smwDoorChainHBot" : "smwDoorChainBot";
+            string string1 = ori == Orientations.Horizontal ? "smwDoorChainHTop" : "smwDoorChainTop";
+            for (int i = 0; i < chainSprites.Length; i++) 
+            {
+                Add(chainSprites[i] = GFX.SpriteBank.Create((i % 2 == 0) ? string1 : string0));
+                chainSprites[i].Position = new Vector2(orientation == Orientations.Horizontal ? i * 8 + 4: Width / 2, orientation == Orientations.Vertical ? i * 8 + 4 : Height / 2);
+            }
             Add(doorLock = GFX.SpriteBank.Create("smwDoorLock"));
             doorLock.CenterOrigin();
             doorLock.Position = new Vector2(Width / 2, Height / 2);
@@ -70,6 +75,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 sm.Entity.Collidable = false;
             }
+            int i = 0;
+            foreach (Sprite sprite in chainSprites)
+            {
+                Remove(sprite);
+                SceneAs<Level>().ParticlesBG.Emit(FinalBoss.P_Burst, 3, Position + sprite.Position, new Vector2(4, 4), Calc.HexToColor("ebaa77"),
+                    (float)(orientation == Orientations.Horizontal ? Math.PI / 2 + i++ % 2 * Math.PI : i++ % 2 * Math.PI));
+            }
             Collidable = false;
             yield return doorLock.CurrentAnimationTotalFrames * doorLock.currentAnimation.Delay;
 
@@ -77,7 +89,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 Scene.Remove(sm.Entity);
             }
-            renderChain = false;
             yield return doorLock.CurrentAnimationTotalFrames * doorLock.currentAnimation.Delay;
             RemoveSelf();
             yield break;
@@ -89,13 +100,5 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         }
 
-        public override void Render()
-        {
-            if (renderChain) for (int i = 0; i < (int)(orientation == Orientations.Vertical ? Height : Width) / 8; i++)
-            {
-                doorTextures[i % 2].Draw(Position + new Vector2(orientation == Orientations.Horizontal ? i * 8 : 0, orientation == Orientations.Vertical ? i * 8 : 0));
-            }
-            base.Render();
-        }
     }
 }
