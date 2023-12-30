@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using System;
@@ -12,6 +12,40 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     [Tracked]
     public class EllipticalShockwave : Entity
     {
+
+        private class Glob
+        {
+            public int positionOnLine;
+            public float size;
+            public float timer; //[0,timerMax)
+            public float expand;
+            public float timerMax;//[0.1, 1]
+
+            public Glob(Random random, float expand, int numPoints)
+            {
+                positionOnLine = random.Next(0, numPoints);
+                size = 1 + random.NextFloat() * random.NextFloat() * 12;
+                timerMax = 0.1F + random.NextFloat() * 0.9f;
+                this.expand = expand;
+            }
+
+            public static float Lifespan = 1.5F;
+
+            public float Size()
+            {
+                return size * timer;
+            }
+
+            internal void Reset(Random random, float expand, int numPoints)
+            {
+                positionOnLine = random.Next(0, numPoints);
+                size = 1 + random.NextFloat() * random.NextFloat() * 12;
+                timerMax = 0.1F + random.NextFloat() * 0.9f;
+                timer = 0;
+                this.expand = expand;
+            }
+        }
+
         private float b;
         private float a;
 
@@ -23,15 +57,68 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private MTexture shockwave;
         private Vector2[] ellipsePoints;
-        private VertexPositionColor[] verteces;
+        private VertexPositionColor[] innerShockwaveVertecies;
+        private VertexPositionColor[] outerVerts;
+
+        private List<Glob> globsInner = new();
+        private List<Glob > globsOuter = new();
+        private int absoluteMaxGlobs = 4000;
+        public int currentMaxGlobs { get { return (int) Math.Min(absoluteMaxGlobs, (200 + expand * expand / 4)); } }
+        private Random random = new Random();
 
         private void UpdateShockwave()
         {
             expand += expandRate * Engine.DeltaTime;
-            if (verteces == null) verteces = new VertexPositionColor[NumVerteces];
+            if (innerShockwaveVertecies == null) innerShockwaveVertecies = new VertexPositionColor[NumVerteces];
+            float transparency = 0.7F;
+            Color innerShockwaveColor = new Color(0, 1, 1F, 0.5f); //half transparent cyan
+            Color outerShockwaveColor = new Color(1, 1, 1F, 0.5f); //half transparent white
+            if (outerVerts == null)
+            {
+                outerVerts = new VertexPositionColor[NumVerteces];
+                for (int i = 0; i < currentMaxGlobs; i++)
+                {
+                    globsOuter.Add(new Glob(random, expand, numPoints));
+                    globsInner.Add(new Glob(random, expand, numPoints));
+                }
+                
+            }
+            if (globsOuter.Count < currentMaxGlobs)
+            {
+                for (int i = 0; i < currentMaxGlobs - globsOuter.Count; i++)
+                {
+                    globsOuter.Add(new Glob(random, expand, numPoints));
+                    globsInner.Add(new Glob(random, expand, numPoints));
+                }
+
+            }
+
+            float[] globularAdditionsInner = new float[ellipsePoints.Length];
+            foreach (var glob in globsInner)
+            {
+                if (glob.timer >= glob.timerMax)
+                {
+                    if (random.NextFloat() < 0.1F)
+                    {
+                        float innerRingSize = Math.Max(expand - thickness - thickness * 0.15F, 0);
+                    }
+                    glob.Reset(random, expand, numPoints);
+
+                }
+                glob.timer += Engine.DeltaTime / Glob.Lifespan;
+                int points = (int)(8 );
+                for (int i = 0; i < points; i++)
+                {
+                    globularAdditionsInner[(i + glob.positionOnLine) % ellipsePoints.Length] += (float) (glob.Size() * Math.Cos(Math.PI * (i - points / 2) / points));
+                }
+            }
+            innerRingTriangleCounter = 0;
+            var cameraPosition = SceneAs<Level>().Camera.Position;
             for (int i = 0; i < ellipsePoints.Length; i++)
             {
                 Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
+
+                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
                 Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
                 Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
                 float outerRingSize = expand;
@@ -39,31 +126,87 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 if (i % 2 == 1)
                 {
                     v1 *= outerRingSize;
-                    v2 *= innerRingSize;
+                    v2 *= innerRingSize - (0.3F * globularAdditionsInner[(i + 1) % ellipsePoints.Length]);
                     v3 *= outerRingSize;
                 } 
                 else
                 {
-                    v1 *= innerRingSize;
+                    v1 *= innerRingSize - (0.3F * globularAdditionsInner[(i + 0) % ellipsePoints.Length]);
                     v2 *= outerRingSize;
-                    v3 *= innerRingSize;
+                    v3 *= innerRingSize - (0.3F * globularAdditionsInner[(i + 2) % ellipsePoints.Length]);
                 }
 
-                verteces[3 * i + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
-                verteces[3 * i + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
-                verteces[3 * i + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0F), Color.White * 0.5F);
+                innerShockwaveVertecies[3 * innerRingTriangleCounter + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0F), innerShockwaveColor * transparency);
+                innerShockwaveVertecies[3 * innerRingTriangleCounter + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0F), innerShockwaveColor * transparency);
+                innerShockwaveVertecies[3 * innerRingTriangleCounter + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0F), innerShockwaveColor * transparency);
+                innerRingTriangleCounter++;
             }
-            
+            float[] globularAdditionsOuter = new float[ellipsePoints.Length];
+            //glob management
+
+            foreach (var glob in globsOuter)
+            {
+                if (glob.timer>= glob.timerMax)
+                {
+                    if (random.NextFloat() < 0.1F)
+                    {
+                        float innerRingSize = Math.Max(expand - thickness - thickness * 0.15F, 0);
+                        SceneAs<Level>().ParticlesFG.Emit(Player.P_DashA, Position + innerRingSize * ellipsePoints[glob.positionOnLine] - ellipsePoints[glob.positionOnLine].SafeNormalize() * glob.Size(), Color.White);
+                    }
+                    glob.Reset(random, expand, numPoints);
+                    
+                }
+                glob.timer += Engine.DeltaTime / Glob.Lifespan;
+                int points = (int) (12 );
+                for (int i = 0; i < points; i++)
+                {
+                    globularAdditionsOuter[(i + glob.positionOnLine) % ellipsePoints.Length] += (float) (glob.Size() * Math.Cos(Math.PI * (i - points / 2) / points));
+                }
+            }
+
+            //outer ring management
+            outerRingTriangleCounter = 0;
+            for (int i = 0; i < ellipsePoints.Length; i++)
+            {
+                Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
+                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
+                Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
+                Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
+                float outerRingSize = expand;
+                float innerRingSize = Math.Max(expand - thickness - thickness * 0.33F, 0);
+                if (i % 2 == 1)
+                {
+                    v1 *= outerRingSize;
+                    v2 *= (innerRingSize - globularAdditionsOuter[(i + 1) % ellipsePoints.Length]);
+                    v3 *= outerRingSize;
+                }
+                else
+                {
+                    v1 *= (innerRingSize - globularAdditionsOuter[(i + 0) % ellipsePoints.Length]);
+                    v2 *= outerRingSize;
+                    v3 *= (innerRingSize - globularAdditionsOuter[(i + 2) % ellipsePoints.Length]);
+                }
+
+                outerVerts[3 * outerRingTriangleCounter + 0] = new VertexPositionColor(new Vector3(v1 + Position - SceneAs<Level>().Camera.Position, 0F), outerShockwaveColor * transparency);
+                outerVerts[3 * outerRingTriangleCounter + 1] = new VertexPositionColor(new Vector3(v2 + Position - SceneAs<Level>().Camera.Position, 0F), outerShockwaveColor * transparency);
+                outerVerts[3 * outerRingTriangleCounter + 2] = new VertexPositionColor(new Vector3(v3 + Position - SceneAs<Level>().Camera.Position, 0F), outerShockwaveColor * transparency);
+                outerRingTriangleCounter++;
+            }
+
         }
-        private int numPoints = 1000;
+        public int numPoints = 3000;
         private bool killPlayer;
+        private int outerRingTriangleCounter;
+        private int innerRingTriangleCounter;
+        private Vector2 previousPlayerPos;
 
         public int NumVerteces
         {
             get { return numPoints * 3 ; }
         }
 
-        public EllipticalShockwave(Vector2 Position, float a, float b, float initialSize, float expandRate, float shockwaveThickness, float breakoutSpeed) : base(Position) {
+
+        public EllipticalShockwave(Vector2 Position, float a, float b, float initialSize, float expandRate, float shockwaveThickness, float breakoutSpeed, int absoluteMaxGlobs, int renderPointsOnMesh) : base(Position) {
             this.b = b;
             this.a = a;
             this.expand = initialSize;
@@ -71,7 +214,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             this.breakoutSpeed = breakoutSpeed;
             thickness = shockwaveThickness;
             Depth = Depths.Above;
-            
+            this.absoluteMaxGlobs = absoluteMaxGlobs;
+            this.numPoints = renderPointsOnMesh;
             shockwave = GFX.Game["objects/ss2024/ellipticalShockwave/shockwave"];
 
             ellipsePoints = new Vector2[numPoints];
@@ -84,17 +228,52 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         public override void Awake(Scene scene)
         {
-            base.Awake(scene);
-        }
+            base.Awake(scene); 
+            
+            Player player = Scene.Tracker.GetEntity<Player>();
 
+            previousPlayerPos = player.Position;
+        }
+        /// <summary>
+        /// 
+        /// We use an alternate render method because we need to be on top of everything render wise, but we're using GFX.DrawVertices,
+        /// which will execute instantly. as such we use a FG Backdrop to execute these calls after the main gameworld has been drawn
+        /// </summary>
         public void RenderWave()
         {
-            if (verteces != null)
+            if (innerShockwaveVertecies != null)
             {
-                GFX.DrawVertices(Matrix.Identity, verteces, NumVerteces);
+                GFX.DrawVertices(Matrix.Identity, outerVerts, outerRingTriangleCounter * 3);
+                GFX.DrawVertices(Matrix.Identity, innerShockwaveVertecies, innerRingTriangleCounter * 3);
             }
         }
 
+        /// <summary>
+        /// 
+        /// We use an alternate debug render method because we need to be on top of everything render wise, but we're using GFX.DrawVertices,
+        /// which will execute instantly. as such we use a FG Backdrop to execute these calls after the main gameworld has been drawn
+        /// </summary>
+        public void DebugRenderWave(Camera camera)
+        {
+
+            Player player = Scene.Tracker.GetEntity<Player>();
+            if (player == null)
+            {
+                return;
+            }
+            if (player.Dead)
+            {
+                return;
+            }
+            for (int i = 0; i < numPoints; i++)
+            {
+
+                Draw.Line(ellipsePoints[i] * expand + Position - camera.Position, ellipsePoints[(i + 1) % numPoints] * expand + Position - camera.Position, Color.Red);
+                Draw.Line(ellipsePoints[i] * (expand - thickness) + Position - camera.Position, ellipsePoints[(i + 1) % numPoints] * (expand - thickness) + Position - camera.Position, Color.Red);
+
+            }
+
+        }
         public override void DebugRender(Camera camera)
         {
             base.DebugRender(camera);
@@ -108,6 +287,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 return;
             }
+            for (int i = 0; i < numPoints; i++)
+            {
+
+                Draw.Line(ellipsePoints[i] * expand + Position, ellipsePoints[(i + 1) % numPoints] * expand + Position, Color.Red);
+                Draw.Line(ellipsePoints[i] * (expand - thickness) + Position, ellipsePoints[(i + 1) % numPoints] * (expand - thickness) + Position, Color.Red);
+
+            }
+            /** I said show me the REAL Debug Hitbox (this hitbox is used for warped transformation calculations
             Vector2 playerPos = player.TopLeft;
             Vector2 playerSize = new Vector2(player.Width, player.Height);
 
@@ -140,6 +327,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Position = shockwaveActualPos;
             Collidable = false;
             Collider = null;
+            */
 
         }
 
@@ -153,28 +341,31 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
             if (player.Dead)
             {
+                previousPlayerPos = player.Position;
                 return;
             }
             if (killPlayer)
             {
                 player.Die(new Vector2(1, 0));
+                previousPlayerPos = player.Position;
             }
             UpdateShockwave();
             if (CheckPlayerMovingInShockwaveDirection(player))
             {
+                previousPlayerPos = player.Position;
                 return;
             }
 
 
             Vector2 playerActualPosition = player.Position;
             Collider playerActualHitbox = player.Collider;
-            float increment = (player.Speed.Length() * Engine.DeltaTime);
+            float increment = (float)((player.Position - previousPlayerPos).Length() == 0 ? 1 : Math.Max(0.001, 1 / (player.Position - previousPlayerPos).Length()));
             if (player.Speed != Vector2.Zero)
             {
-                for (float i = 0; i <= increment; i+=0.25F)
+                for (float i = 0; i <= 1; i+= increment)
                 {
-                    player.Position = player.Position + i * player.Speed.SafeNormalize();
-                    if (CheckPlayerPos(player))
+                    player.Position = player.Position * (1 - i)+ i * previousPlayerPos;
+                    if (CheckPlayerPos(player) && !SaveData.Instance.Assists.Invincible)
                     {
                         killPlayer = true;
                         player.Position = playerActualPosition;
@@ -192,6 +383,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             player.Collider = playerActualHitbox;
             player.Position = playerActualPosition;
+            previousPlayerPos = player.Position;
         }
 
 
@@ -269,7 +461,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool CheckPlayerMovingInShockwaveDirection(Player play)
         {
             if (play.Position == Position) return false;
-            if (play.Speed.Length() <= breakoutSpeed) return false;
+            if (Math.Max(play.Speed.Length(), play.beforeDashSpeed.Length()) <= breakoutSpeed) return false;
             Vector2 deltaPos = (play.Position - Position);
             deltaPos = new Vector2(deltaPos.X / b, deltaPos.Y / a);
             deltaPos.Normalize();   

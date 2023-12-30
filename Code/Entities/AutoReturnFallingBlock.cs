@@ -192,6 +192,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     StopShaking();
                     break;
                 }
+                StopShaking();
                 float impactTimer = restartDelay;
 
                 Vector2 crashPosition = Position;
