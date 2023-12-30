@@ -35,7 +35,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Depth = 120;
 
             flag = data.Attr("flag", "door_check");
-            roomName = data.Attr("roomName", "");
+            roomName = data.Attr("roomName", "").Trim();
             audio = data.Attr("audio", "event:/paeceful_sibs_chamber/smw_door_opens");
             closed = GFX.Game[data.Attr("closedPath", "objects/ss2024/gloriousPassage/closed")];
             open = GFX.Game[data.Attr("openPath", "objects/ss2024/gloriousPassage/open")];
@@ -123,15 +123,15 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     Vector2 cameraDelta = level.Camera.Position - pos;
                     level.Remove(player);
                     level.UnloadLevel();
-                    if (level.Session.MapData.levelsByName.ContainsKey(roomName.Trim()))
+                    if (level.Session.MapData.levelsByName.ContainsKey(roomName))
                     {
-                        level.Session.Level = roomName.Trim();
+                        level.Session.Level = roomName;
                     } 
                     else
                     {
                         foreach (LevelData d in level.Session.MapData.Levels)
                         {
-                            if (d.Name.Trim() == roomName.Trim()) level.Session.Level = d.Name;
+                            if (d.Name.Trim() == roomName) level.Session.Level = d.Name;
                         }
                     }
                     

@@ -299,7 +299,9 @@ namespace Celeste.Mod.NeutronHelper
 
         public override void Update()
         {
-            base.Update();
+
+            //base.Update(); // fuck you !!!!!!!
+            Components.Update();
 
             if(SantasGiftsModule.GravityHelperImports.GetPlayerGravity?.Invoke() == 1)
             {
