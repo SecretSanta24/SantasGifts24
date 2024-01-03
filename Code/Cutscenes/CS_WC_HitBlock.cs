@@ -157,6 +157,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
             {
                 if (WasSkipped)
                 {
+                    if (level.Session.Audio.Music.Event != "event:/vitellary/wizardeyes_beat")
+                    {
+                        Audio.SetMusic("event:/vitellary/wizardeyes_beat");
+                        Audio.SetMusicParam("fade", 1);
+                        level.Session.Audio.Music.Event = "event:/vitellary/wizardeyes_beat";
+                    }
                     player.X = 4763f;
                     player.Y = 816f;
                     level.Session.SetFlag("06_gp", false);
@@ -165,7 +171,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
                     level.CameraOffset.Y = 64f;
                     level.Camera.Position = player.CameraTarget;
 
-                    if (monos.Count > 1)
+                    if (monos.Count > 2)
                     {
                         monos[0].RemoveSelf();
                     }

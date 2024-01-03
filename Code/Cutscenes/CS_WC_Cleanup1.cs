@@ -18,7 +18,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
         {
             base.Awake(scene);
             var monos = scene.Tracker.GetEntities<Monopticon>();
-            if (monos.Count > 1)
+            if (monos.Count > 2)
             {
                 monos[0].RemoveSelf();
             }

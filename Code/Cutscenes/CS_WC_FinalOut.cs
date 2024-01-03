@@ -67,6 +67,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
                 level.LoadLevel(Player.IntroTypes.None, false);
                 level.Session.SetFlag("end_fade", true);
                 level.Session.SetFlag("cs_fadeout", false);
+                if (WasSkipped)
+                {
+                    level.SnapColorGrade("none");
+                    level.Lighting.Alpha = 1f;
+                }
             }
         }
 
