@@ -71,7 +71,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             sprite.SetOrigin(18, 20);
             sprite.Visible = true;
             Hold = new Holdable(0.1f);
-            if (grabbable) Add(Hold);
+            Add(Hold);
             Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
             Hold.SlowFall = false;
             Hold.SlowRun = true;
@@ -617,12 +617,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void Pickup(Player player)
         {
-            player.holdCannotDuck = true;
-            keySolid.Collidable = false;
-            Position = keySolid.Position = player.Center;
-            previousPosition = Position;
-            SetState(State.PreGrab);
-            Hold.Pickup(player);
+            if (grabbable)
+            {
+                player.holdCannotDuck = true;
+                keySolid.Collidable = false;
+                Position = keySolid.Position = player.Center;
+                previousPosition = Position;
+                SetState(State.PreGrab);
+                Hold.Pickup(player);
+            }
         }
 
         public void ExplodeLaunch(Vector2 from)
