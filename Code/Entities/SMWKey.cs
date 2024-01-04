@@ -45,23 +45,33 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
 
+        //we're don't use the StateMachine describe by MonoGame because a simple state machine is
         private enum State
         {
             Ungrabbed, Despawn, PreGrab, Buffered, Primed, Grabbed, PostDashLeniency
         }
         private State state = State.Ungrabbed;
+        private bool grabbable;
 
         public SMWKey(Vector2 position)
             : base(position)
         {
             previousPosition = position;
+        }
+
+        public SMWKey(EntityData data, Vector2 offset)
+            : this(data.Position + offset)
+        {
+            grabbable = data.Bool("grabbable", true);
+
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
             Add(sprite = GFX.SpriteBank.Create("smwKey"));
             sprite.Play("idle");
             sprite.SetOrigin(18, 20);
             sprite.Visible = true;
-            Add(Hold = new Holdable(0.1f));
+            Hold = new Holdable(0.1f);
+            if (grabbable) Add(Hold);
             Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
             Hold.SlowFall = false;
             Hold.SlowRun = true;
@@ -74,16 +84,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Hold.SpeedGetter = () => Speed;
             onCollideH = OnCollideH;
             onCollideV = OnCollideV;
+
             LiftSpeedGraceTime = 0.1f;
             Add(new VertexLight(base.Collider.Center, Color.White, 1f, 32, 64));
             base.Tag = Tags.TransitionUpdate;
             Add(new MirrorReflection());
             Add(new DashListener(OnDash));
-        }
 
-        public SMWKey(EntityData e, Vector2 offset)
-            : this(e.Position + offset)
-        {
         }
 
         public void OnDash(Vector2 direction)
@@ -406,7 +413,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     return;
                 }
 
-                Hold.CheckAgainstColliders();
+                if (grabbable) Hold.CheckAgainstColliders();
 
             }
             Collidable = tempCollidableState;
@@ -416,6 +423,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             if (toSet == state) return;
             if (state == State.Despawn) return;
+            if (toSet == State.PreGrab && !grabbable) return;
             //state setup rules
             //univeral rules
             leniencyGrabTimer = 0;
@@ -583,7 +591,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (self.Entity is SMWKey key)
             {
                 bool grabbed = false;
-                
+                if (!key.grabbable) return false;
                 foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
                 {
                     if (grabbed = (smwKey.Hold.IsHeld && self.Entity != smwKey)) break;
@@ -609,6 +617,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void Pickup(Player player)
         {
+            player.holdCannotDuck = true;
             keySolid.Collidable = false;
             Position = keySolid.Position = player.Center;
             previousPosition = Position;
