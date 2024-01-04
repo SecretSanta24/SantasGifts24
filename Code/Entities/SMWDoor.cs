@@ -56,6 +56,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             doorLock.Position = new Vector2(Width / 2, Height / 2);
             Add(new ClimbBlocker(false));
             AllowStaticMovers = true;
+            Depth = Depths.SolidsBelow;
         }
 
         public SMWDoor(EntityData data, Vector2 offset) : this(data, offset, Orientations.Vertical)
@@ -78,18 +79,22 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             int i = 0;
             foreach (Sprite sprite in chainSprites)
             {
-                Remove(sprite);
-                SceneAs<Level>().ParticlesBG.Emit(FinalBoss.P_Burst, 3, Position + sprite.Position, new Vector2(4, 4), Calc.HexToColor("ebaa77"),
-                    (float)(orientation == Orientations.Horizontal ? Math.PI / 2 + i++ % 2 * Math.PI : i++ % 2 * Math.PI));
+                sprite.Play("open");
             }
             Collidable = false;
-            yield return doorLock.CurrentAnimationTotalFrames * doorLock.currentAnimation.Delay;
+            yield return 0.2F;
 
             foreach (var sm in staticMovers)
             {
                 Scene.Remove(sm.Entity);
             }
-            yield return doorLock.CurrentAnimationTotalFrames * doorLock.currentAnimation.Delay;
+            foreach (Sprite sprite in chainSprites)
+            {
+                Remove(sprite);
+                SceneAs<Level>().ParticlesBG.Emit(FinalBoss.P_Burst, 3, Position + sprite.Position, new Vector2(4, 4), Calc.HexToColor("ebaa77"),
+                    (float)(orientation == Orientations.Horizontal ? Math.PI / 2 + i++ % 2 * Math.PI : i++ % 2 * Math.PI));
+            }
+            yield return 1F;
             RemoveSelf();
             yield break;
         }
