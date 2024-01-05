@@ -191,6 +191,12 @@
 		<Anim id="open" path="pomf" delay="0.1" frames="1-5" goto="postopen"/>
 		<Anim id="postopen" path="pomf" delay="0.1" frames="6-12"/>
 	</smwDoorLock>
+	<smwDoorLockH path="objects/ss2024/smwDoor/" start="idle">
+		<Center/>
+		<Loop id="idle" path="lockh" delay="0.1" frames="0"/>
+		<Anim id="open" path="lockh" delay="0.1" frames="1-5" goto="postopen"/>
+		<Anim id="postopen" path="pomf" delay="0.1" frames="6-12"/>
+	</smwDoorLockH>
 	<smwDoorChainBot path="objects/ss2024/smwDoor/" start="idle">
 		<Center/>
 		<Loop id="idle" path="chainBot" delay="0.1" frames="0"/>
