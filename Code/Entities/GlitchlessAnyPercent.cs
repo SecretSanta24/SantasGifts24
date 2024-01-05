@@ -64,7 +64,8 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Add(new HoldableCollider(OnHoldable));
             Add(bounceWiggler = Wiggler.Create(0.5f, 3f));
             Add(pupilWiggler = Wiggler.Create(0.5f, 3f));
-            shockwaveTimer = 2f;
+            shockwaveTimer = 2.05f;
+            shockwaveFlag = true;
         }
 
         private void OnPlayer(Player player)
@@ -168,7 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             {
                 Audio.SetMusicParam("eye_distance", Calc.ClampedMap(entity.X, (base.Scene as Level).Bounds.Left, base.X));
             }
-            if (!playerHasMoved && entity != null && entity.Speed != Vector2.Zero)
+            if (!playerHasMoved && entity != null && entity.Speed != Vector2.Zero && entity.StateMachine.state != Player.StIntroRespawn)
             {
                 playerHasMoved = true;
             }
@@ -184,7 +185,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
                         shockwaveFlag = !shockwaveFlag;
                         if (shockwaveFlag)
                         {
-                            shockwaveTimer -= 1f;
+                            shockwaveTimer = 1f;
                         }
                     }
                     base.Scene.Add(Engine.Pooler.Create<TempleBigEyeballShockwave>().Init(base.Center + new Vector2(50f, 0f)));

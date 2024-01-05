@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace Celeste.Mod.SantasGifts24.Entities
 {
     [CustomEntity("SS2024/MortisDummy")]
+    [Tracked]
     public class MortisDummy : Entity
     {
         public class AuxiliaryLightEntity : Entity
@@ -37,7 +38,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         public MortisDummy(EntityData data, Vector2 offset) : this(data.Position + offset) 
         {
-            Tag = Tags.HUD | Tags.PauseUpdate;
         }
         public MortisDummy(Vector2 position) : base(position) 
         {
@@ -48,6 +48,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             rickmortis = GFX.Game["objects/SS2024/SunsetQuasar/portal/rickmortis"];
             whitemortis = GFX.Game["objects/SS2024/SunsetQuasar/portal/whitemortis"];
             mortisPosition = new Vector2(0f, 0f);
+            Tag = Tags.HUD | Tags.PauseUpdate;
 
         }
         public override void Added(Scene scene)
@@ -102,6 +103,23 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 yield return null;
             }
         }
+
+        public IEnumerator end(Vector2 offset)
+        {
+            for (float i = 0; i < 1f; i += Engine.DeltaTime / 1f)
+            {
+                mortisPercent = Ease.SineInOut(1-i);
+                mortisPosition.X = Ease.SineInOut(1-i) * offset.X;
+                mortisPosition.Y = Ease.ExpoIn(1-i) * offset.Y;
+                portal.Scale = Vector2.One * Ease.BackOut(1 - i);
+                aux.light.Alpha = aux.bloom.Alpha = Ease.SineOut(Math.Min((1 - i) * 3, 1));
+                aux.light.startRadius = Ease.SineOut(1 - i) * 20;
+                aux.light.endRadius = aux.light.startRadius + (Ease.SineOut(1 - i) * 30);
+                aux.light.HandleGraphicsReset();
+                yield return null;
+            }
+            RemoveSelf();
+        }
     }
 
     public class DoctorDummy : Entity
@@ -125,9 +143,12 @@ namespace Celeste.Mod.SantasGifts24.Entities
     public class QueerEventTrigger : Trigger
     {
         string ev;
-        public QueerEventTrigger(EntityData data, Vector2 offset) : base(data, offset)
+
+        public EntityID eid;
+        public QueerEventTrigger(EntityData data, Vector2 offset, EntityID id) : base(data, offset)
         {
             ev = data.Attr("event", "");
+            eid = id;
         }
         public override void OnEnter(Player player)
         {
@@ -142,6 +163,11 @@ namespace Celeste.Mod.SantasGifts24.Entities
                         base.Scene.Add(new CS01_OwieExplode(player));
                         RemoveSelf();
                     }
+                    break;
+                case "thatonee":
+                    Scene.Add(new CS01_Conflict1(player));
+                    (Scene as Level).Session.DoNotLoad.Add(eid);
+                    RemoveSelf();
                     break;
                 default:
                     RemoveSelf();
@@ -183,6 +209,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             base.Scene.Add(endingText);
             level.Add(level.HiresSnow = new HiresSnow());
             level.HiresSnow.Alpha = 0f;
+            player.ForceCameraUpdate = false;
             while (ease < 1f)
             {
                 ease += Engine.DeltaTime * 0.25f;
@@ -292,8 +319,6 @@ namespace Celeste.Mod.SantasGifts24.Entities
     {
         private Player player;
 
-        private PrologueEndingTextButGroceries endingText;
-
         public SoundSource sound;
 
         public float red;
@@ -333,6 +358,8 @@ namespace Celeste.Mod.SantasGifts24.Entities
             player.Drop();
             player.ForceCameraUpdate = true;
             Vector2 madpos = player.Position;
+            Add(new Coroutine(player.DummyWalkTo(1760, false, 1, false)));
+            yield return Textbox.Say("SecretSanta2024_2_Medium_sunsetquasar_d05");
             yield return 1.5f;
 
             UpdogCarriable updog = Scene.Tracker.GetEntity<TheoCrystal>() as UpdogCarriable;
@@ -374,7 +401,13 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Add(sound = new SoundSource());
             sound.Play("event:/sunset_secretsanta/impending");
             Add(new Coroutine(redflash()));
-            yield return 6f;
+            yield return 1f;
+            yield return player.DummyRunTo(player.X + 16, false);
+            yield return 0.5f;
+            yield return Textbox.Say("SecretSanta2024_2_Medium_sunsetquasar_d03" + (player.Y < 160 ? "_down" : "_up"), Walk2);
+            
+            yield return 2f;
+            Add(new Coroutine(Textbox.Say("SecretSanta2024_2_Medium_sunsetquasar_d04" + (player.Y < 160 ? "_down" : "_up"))));
             sound.Param("death", 1f);
             ohshit = true;
             (Scene as Level).NextColorGrade("SS2024/SunsetQuasar/white", 0.5f);
@@ -387,6 +420,14 @@ namespace Celeste.Mod.SantasGifts24.Entities
             yield return 0.5f;
 
             EndCutscene(level);
+        }
+
+        public IEnumerator Walk2()
+        {
+            yield return player.DummyRunTo(player.X - 32, false);
+            yield return 0.5f;
+            player.Sprite.Play("tired");
+            yield return 0.5f;
         }
 
         public IEnumerator redflash()
@@ -451,12 +492,19 @@ namespace Celeste.Mod.SantasGifts24.Entities
     {
         private Player player;
 
-        private PrologueEndingTextButGroceries endingText;
+        public float boomAlpha;
+
+        public DoctorDummy doc;
+        public MortisDummy rickmortis;
+
+        public float beamPercent;
 
         public CS01_Conflict1(Player player)
             : base(fadeInOnSkip: false, endingChapterAfter: true)
         {
             this.player = player;
+            Depth = -99999;
+
         }
 
         public override void OnBegin(Level level)
@@ -464,13 +512,111 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Add(new Coroutine(Cutscene(level)));
         }
 
+        public override void Update()
+        {
+            base.Update();
+            if (beamPercent > 0) 
+            {
+                beamPercent = Math.Max(beamPercent - Engine.DeltaTime / 1.4f, 0);
+            }
+        }
+
         private IEnumerator Cutscene(Level level)
         {
             player.StateMachine.State = 11;
             player.Dashes = 1;
-            yield return 1.5f;
+            player.DummyAutoAnimate = true;
+            player.ForceCameraUpdate = false;
+            yield return 0.5f;
+            yield return player.DummyWalkTo(1472f);
+            yield return 1f;
+            Audio.Play("event:/sunset_secretsanta/doctorcrash");
+            yield return 1.12f;
+            boomAlpha = 1;
+            player.Facing = Facings.Right;
+            player.Jump();
+            Add(new Coroutine(boom()));
+            player.ForceCameraUpdate = true;
+            yield return Textbox.Say("SecretSanta2024_2_Medium_sunsetquasar_d06", go, yeah2, yea3, yeahh4, stopitfuck);
 
             EndCutscene(level);
+        }
+
+        public IEnumerator go()
+        {
+            Level level = (Scene as Level);
+            Vector2 campos = level.Camera.Position;
+            yield return 1.2f;
+            player.ForceCameraUpdate = true;
+            //Add(new Coroutine(camera(campos, level)));
+            Add(new Coroutine(Level.ZoomTo(new Vector2(230f, 116f), 2f, 1.2f)));
+
+            Scene.Add(doc = new DoctorDummy(new Vector2(1688f, 554f)));
+            doc.Flip();
+
+            yield return player.DummyRunTo(player.X + 104);
+        }
+
+        public IEnumerator yeah2()
+        {
+            Add(new Coroutine(player.DummyRunTo(player.X + 80)));
+            Add(new Coroutine((Scene as Level).ZoomBack(1f)));
+            yield return 2f;
+        }
+
+        public IEnumerator yea3()
+        {
+            yield return 1f;
+            Scene.Add(rickmortis = new MortisDummy(new Vector2(1736, 552)));
+            yield return 0.5f;
+            Audio.Play("event:/sunset_secretsanta/portal", rickmortis.Position);
+            doc.Flip();
+            yield return 2.5f;
+        }
+
+        public IEnumerator yeahh4()
+        {
+            yield return 0.5f;
+            float yy = doc.Y;
+            float target = doc.Y - 56;
+            for(float p = 0; p < 1; p += Engine.DeltaTime / 2f)
+            {
+                doc.Y = Calc.LerpClamp(yy, target, Ease.SineInOut(p));
+                yield return null;
+            }
+            yield return 0.5f;
+            doc.Visible = false;
+            UpdogCarriable updog = new UpdogCarriable(doc.Position);
+            Scene.Add(updog);
+            if (!Settings.Instance.DisableFlashes) Scene.Add(new OrbEffect(doc.Position, 4));
+            else Scene.Add(new OrbEffect(doc.Position, 0.22f));
+            beamPercent = 1f;
+            Audio.Play("event:/sunset_secretsanta/crystal", doc.Position);
+            updog.noGravityTimer = 0.5f;
+        }
+
+        public IEnumerator stopitfuck()
+        {
+            rickmortis.Add(new Coroutine(rickmortis.end(new Vector2(-108f, 20f))));
+            yield return 3f;
+        }
+
+        public IEnumerator boom()
+        {
+            while(boomAlpha > 0)
+            {
+                boomAlpha = Math.Max(boomAlpha - Engine.DeltaTime, 0);
+                yield return null;
+            }
+        }
+
+        public IEnumerator camera(Vector2 pos, Level level)
+        {
+            for(float i = 0; i < 15; i += Engine.DeltaTime)
+            {
+                level.Camera.Approach(pos + new Vector2(16, 0), 0.01f * Engine.TimeRate);
+                yield return null;
+            }
         }
 
         public override void OnEnd(Level level)
@@ -480,9 +626,24 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
 
             }
-            level.SnapColorGrade("SS2024/SunsetQuasar/white");
-            player.StateMachine.State = 11;
-            level.Session.SetFlag("SS2024_SunsetQuasar_thehellfire");
+            player.StateMachine.State = 0;
+            level.Session.SetFlag("SS2024_Sunsetquasar_updog");
+        }
+
+        public override void Render()
+        {
+            base.Render();
+
+            float beam2 = Ease.SineIn(beamPercent);
+
+            GFX.Game["objects/SS2024/SunsetQuasar/boom"].Draw((Scene as Level).Camera.Position, Vector2.Zero, new Color(boomAlpha, boomAlpha, boomAlpha, 0));
+            if(doc != null)
+            {
+                if(rickmortis != null)
+                {
+                    Draw.Line(doc.Position, rickmortis.Position - (Vector2.UnitX * 13), new Color(beam2, beam2, beam2, 0), 5 * beam2);
+                }
+            }
         }
     }
 
