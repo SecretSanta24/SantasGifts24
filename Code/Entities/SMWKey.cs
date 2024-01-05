@@ -45,23 +45,33 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
 
+        //we're don't use the StateMachine describe by MonoGame because a simple state machine is
         private enum State
         {
             Ungrabbed, Despawn, PreGrab, Buffered, Primed, Grabbed, PostDashLeniency
         }
         private State state = State.Ungrabbed;
+        private bool grabbable;
 
         public SMWKey(Vector2 position)
             : base(position)
         {
             previousPosition = position;
+        }
+
+        public SMWKey(EntityData data, Vector2 offset)
+            : this(data.Position + offset)
+        {
+            grabbable = data.Bool("grabbable", true);
+
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
             Add(sprite = GFX.SpriteBank.Create("smwKey"));
             sprite.Play("idle");
             sprite.SetOrigin(18, 20);
             sprite.Visible = true;
-            Add(Hold = new Holdable(0.1f));
+            Hold = new Holdable(0.1f);
+            Add(Hold);
             Hold.PickupCollider = new Hitbox(20f, 22f, -10f, -16f);
             Hold.SlowFall = false;
             Hold.SlowRun = true;
@@ -74,16 +84,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Hold.SpeedGetter = () => Speed;
             onCollideH = OnCollideH;
             onCollideV = OnCollideV;
+
             LiftSpeedGraceTime = 0.1f;
             Add(new VertexLight(base.Collider.Center, Color.White, 1f, 32, 64));
             base.Tag = Tags.TransitionUpdate;
             Add(new MirrorReflection());
             Add(new DashListener(OnDash));
-        }
 
-        public SMWKey(EntityData e, Vector2 offset)
-            : this(e.Position + offset)
-        {
         }
 
         public void OnDash(Vector2 direction)
@@ -406,7 +413,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     return;
                 }
 
-                Hold.CheckAgainstColliders();
+                if (grabbable) Hold.CheckAgainstColliders();
 
             }
             Collidable = tempCollidableState;
@@ -416,6 +423,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             if (toSet == state) return;
             if (state == State.Despawn) return;
+            if (toSet == State.PreGrab && !grabbable) return;
             //state setup rules
             //univeral rules
             leniencyGrabTimer = 0;
@@ -429,7 +437,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     break;
 
                 case State.Despawn:
-                    keySolid.Collidable = true;
+                    keySolid.Collidable = false;
                     Add(new Coroutine(DestroyKey(), true));
                     if (Hold.IsHeld)
                     {
@@ -583,7 +591,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (self.Entity is SMWKey key)
             {
                 bool grabbed = false;
-                
+                if (!key.grabbable) return false;
                 foreach (SMWKey smwKey in self.Scene.Tracker.GetEntities<SMWKey>())
                 {
                     if (grabbed = (smwKey.Hold.IsHeld && self.Entity != smwKey)) break;
@@ -609,11 +617,44 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void Pickup(Player player)
         {
-            keySolid.Collidable = false;
-            Position = keySolid.Position = player.Center;
-            previousPosition = Position;
-            SetState(State.PreGrab);
-            Hold.Pickup(player);
+            if (grabbable)
+            {
+                player.holdCannotDuck = true;
+                keySolid.Collidable = false;
+                //check the key along its path before teleporting key. This way it cannot clip through seeker barriers
+                float distance = (player.Center - Position).Length();
+                float progressIncrement = 1;
+                if (distance > 0) progressIncrement = Math.Max(1 / distance, 0.01F);
+                bool hitBarrier = false;
+                for (float i = 0; i < 1; i+=progressIncrement)
+                {
+                    Position = Vector2.Lerp(Position, player.Center, i); 
+                    foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
+                    {
+                        barrier.Collidable = true;
+                        bool collided = CollideCheck(barrier);
+                        barrier.Collidable = false;
+                        if (collided)
+                        {
+                            SetState(State.Despawn);
+                            hitBarrier = true;
+                            Position = keySolid.Position = player.Center;
+                            previousPosition = Position;
+                            return;
+                        }
+                    }
+                }
+                if (hitBarrier)
+                {
+                    return;
+                }
+
+
+                Position = keySolid.Position = player.Center;
+                previousPosition = Position;
+                SetState(State.PreGrab);
+                Hold.Pickup(player);
+            }
         }
 
         public void ExplodeLaunch(Vector2 from)

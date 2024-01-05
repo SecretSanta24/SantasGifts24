@@ -73,6 +73,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
             level.Session.SetFlag("hasBino2", true);
 
             level.Session.SetFlag("spiritRealm", true);
+            if (level.Session.Audio.Music.Event != "event:/vitellary/wizardeyes2")
+            {
+                Audio.SetMusic("event:/vitellary/wizardeyes2");
+                Audio.SetMusicParam("layer1", 1f);
+                level.Session.Audio.Music.Event = "event:/vitellary/wizardeyes2";
+                level.Session.Audio.Music.Layer(1, true);
+            }
         }
 
         private Player player;

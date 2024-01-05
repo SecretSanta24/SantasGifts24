@@ -5,7 +5,10 @@ local smwKey = {}
 smwKey.name = "SS2024/SMWKey"
 smwKey.depth = 100
 smwKey.placements = {
-    name = "SMW Key"
+    name = "SMW Key",
+    data = {
+        grabbable = true
+    }
 }
 
 -- Offset is from sprites.xml, not justifications

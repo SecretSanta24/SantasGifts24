@@ -76,6 +76,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Mechanics {
 			if (persistent) {
 				SantasGiftsModule.Instance.Session.LightDarkPersistent = newMode;
 			}
+			level.Session.Audio.Music.Layer(1, newMode == LightDarkMode.Dark);
+			level.Session.Audio.Apply();
 			level.Session.SetFlag(LDNormalFlag, newMode == LightDarkMode.Normal);
 			level.Session.SetFlag(LDDarkFlag, newMode == LightDarkMode.Dark);
 			List<Component> listeners = level.Tracker.GetComponents<LightDarkListener>();
