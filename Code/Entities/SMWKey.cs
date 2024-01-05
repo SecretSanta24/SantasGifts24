@@ -437,7 +437,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     break;
 
                 case State.Despawn:
-                    keySolid.Collidable = true;
+                    keySolid.Collidable = false;
                     Add(new Coroutine(DestroyKey(), true));
                     if (Hold.IsHeld)
                     {
@@ -621,6 +621,35 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 player.holdCannotDuck = true;
                 keySolid.Collidable = false;
+                //check the key along its path before teleporting key. This way it cannot clip through seeker barriers
+                float distance = (player.Center - Position).Length();
+                float progressIncrement = 1;
+                if (distance > 0) progressIncrement = Math.Max(1 / distance, 0.01F);
+                bool hitBarrier = false;
+                for (float i = 0; i < 1; i+=progressIncrement)
+                {
+                    Position = Vector2.Lerp(Position, player.Center, i); 
+                    foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
+                    {
+                        barrier.Collidable = true;
+                        bool collided = CollideCheck(barrier);
+                        barrier.Collidable = false;
+                        if (collided)
+                        {
+                            SetState(State.Despawn);
+                            hitBarrier = true;
+                            Position = keySolid.Position = player.Center;
+                            previousPosition = Position;
+                            return;
+                        }
+                    }
+                }
+                if (hitBarrier)
+                {
+                    return;
+                }
+
+
                 Position = keySolid.Position = player.Center;
                 previousPosition = Position;
                 SetState(State.PreGrab);
