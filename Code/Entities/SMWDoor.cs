@@ -51,12 +51,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 Add(chainSprites[i] = GFX.SpriteBank.Create((i % 2 == 0) ? string1 : string0));
                 chainSprites[i].Position = new Vector2(orientation == Orientations.Horizontal ? i * 8 + 4: Width / 2, orientation == Orientations.Vertical ? i * 8 + 4 : Height / 2);
             }
-            Add(doorLock = GFX.SpriteBank.Create("smwDoorLock"));
+            Add(doorLock = GFX.SpriteBank.Create(ori == Orientations.Horizontal ? "smwDoorLockH" : "smwDoorLock" ));
             doorLock.CenterOrigin();
-            doorLock.Position = new Vector2(Width / 2, Height / 2);
+            if (ori == Orientations.Vertical) doorLock.Position = new Vector2(Width / 2, Height / 2);
+            else doorLock.Position = new Vector2(Width / 2, Height / 2);
             Add(new ClimbBlocker(false));
             AllowStaticMovers = true;
-            Depth = Depths.SolidsBelow;
+            Depth = -500;
         }
 
         public SMWDoor(EntityData data, Vector2 offset) : this(data, offset, Orientations.Vertical)
