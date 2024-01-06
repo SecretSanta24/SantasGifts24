@@ -140,15 +140,13 @@ namespace Celeste.Mod.SantasGifts24.Entities
         }
     }
     [CustomEntity("SS2024/QueerEventTrigger")]
+    [Tracked]
     public class QueerEventTrigger : Trigger
     {
         string ev;
-
-        public EntityID eid;
-        public QueerEventTrigger(EntityData data, Vector2 offset, EntityID id) : base(data, offset)
+        public QueerEventTrigger(EntityData data, Vector2 offset) : base(data, offset)
         {
             ev = data.Attr("event", "");
-            eid = id;
         }
         public override void OnEnter(Player player)
         {
@@ -161,17 +159,41 @@ namespace Celeste.Mod.SantasGifts24.Entities
                     if ((Scene as Level).Session.GetFlag("SS2024_TheLargeArtifact0") && (Scene as Level).Session.GetFlag("SS2024_TheLargeArtifact1"))
                     {
                         base.Scene.Add(new CS01_OwieExplode(player));
-                        RemoveSelf();
+                        Collidable = false;
                     }
                     break;
                 case "thatonee":
-                    Scene.Add(new CS01_Conflict1(player));
-                    (Scene as Level).Session.DoNotLoad.Add(eid);
-                    RemoveSelf();
+                    if (!(Scene as Level).Session.GetFlag("SS2024_Sunsetquasar_updog")) Scene.Add(new CS01_Conflict1(player));
+                    Collidable = false;
                     break;
                 default:
-                    RemoveSelf();
+                    Collidable = false;
                     break;
+            }
+        }
+
+        public static void Load()
+        {
+            On.Celeste.Level.Shake += ShakeHook;
+        }
+
+        public static void Unload()
+        {
+            On.Celeste.Level.Shake -= ShakeHook;
+        }
+
+        public static void ShakeHook(On.Celeste.Level.orig_Shake orig, Level self, float time)
+        {
+            QueerEventTrigger q = self.Tracker.GetEntity<QueerEventTrigger>();
+            if(q == null)
+            {
+                orig(self, time);
+                return;
+            }
+            if (self.InCutscene)
+            {
+                self.shakeDirection = Vector2.Zero;
+                self.shakeTimer = Math.Max(self.shakeTimer, time);
             }
         }
     }
@@ -203,6 +225,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             yield return 0.4f;
             player.DummyAutoAnimate = false;
             player.Sprite.Play("sleep");
+            Audio.Play("event:/char/madeline/campfire_sit", player.Position);
             yield return 1.5f;
             float ease = 0f;
             endingText = new PrologueEndingTextButGroceries(instant: false);
@@ -332,7 +355,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         public float angleSpeed = 0f;
 
         public CS01_OwieExplode(Player player)
-            : base(fadeInOnSkip: false, endingChapterAfter: true)
+            : base(fadeInOnSkip: false, endingChapterAfter: false)
         {
             this.player = player;
             Depth = -22000;
@@ -353,6 +376,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         private IEnumerator Cutscene(Level level)
         {
+            Add(new Coroutine(fademus()));
             player.StateMachine.State = 11;
             player.Dashes = 1;
             player.Drop();
@@ -399,6 +423,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             Add(new Coroutine(spinnnn(updog, art0, art1)));
             yield return 1.5f;
             Add(sound = new SoundSource());
+            level.Shake();
             sound.Play("event:/sunset_secretsanta/impending");
             Add(new Coroutine(redflash()));
             yield return 1f;
@@ -420,6 +445,17 @@ namespace Celeste.Mod.SantasGifts24.Entities
             yield return 0.5f;
 
             EndCutscene(level);
+        }
+
+        public IEnumerator fademus()
+        {
+            for(float i = 0; i < 1f; i += Engine.DeltaTime)
+            {
+                Audio.SetMusicParam("fade", 1 - i);
+                yield return null;
+            }
+            Level.Session.Audio.Music.Event = SFX.EventnameByHandle("event:/none");
+            Level.Session.Audio.Apply();
         }
 
         public IEnumerator Walk2()
@@ -462,9 +498,11 @@ namespace Celeste.Mod.SantasGifts24.Entities
         {
             if (WasSkipped)
             {
-
-
+                Level.Session.Audio.Music.Event = SFX.EventnameByHandle("event:/none");
+                Level.Session.Audio.Apply();
             }
+            level.SnapColorGrade("SS2024/SunsetQuasar/white");
+            Distort.Anxiety = 0;
             UpdogCarriable updog = Scene.Tracker.GetEntity<TheoCrystal>() as UpdogCarriable;
             if (updog != null)
             {
@@ -476,6 +514,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             player.ForceCameraUpdate = false;
             player.StateMachine.State = 0;
             level.Session.SetFlag("SS2024_SunsetQuasar_thehellfire");
+            player.Facing = Facings.Right;
         }
 
         public override void Render()
@@ -500,7 +539,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
         public float beamPercent;
 
         public CS01_Conflict1(Player player)
-            : base(fadeInOnSkip: false, endingChapterAfter: true)
+            : base(fadeInOnSkip: false, endingChapterAfter: false)
         {
             this.player = player;
             Depth = -99999;
@@ -532,11 +571,13 @@ namespace Celeste.Mod.SantasGifts24.Entities
             yield return 1f;
             Audio.Play("event:/sunset_secretsanta/doctorcrash");
             yield return 1.12f;
+            Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
+            level.Shake(0.5f);
             boomAlpha = 1;
             player.Facing = Facings.Right;
             player.Jump();
             Add(new Coroutine(boom()));
-            player.ForceCameraUpdate = true;
+
             yield return Textbox.Say("SecretSanta2024_2_Medium_sunsetquasar_d06", go, yeah2, yea3, yeahh4, stopitfuck);
 
             EndCutscene(level);
@@ -545,16 +586,15 @@ namespace Celeste.Mod.SantasGifts24.Entities
         public IEnumerator go()
         {
             Level level = (Scene as Level);
-            Vector2 campos = level.Camera.Position;
-            yield return 1.2f;
+            yield return 0.6f;
             player.ForceCameraUpdate = true;
-            //Add(new Coroutine(camera(campos, level)));
             Add(new Coroutine(Level.ZoomTo(new Vector2(230f, 116f), 2f, 1.2f)));
 
             Scene.Add(doc = new DoctorDummy(new Vector2(1688f, 554f)));
             doc.Flip();
 
             yield return player.DummyRunTo(player.X + 104);
+            yield return 0.5f;
         }
 
         public IEnumerator yeah2()
@@ -566,7 +606,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
 
         public IEnumerator yea3()
         {
-            yield return 1f;
+            yield return 0.5f;
             Scene.Add(rickmortis = new MortisDummy(new Vector2(1736, 552)));
             yield return 0.5f;
             Audio.Play("event:/sunset_secretsanta/portal", rickmortis.Position);
@@ -585,20 +625,24 @@ namespace Celeste.Mod.SantasGifts24.Entities
                 yield return null;
             }
             yield return 0.5f;
-            doc.Visible = false;
-            UpdogCarriable updog = new UpdogCarriable(doc.Position);
+            UpdogCarriable updog = new UpdogCarriable(doc.Position + new Vector2(0, 12));
             Scene.Add(updog);
             if (!Settings.Instance.DisableFlashes) Scene.Add(new OrbEffect(doc.Position, 4));
             else Scene.Add(new OrbEffect(doc.Position, 0.22f));
             beamPercent = 1f;
+            Input.Rumble(RumbleStrength.Medium, RumbleLength.Short);
+            Level.Shake();
             Audio.Play("event:/sunset_secretsanta/crystal", doc.Position);
-            updog.noGravityTimer = 0.5f;
+            updog.noGravityTimer = 1f;
+            doc.Visible = false;
+            yield return 1.5f;
         }
 
         public IEnumerator stopitfuck()
         {
+            yield return 0.4f;
             rickmortis.Add(new Coroutine(rickmortis.end(new Vector2(-108f, 20f))));
-            yield return 3f;
+            yield return 1.8f;
         }
 
         public IEnumerator boom()
@@ -610,22 +654,17 @@ namespace Celeste.Mod.SantasGifts24.Entities
             }
         }
 
-        public IEnumerator camera(Vector2 pos, Level level)
-        {
-            for(float i = 0; i < 15; i += Engine.DeltaTime)
-            {
-                level.Camera.Approach(pos + new Vector2(16, 0), 0.01f * Engine.TimeRate);
-                yield return null;
-            }
-        }
-
         public override void OnEnd(Level level)
         {
             if (WasSkipped)
             {
-
-
+                player.Position = new Vector2(1658, 568);
+                Scene.Add(new UpdogCarriable(new Vector2(1688, 568)));
+                level.Camera.Position = new Vector2(1546, 432);
+                //level.Session.Audio.Ambience.Event = SFX.EventnameByHandle("event:/sunset_secretsanta/amb");
             }
+            if(rickmortis != null) rickmortis.RemoveSelf();
+            if(doc != null) doc.RemoveSelf();
             player.StateMachine.State = 0;
             level.Session.SetFlag("SS2024_Sunsetquasar_updog");
         }

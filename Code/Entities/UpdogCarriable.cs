@@ -38,6 +38,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public override void Added(Scene scene)
         {
             base.Added(scene);
+
             if (dontspawnflag && !(scene as Level).Session.GetFlag("SS2024_Sunsetquasar_updog"))
             {
                 RemoveSelf();
@@ -54,6 +55,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 {
                     Depth = -20000;
                 };
+            }
+
+            DeathEffect death = Components.Get<DeathEffect>();
+
+            if (death != null)
+            {
+                death.Color = Calc.HexToColor("B864BE");
             }
         }
 

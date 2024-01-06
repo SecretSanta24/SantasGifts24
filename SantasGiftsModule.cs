@@ -56,6 +56,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Load()
 		{
+            QueerEventTrigger.Load();
             NoBillboardBloom.Load();
             NoShadowClutterController.Load();
             TechialSeason.Load();
@@ -92,6 +93,7 @@ namespace Celeste.Mod.SantasGifts24
 
 		public override void Unload()
         {
+            QueerEventTrigger.Unload();
             NoBillboardBloom.Unload();
             NoShadowClutterController.Unload();
             TechialSeason.Unload();
