@@ -68,6 +68,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
 
         public override void OnEnd(Level level)
         {
+            if (WasSkipped && level.Session.Audio.Music.Event != "event:/vitellary/wizardeyes1")
+            {
+                level.Session.Audio.Music.Event = "event:/vitellary/wizardeyes1";
+                level.Session.Audio.Music.Layer(1, true);
+                level.Session.Audio.Music.Layer(2, true);
+                level.Session.Audio.Apply();
+            }
             player.X = -408;
             player.StateMachine.State = Player.StNormal;
             player.ForceCameraUpdate = false;
