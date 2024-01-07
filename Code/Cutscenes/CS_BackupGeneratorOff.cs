@@ -53,7 +53,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
             }
 
             player.StateMachine.State = 11;
-            player.DummyAutoAnimate = false;
+            player.DummyAutoAnimate = true;
             while (!player.OnGround() || player.Speed.Y < 0f)
             {
                 yield return null;
