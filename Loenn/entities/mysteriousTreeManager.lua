@@ -13,4 +13,4 @@ mysteriousTreeManager.placements = {
     }
 }
 
-return mysteriousTreeManager
+return nil
