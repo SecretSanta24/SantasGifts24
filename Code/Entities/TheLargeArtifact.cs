@@ -79,7 +79,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             base.Collider = new Hitbox(12f, 12f, -6f, -6f);
             Add(sprite = new Sprite(GFX.Game, "collectables/SS2024/SunsetQuasar/" + GemID + "/gem"));
             Add(new VertexLight(GemColors[GemID], 1, 24, 40));
-            sprite.AddLoop("idle", "", 0.05f, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7]);
+            //sprite.AddLoop("idle", "", 0.05f, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7]);
             sprite.Play("idle");
             sprite.CenterOrigin();
             Add(scaleWiggler = Wiggler.Create(0.5f, 4f, delegate (float f)
@@ -108,7 +108,7 @@ namespace Celeste.Mod.SantasGifts24.Entities
             base.Collider = new Hitbox(12f, 12f, -6f, -6f);
             Add(sprite = new Sprite(GFX.Game, "collectables/SS2024/SunsetQuasar/" + GemID + "/gem"));
             Add(new VertexLight(GemColors[GemID], 1, 24, 40));
-            sprite.AddLoop("idle", "", 0.05f, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7]);
+            //sprite.AddLoop("idle", "", 0.05f, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7]);
             sprite.Play("idle");
             sprite.CenterOrigin();
             Add(scaleWiggler = Wiggler.Create(0.5f, 4f, delegate (float f)

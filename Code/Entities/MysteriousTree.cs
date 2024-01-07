@@ -8,32 +8,153 @@ using System.Collections;
 using Microsoft.Xna.Framework;
 using Monocle;
 using Celeste.Mod.Entities;
+using Celeste.Mod.SantasGifts24.Code.Cutscenes;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
     public class MysteriousTree : Entity
     {
+        public class ConfettiRenderer : Entity
+        {
+            private struct Particle
+            {
+                public Vector2 Position;
+
+                public Color Color;
+
+                public Vector2 Speed;
+
+                public float Timer;
+
+                public float Percent;
+
+                public float Duration;
+
+                public float Alpha;
+
+                public float Approach;
+            }
+
+            private static readonly Color[] confettiColors = new Color[2]
+            {
+            Calc.HexToColor("37db45"),
+            Calc.HexToColor("43a633"),
+            };
+
+            private Particle[] particles = new Particle[30];
+
+            public ConfettiRenderer(Vector2 position)
+                : base(position)
+            {
+                base.Depth = -10010;
+                for (int i = 0; i < particles.Length; i++)
+                {
+                    particles[i].Position = Position + new Vector2(Calc.Random.Range(-3, 3), Calc.Random.Range(-3, 3));
+                    particles[i].Color = Calc.Random.Choose(confettiColors);
+                    particles[i].Timer = Calc.Random.NextFloat();
+                    particles[i].Duration = Calc.Random.Range(2, 4);
+                    particles[i].Alpha = 1f;
+                    float angleRadians = Calc.Random.Range(0f, (float)Math.PI * 2f);
+                    int num = Calc.Random.Range(80, 120);
+                    particles[i].Speed = Calc.AngleToVector(angleRadians, num);
+                }
+            }
+
+            public override void Update()
+            {
+                for (int i = 0; i < particles.Length; i++)
+                {
+                    particles[i].Position += particles[i].Speed * Engine.DeltaTime;
+                    particles[i].Speed.X = Calc.Approach(particles[i].Speed.X, 0f, 80f * Engine.DeltaTime);
+                    particles[i].Speed.Y = Calc.Approach(particles[i].Speed.Y, 20f, 100f * Engine.DeltaTime);
+                    particles[i].Timer += Engine.DeltaTime;
+                    particles[i].Percent += Engine.DeltaTime / particles[i].Duration;
+                    particles[i].Alpha = Calc.ClampedMap(particles[i].Percent, 0.9f, 1f, 1f, 0f);
+                    if (particles[i].Speed.Y > 0f)
+                    {
+                        particles[i].Approach = Calc.Approach(particles[i].Approach, 5f, Engine.DeltaTime * 16f);
+                    }
+                }
+            }
+
+            public override void Render()
+            {
+                for (int i = 0; i < particles.Length; i++)
+                {
+                    float num = 0f;
+                    Vector2 position = particles[i].Position;
+                    if (particles[i].Speed.Y < 0f)
+                    {
+                        num = particles[i].Speed.Angle();
+                    }
+                    else
+                    {
+                        num = (float)Math.Sin(particles[i].Timer * 4f) * 1f;
+                        position += Calc.AngleToVector((float)Math.PI / 2f + num, particles[i].Approach);
+                    }
+                    GFX.Game["particles/petal"].DrawCentered(position + Vector2.UnitY, Color.Black * (particles[i].Alpha * 0.5f), 1f, num);
+                    GFX.Game["particles/petal"].DrawCentered(position, particles[i].Color * particles[i].Alpha, 1f, num);
+                }
+            }
+        }
+
+        private class TreeExplosion : Entity {
+
+            private float stayTimer;
+            public TreeExplosion(Vector2 Position)
+                : base(Position)
+            {
+                Add(GFX.SpriteBank.Create("treeExplosion"));
+                stayTimer = 0.6f;
+            }
+
+            public override void Added(Scene scene)
+            {
+                base.Added(scene);
+                Audio.Play("event:/Kataiser/sfx/ww2_ssc24_hk_death_explosion", Position);
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                if(stayTimer > 0f)
+                {
+                    stayTimer -= Engine.DeltaTime;
+                }
+                else
+                {
+                    RemoveSelf();
+                }
+            }
+
+
+        }
+
         public Vector2 BeamOrigin, ShotOrigin;
+        public string RoomName;
+        public bool BeginFight;
 
         private Sprite sprite;
         private StateMachine stateMachine;
-        private bool attacking;
+        private bool attacking, inCutscene;
         private SoundSource laserSfx, chargeSfx;
         private Level level;
-        private Solid nose, trunk;
+        private Solid trunk;
         private TreeKeyBarrier barrier;
         private string flag1, flag2, flag3;
-        private string roomName;
+        private string beginImmediatelyFlag;
+
 
         private int hp = 3;
         
-        public MysteriousTree(Vector2 position, string flag1, string flag2, string flag3, string roomName)
+        public MysteriousTree(Vector2 position, string flag1, string flag2, string flag3, string roomName, string beginImmediatelyFlag)
             : base(position)
         {
+            RoomName = roomName;
             this.flag1 = flag1;
             this.flag2 = flag2;
             this.flag3 = flag3;
-            this.roomName = roomName;
+            this.beginImmediatelyFlag = beginImmediatelyFlag;
             Depth = 100;
             Add(laserSfx = new SoundSource());
             Add(chargeSfx = new SoundSource());
@@ -41,32 +162,54 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             sprite.Position.X -= 32f;
             Add(stateMachine = new StateMachine());
 
-            stateMachine.SetCallbacks(0, idleUpdate);
+            stateMachine.SetCallbacks(0, idleUpdate, begin:idleBegin);
             stateMachine.SetCallbacks(1, attackUpdate, attackCoroutine, attackBegin, attackEnd);
             stateMachine.SetCallbacks(2, hurtUpdate, hurtCoroutine, hurtBegin);
-            stateMachine.SetCallbacks(3, deathUpdate, deathCoroutine);
-            BeamOrigin = Center; //TODO : change with sprite
-            ShotOrigin = Center + Vector2.UnitY * 64f; //TODO : change with sprite
+            stateMachine.SetCallbacks(3, deathUpdate, begin:deathBegin);
+            BeamOrigin = Center + new Vector2(26f, 84f);
+            ShotOrigin = Center + new Vector2(28f, 140f);
         }
 
         public override void Awake(Scene scene)
         {
             base.Awake(scene);
             level = SceneAs<Level>();
-            scene.Add(nose = new Solid(new Vector2(Position.X - 32f, Position.Y + 64f), 32f, 16f, false));
-            scene.Add(trunk = new Solid(new Vector2(Position.X + 1, Position.Y), 56f, 150f, false));
-            scene.Add(barrier = new TreeKeyBarrier(new Vector2(Position.X, Position.Y + 32f), 32f, 32f, this));
+            scene.Add(trunk = new Solid(new Vector2(Position.X + 1, Position.Y + 16f), 80f, 200f, false));
+            trunk.Add(new ClimbBlocker(edge: true));
+            scene.Add(barrier = new TreeKeyBarrier(new Vector2(Position.X, Position.Y + 60f), 48f, 56f, this));
         }
 
         // idle
+        private void idleBegin()
+        {
+            selectIdleAnimation();
+        }
+
         private int idleUpdate()
         {
             Player player = Scene.Tracker.GetEntity<Player>();
-            if (player != null && player.Speed != Vector2.Zero)
+
+            if (level.Session.GetFlag(beginImmediatelyFlag))
+            {
+                if (player != null && player.Speed != Vector2.Zero)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            if (!inCutscene && Math.Abs(player.Position.X - Position.X) < 200f)
+            {
+                Scene.Add(new CS_TreeBegin(this));
+                inCutscene = true;
+            }
+
+            if (BeginFight)
             {
                 return 1;
             }
-
             return 0;
         }
 
@@ -74,6 +217,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private void attackBegin()
         {
             attacking = true;
+            selectIdleAnimation();
         }
 
         private void attackEnd()
@@ -83,6 +227,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 level.Remove(mtb);
                 mtb.RemoveSelf();
+            }
+            foreach (MysteriousTreeShot mts in level.Tracker.GetEntities<MysteriousTreeShot>())
+            {
+                level.Remove(mts);
+                mts.RemoveSelf();
             }
         }
 
@@ -134,96 +283,74 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private IEnumerator hurtCoroutine()
         {
-            yield return 3f;
+            level.Shake();
+            Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+            sprite.Play("damage");
+            Audio.Play("event:/Kataiser/sfx/ww2_ssc24_hk_tree_hit", Position);
+            level.Add(new ConfettiRenderer(trunk.TopLeft + new Vector2(0f, 16f)));
+            level.Add(new ConfettiRenderer(trunk.TopCenter + new Vector2(0f, 16f)));
+            yield return 0.2f;
+            selectIdleAnimation();
+            yield return 2f;
             attacking = true;
         }
 
         // death
 
+        private void deathBegin()
+        {
+            Scene.Add(new CS_TreeEnd(this));
+        }
+
         private int deathUpdate()
         {
+            if(Scene.OnInterval(0.2f))
+            {
+                level.Add(new TreeExplosion(getRandomPosition()));
+            }
             return 3;
         }
 
-        private IEnumerator deathCoroutine()
+        public void PlayBegin()
         {
-            yield return 3f;
-            yield return FadeOutLevel();
-            TeleportToEnd();
+            sprite.Play("yellA");
+            Audio.Play("event:/Kataiser/sfx/ww2_ssc24_hk_scream", Position);
+            level.Shake();
+            Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
         }
 
-        private IEnumerator FadeOutLevel()
+        public void Die()
         {
-            new FadeWipe(level, wipeIn: false)
-            {
-                Duration = 1f
-            };
-            ScreenWipe.WipeColor = Color.White;
-            yield return 1f;
+            sprite.Play("death");
+            level.Shake();
+            Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
+            level.Add(new ConfettiRenderer(trunk.TopLeft + new Vector2(0f, 16f)));
+            level.Add(new ConfettiRenderer(trunk.TopCenter + new Vector2(0f, 16f)));
+            Audio.Play("event:/Kataiser/sfx/ww2_ssc24_hk_tree_hit", Position);
         }
 
-        private void TeleportToEnd()
+        private Vector2 getRandomPosition()
         {
-            LevelData leveldata = level.Session.LevelData;
-            Player player = level.Tracker.GetEntity<Player>();
-            if (player != null)
+            Vector2 initialPos = new Vector2(Position.X - 16f, Position.Y + 32f);
+            float randomX = (float)Calc.Random.NextDouble() * 100f;
+            float randomY = (float)Calc.Random.NextDouble() * 200f;
+
+            return new Vector2(initialPos.X + randomX, initialPos.Y + randomY);
+        }
+
+        private void selectIdleAnimation()
+        {
+            switch(hp)
             {
-                level.OnEndOfFrame += delegate
-                {
-                    Vector2 position = player.Position;
-                    player.Position -= leveldata.Position;
-                    level.Camera.Position -= leveldata.Position;
-                    int dashes = player.Dashes;
-                    float stamina = player.Stamina;
-                    Facings facing = player.Facing;
-                    level.Session.Level = roomName;
-
-                    Leader leader = player.Get<Leader>();
-                    foreach (Follower follower in leader.Followers)
-                    {
-                        if (follower.Entity != null)
-                        {
-                            follower.Entity.AddTag(Tags.Global);
-                            level.Session.DoNotLoad.Add(follower.ParentEntityID);
-                        }
-                    }
-
-                    level.Remove(player);
-                    level.UnloadLevel();
-                    level.Add(player);
-                    level.LoadLevel(Player.IntroTypes.Transition);
-
-                    leveldata = level.Session.LevelData;
-
-                    level.Session.RespawnPoint = level.Session.LevelData.Spawns.ClosestTo(new Vector2(-3000f, 690f));
-                    player.Position = level.Session.RespawnPoint.Value;
-                    player.Dashes = dashes;
-                    player.Stamina = stamina;
-                    player.Facing = Facings.Right;
-                    level.Camera.Position = level.GetFullCameraTargetAt(player, player.Position);
-
-                    foreach (Follower follower in leader.Followers)
-                    {
-                        if (follower.Entity != null)
-                        {
-                            follower.Entity.Position += player.Position - position;
-                            follower.Entity.RemoveTag(Tags.Global);
-                            level.Session.DoNotLoad.Remove(follower.ParentEntityID);
-                        }
-                    }
-
-                    for (int i = 0; i < leader.PastPoints.Count; i++)
-                    {
-                        leader.PastPoints[i] += player.Position - position; ;
-                    }
-                    leader.TransferFollowers();
-                    FadeWipe wipe2 = new FadeWipe(level, wipeIn: true) { Duration = 1f };
-                    ScreenWipe.WipeColor = Color.White;
-                    wipe2.OnComplete += () =>
-                    {
-                        ScreenWipe.WipeColor = Color.Black;
-                    };
-                };
+                case 3:
+                    sprite.Play("idleA");
+                    break;
+                case 2:
+                    sprite.Play("idleB");
+                    break;
+                default:
+                    sprite.Play("idleC");
+                    break;
             }
         }
 
@@ -249,8 +376,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Player entity = level.Tracker.GetEntity<Player>();
             Vector2 at = ShotOrigin;
             level.Add(Engine.Pooler.Create<MysteriousTreeShot>().Init(this, at, entity));
-            level.Add(Engine.Pooler.Create<MysteriousTreeShot>().Init(this, at + (Vector2.UnitX * 16f), entity));
-            level.Add(Engine.Pooler.Create<MysteriousTreeShot>().Init(this, at - (Vector2.UnitX * 16f), entity));
+            level.Add(Engine.Pooler.Create<MysteriousTreeShot>().Init(this, at + new Vector2(6f, 16f), entity));
+            level.Add(Engine.Pooler.Create<MysteriousTreeShot>().Init(this, at + new Vector2(-6f, 16f), entity));
         }
 
         public void TakeDamage()
@@ -281,7 +408,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
-            scene.Remove(nose);
             scene.Remove(trunk);
             scene.Remove(barrier);
         }

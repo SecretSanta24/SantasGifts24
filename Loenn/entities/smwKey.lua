@@ -23,5 +23,4 @@ function smwKey.sprite(room, entity)
     return sprite
 end
 
---return smwKey
-return nil
+return smwKey

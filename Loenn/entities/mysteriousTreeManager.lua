@@ -8,8 +8,9 @@ mysteriousTreeManager.placements = {
         flag1 = "",
         flag2 = "",
         flag3 = "",
-        onDeathTeleportRoomName = ""
+        onDeathTeleportRoomName = "",
+        beginImmediatelyFlag = ""
     }
 }
 
-return nil
+return mysteriousTreeManager
