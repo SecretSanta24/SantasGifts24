@@ -71,12 +71,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
 
             yield return 1f;
             Add(new Coroutine(fadeTitleImage()));
-            yield return 1f;
+            yield return 1.5f;
             Add(new Coroutine(fadeTitleImage2()));
-            yield return 1f;
             tree.PlayBegin();
             Add(new Coroutine(screamEffects()));
-            yield return 1.5f;
+            yield return 2f;
             EndCutscene(level);
         }
 
@@ -97,6 +96,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
             titleImage.Color = Color.White * 0f;
             titleImage2.Color = Color.White * 0f;
             Distort.Anxiety = 0f;
+            level.Session.SetFlag(tree.beginImmediatelyFlag, true);
         }
 
         private IEnumerator fadeTitleImage()
@@ -124,7 +124,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Cutscenes
                 titleImage2.Color = Color.White * alpha2;
                 yield return null;
             }
-            yield return 2f;
+            yield return 1.5f;
             while (alpha2 > 0f)
             {
                 alpha2 -= 0.1f;

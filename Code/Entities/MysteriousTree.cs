@@ -133,6 +133,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public Vector2 BeamOrigin, ShotOrigin;
         public string RoomName;
         public bool BeginFight;
+        public string beginImmediatelyFlag;
 
         private Sprite sprite;
         private StateMachine stateMachine;
@@ -142,7 +143,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private Solid trunk;
         private TreeKeyBarrier barrier;
         private string flag1, flag2, flag3;
-        private string beginImmediatelyFlag;
 
 
         private int hp = 3;
@@ -174,9 +174,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Awake(scene);
             level = SceneAs<Level>();
-            scene.Add(trunk = new Solid(new Vector2(Position.X + 1, Position.Y + 16f), 80f, 200f, false));
+            scene.Add(trunk = new Solid(new Vector2(Position.X + 9f, Position.Y + 16f), 80f, 200f, false));
             trunk.Add(new ClimbBlocker(edge: true));
-            scene.Add(barrier = new TreeKeyBarrier(new Vector2(Position.X, Position.Y + 60f), 48f, 56f, this));
+            scene.Add(barrier = new TreeKeyBarrier(new Vector2(Position.X + 8f, Position.Y + 60f), 48f, 44f, this));
         }
 
         // idle
@@ -188,6 +188,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private int idleUpdate()
         {
             Player player = Scene.Tracker.GetEntity<Player>();
+
+            if (BeginFight)
+            {
+                return 1;
+            }
 
             if (level.Session.GetFlag(beginImmediatelyFlag))
             {
@@ -206,10 +211,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 inCutscene = true;
             }
 
-            if (BeginFight)
-            {
-                return 1;
-            }
             return 0;
         }
 
@@ -315,6 +316,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             sprite.Play("yellA");
             Audio.Play("event:/Kataiser/sfx/ww2_ssc24_hk_scream", Position);
+            level.Session.Audio.Music.Param("NightProgression", 6);
+            level.Session.Audio.Apply(forceSixteenthNoteHack: false);
             level.Shake();
             Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
         }
@@ -410,6 +413,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             base.Removed(scene);
             scene.Remove(trunk);
             scene.Remove(barrier);
+        }
+
+        public override void Render()
+        {
+            sprite.DrawSimpleOutline();
+            base.Render();
         }
     }
 }
