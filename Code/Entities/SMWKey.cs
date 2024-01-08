@@ -71,7 +71,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Add(sprite = new Sprite(GFX.Game, ""));
             sprite.AddLoop("idle", spritePath, 0.1f, [0]);
 
-            sprite.Add("destroyed", spritePath, 0.1f, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+            sprite.Add("destroyed", spritePath, 0.1f, new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
 
             sprite.Play("idle");
             sprite.SetOrigin(18, 20);
