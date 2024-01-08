@@ -1,6 +1,7 @@
 ﻿using Celeste;
 using Celeste.Mod.Entities;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -737,15 +738,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
             }
-            if (IsSoftMaterial(data.Hit))
-            {
-
-                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landsoft", Position);
-            }
-            else
-            {
-                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landhard", Position);
-            }
+            Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_wall", Position);
             if (Math.Abs(Speed.X) > 100f)
             {
                 ImpactParticles(data.Direction);
@@ -753,9 +746,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Speed.X *= -0.4f;
         }
 
-        private bool IsSoftMaterial(Platform hit)
+        private bool IsHardMaterial(Platform hit)
         {
-            return hit.SurfaceSoundIndex == 3 || hit.SurfaceSoundIndex == 33;
+
+            return hit.GetLandSoundIndex(this) == SurfaceIndex.Car || hit.GetLandSoundIndex(this) == SurfaceIndex.Brick
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.StoneBridge
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.Wood
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.AuroraGlass;
         }
 
         private void OnCollideV(CollisionData data)
@@ -764,10 +761,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
             }
+            //landsoft should be the default for unknown sounds
+            if (IsHardMaterial(data.Hit))
+            {
+                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landhard", Position);
+
+            }
+            else
+            {
+                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landsoft", Position);
+            }
             if (Speed.Y > 0f)
             {
 
-                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_wall", Position);
 
             }
             if (Speed.Y > 160f)
