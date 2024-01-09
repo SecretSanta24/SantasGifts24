@@ -217,7 +217,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
-            HandleDoors();
+            if (state != State.Despawn) HandleDoors();
             HandleBarriers();
             Collidable = tempCollidableState;
             //keeping here in case this is still a thing
