@@ -40,6 +40,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 TouchSwitch e = t[i] as TouchSwitch;
                 if (e != null)
                 {
+                    e.Depth = -11500;
+                }
+            }
+
+            List<Entity> c = new List<Entity>();
+            c = Scene.Tracker.GetEntities<CrumblePlatform>();
+            for (int i = 0; i < c.Count; i++)
+            {
+                CrumblePlatform e = c[i] as CrumblePlatform;
+                if (e != null)
+                {
                     e.Depth = -12000;
                 }
             }
