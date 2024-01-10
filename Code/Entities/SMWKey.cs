@@ -126,7 +126,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             List<Entity> doors = CollideAll<SMWDoor>();
             if (doors.Count > 0)
             {
-                bool opennedDoor = Collidable;
+                bool opennedDoor = false;
                 foreach (SMWDoor door in doors)
                 {
                     if (door.despawning) continue;
@@ -217,7 +217,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
-            HandleDoors();
+            if (state != State.Despawn) HandleDoors();
             HandleBarriers();
             Collidable = tempCollidableState;
             //keeping here in case this is still a thing

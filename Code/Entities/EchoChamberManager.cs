@@ -40,7 +40,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 TouchSwitch e = t[i] as TouchSwitch;
                 if (e != null)
                 {
-                    e.Depth = -12000;
+                    e.Depth = -11500;
                 }
             }
         }
