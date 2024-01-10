@@ -1,12 +1,14 @@
 ﻿using Celeste;
 using Celeste.Mod.Entities;
 using Celeste.Mod.SantasGifts24.Code.Triggers;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Color = Microsoft.Xna.Framework.Color;
 using Image = Monocle.Image;
 
@@ -63,10 +65,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             : this(data.Position + offset)
         {
             grabbable = data.Bool("grabbable", true);
-
+            string spritePath = data.Attr("spritePath", "objects/ss2024/smwKey/leafkey");
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
-            Add(sprite = GFX.SpriteBank.Create("smwKey"));
+            Add(sprite = new Sprite(GFX.Game, ""));
+            sprite.AddLoop("idle", spritePath, 0.1f, [0]);
+
+            sprite.Add("destroyed", spritePath, 0.1f, new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
+
             sprite.Play("idle");
             sprite.SetOrigin(18, 20);
             sprite.Visible = true;
@@ -120,7 +126,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             List<Entity> doors = CollideAll<SMWDoor>();
             if (doors.Count > 0)
             {
-                bool opennedDoor = Collidable;
+                bool opennedDoor = false;
                 foreach (SMWDoor door in doors)
                 {
                     if (door.despawning) continue;
@@ -134,7 +140,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     Scene.Remove(this);
                     Collider = tempHolder;
 
-                    Audio.Play("event:/game/04_cliffside/greenbooster_reappear", Level.Camera.Position + new Vector2(160f, 90f));
+                    Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_unlock", Level.Camera.Position + new Vector2(160f, 90f));
                     return;
                 }
             }
@@ -211,7 +217,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
-            HandleDoors();
+            if (state != State.Despawn) HandleDoors();
             HandleBarriers();
             Collidable = tempCollidableState;
             //keeping here in case this is still a thing
@@ -493,7 +499,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             Collidable = false;
             sprite.Play("destroyed");
-            Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", Position);
+            Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_seeker", Position);
 
             SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 12f, 36f, 0.5f);
             SceneAs<Level>().Displacement.AddBurst(Position, 0.4f, 24f, 48f, 0.5f);
@@ -732,12 +738,21 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
             }
-            Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_side", Position);
+            Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_wall", Position);
             if (Math.Abs(Speed.X) > 100f)
             {
                 ImpactParticles(data.Direction);
             }
             Speed.X *= -0.4f;
+        }
+
+        private bool IsHardMaterial(Platform hit)
+        {
+
+            return hit.GetLandSoundIndex(this) == SurfaceIndex.Car || hit.GetLandSoundIndex(this) == SurfaceIndex.Brick
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.StoneBridge
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.Wood
+                || hit.GetLandSoundIndex(this) == SurfaceIndex.AuroraGlass;
         }
 
         private void OnCollideV(CollisionData data)
@@ -746,17 +761,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
             }
+            //landsoft should be the default for unknown sounds
+            if (IsHardMaterial(data.Hit))
+            {
+                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landhard", Position);
+
+            }
+            else
+            {
+                Audio.Play("event:/Kataiser/sfx/ww2_woodenkey_landsoft", Position);
+            }
             if (Speed.Y > 0f)
             {
-                if (hardVerticalHitSoundCooldown <= 0f)
-                {
-                    Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_ground", Position, "crystal_velocity", Calc.ClampedMap(Speed.Y, 0f, 200f));
-                    hardVerticalHitSoundCooldown = 0.5f;
-                }
-                else
-                {
-                    Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_ground", Position, "crystal_velocity", 0f);
-                }
+
+
             }
             if (Speed.Y > 160f)
             {

@@ -362,16 +362,20 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             float increment = (float)((player.Position - previousPlayerPos).Length() == 0 ? 1 : Math.Max(0.001, 1 / (player.Position - previousPlayerPos).Length()));
             if (player.Speed != Vector2.Zero)
             {
-                for (float i = 0; i <= 1; i+= increment)
+                if ((previousPlayerPos - player.Position).Length() <= player.Speed.Length() * Engine.DeltaTime)
                 {
-                    player.Position = player.Position * (1 - i)+ i * previousPlayerPos;
-                    if (CheckPlayerPos(player) && !SaveData.Instance.Assists.Invincible)
+
+                    for (float i = 0; i <= 1; i += increment)
                     {
-                        killPlayer = true;
+                        player.Position = player.Position * (1 - i) + i * previousPlayerPos;
+                        if (CheckPlayerPos(player) && !SaveData.Instance.Assists.Invincible)
+                        {
+                            killPlayer = true;
+                            player.Position = playerActualPosition;
+                            break;
+                        }
                         player.Position = playerActualPosition;
-                        break;
                     }
-                    player.Position = playerActualPosition;
                 }
 
             }

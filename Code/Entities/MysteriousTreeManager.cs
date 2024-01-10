@@ -15,7 +15,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
     public class MysteriousTreeManager : Entity
     {
 
-        private string flag1, flag2, flag3, roomName;
+        private string flag1, flag2, flag3, roomName, beginImmediatelyFlag;
         private Level level;
 
         public MysteriousTreeManager(EntityData data, Vector2 offset)
@@ -25,13 +25,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             flag2 = data.Attr("flag2");
             flag3 = data.Attr("flag3");
             roomName = data.Attr("onDeathTeleportRoomName");
+            beginImmediatelyFlag = data.Attr("beginImmediatelyFlag");
         }
 
         public override void Awake(Scene scene)
         {
             base.Awake(scene);
             level = SceneAs<Level>();
-            level.Add(new MysteriousTree(Position, flag1, flag2, flag3, roomName));
+            level.Add(new MysteriousTree(Position, flag1, flag2, flag3, roomName, beginImmediatelyFlag));
         }
 
 

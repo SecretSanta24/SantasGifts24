@@ -172,8 +172,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 }
                 yield return null;
             }
+            yield return 1f;
 
-            if(CrystalsCollected == 511)
+            if (CrystalsCollected == 511)
             {
                 completeCrystal.crystalImage.Visible = true;
                 session.SetFlag("SS24/CC/all");
@@ -230,7 +231,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
                     yield return null;
                 }
-
+                
             }
 
             completeCrystal?.RemoveSelf();

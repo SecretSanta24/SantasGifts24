@@ -167,9 +167,23 @@
 		<Anim id="explode" path="hydro_ancientgenerator_explosion" delay="0.1"/>
 	</shockwaveEmitter>
 
-	<mysteriousTree path="objects/ss2024/tree/" start="idle">
-		<Loop id="idle" path="idle" />
+	<mysteriousTree path="objects/ss2024/tree/" start="idleA">
+		<Justify x="0.6" y="0"/>
+		<Anim id="idleA" path="treeIdleA" delay="0.1" goto="blinkA" frames="0*2,1*2,2-7"/>
+		<Anim id="idleB" path="treeIdleB" delay="0.1" goto="blinkB" frames="0*2,1*2,2-7"/>
+		<Loop id="idleC" path="treeIdleC" delay="0.1" frames="0*2,1*2,2-7"/>
+		<Anim id="blinkA" path="treeBlinkA" delay="0.2" goto="idleA"/>
+		<Anim id="blinkB" path="treeBlinkB" delay="0.2" goto="idleB"/>
+		<Anim id="damage" path="treeDamage" delay="0.1"/>
+		<Anim id="death" path="treeDamage" delay="0.1" goto="yellB"/>
+		<Loop id="yellA" path="treeYellA" delay="0.1"/>
+		<Loop id="yellB" path="treeYellB" delay="0.1"/>
 	</mysteriousTree>
+	<treeExplosion path="objects/ss2024/tree/explosions/" start="explode">
+		<Center/>
+		<Anim id="explode" path="explosion" delay="0.03"/>
+	</treeExplosion>
+
 	<tree_beam path="objects/ss2024/tree/beam/" start="charge">
 		<Justify x="0" y=".5"/>
 		<Loop id="charge" path="beam" delay="0.06" frames="0-13"/>
