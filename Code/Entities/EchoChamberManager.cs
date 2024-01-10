@@ -43,17 +43,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     e.Depth = -11500;
                 }
             }
-
-            List<Entity> c = new List<Entity>();
-            c = Scene.Tracker.GetEntities<CrumblePlatform>();
-            for (int i = 0; i < c.Count; i++)
-            {
-                CrumblePlatform e = c[i] as CrumblePlatform;
-                if (e != null)
-                {
-                    e.Depth = -12000;
-                }
-            }
         }
 
         public override void Update()
