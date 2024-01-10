@@ -235,7 +235,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 shot.Visible = true;
                 Depth = Depths.FGDecals;
 
-                Collider = new Circle(30, 0f, 0f);
+                Collider = new Circle(26, 0f, 0f);
                 Collidable = false;
                 this.player = player;
                 this.linger = lingerFrames;
