@@ -310,7 +310,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     if (level == null) return;
                     Player player = level.Tracker.GetEntity<Player>();
                     if (player == null) return;
-                    level.Add(Engine.Pooler.Create<Strike>().Init(player, 0.5f, 11, 0.3F));
+                    level.Add(Engine.Pooler.Create<Strike>().Init(player, 1f, 11, 0.3F));
                     return;
                 }
                 if(hit || !trueEvil) health--;
