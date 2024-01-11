@@ -230,9 +230,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Awake(scene); 
             
-            Player player = Scene.Tracker.GetEntity<Player>();
+            Player player = scene?.Tracker.GetEntity<Player>();
 
-            previousPlayerPos = player.Position;
+            previousPlayerPos = player?.Position ?? Vector2.Zero;
         }
         /// <summary>
         /// 
