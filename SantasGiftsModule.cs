@@ -83,6 +83,7 @@ namespace Celeste.Mod.SantasGifts24
             LevelMapManager.Load();
             HoldableLiftBoostCancelController.Load();
             SetRespawnFlagStatesTrigger.Load();
+            RngcastleDoor.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -118,6 +119,7 @@ namespace Celeste.Mod.SantasGifts24
             WaterLightningRenderer.Unload();
             ElectricZipLine.Unload();
             LevelMapManager.Unload();
+            RngcastleDoor.Unload();
 
             HoldableLiftBoostCancelController.Unload();
             SetRespawnFlagStatesTrigger.Unload();
