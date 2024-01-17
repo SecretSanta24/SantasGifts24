@@ -85,4 +85,5 @@ end
 
 local door = {smwDoorVert, smwDoorHoriz};
 
-return door 
+return nil
+--return door 

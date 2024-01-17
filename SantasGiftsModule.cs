@@ -84,6 +84,7 @@ namespace Celeste.Mod.SantasGifts24
             HoldableLiftBoostCancelController.Load();
             SetRespawnFlagStatesTrigger.Load();
             RngcastleDoor.Load();
+            AudioEventReplacerController.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -120,6 +121,7 @@ namespace Celeste.Mod.SantasGifts24
             ElectricZipLine.Unload();
             LevelMapManager.Unload();
             RngcastleDoor.Unload();
+            AudioEventReplacerController.Unload();
 
             HoldableLiftBoostCancelController.Unload();
             SetRespawnFlagStatesTrigger.Unload();
