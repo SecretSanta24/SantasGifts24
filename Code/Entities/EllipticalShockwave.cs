@@ -118,7 +118,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
 
-                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
+                if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
                 Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
                 Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
                 float outerRingSize = expand;
@@ -169,7 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             for (int i = 0; i < ellipsePoints.Length; i++)
             {
                 Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
-                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
+                if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
                 Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
                 Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
                 float outerRingSize = expand;
@@ -465,7 +465,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool CheckPlayerMovingInShockwaveDirection(Player play)
         {
             if (play.Position == Position) return false;
-            if (Math.Max(play.Speed.Length(), play.beforeDashSpeed.Length()) <= breakoutSpeed) return false;
+            if (Math.Max(play.Speed.Length(), (play.DashAttacking ? play.beforeDashSpeed.Length() : 0F)) <= breakoutSpeed) return false;
             Vector2 deltaPos = (play.Position - Position);
             deltaPos = new Vector2(deltaPos.X / b, deltaPos.Y / a);
             deltaPos.Normalize();   
