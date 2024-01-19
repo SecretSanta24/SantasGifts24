@@ -257,14 +257,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
 
             Player player = Scene.Tracker.GetEntity<Player>();
-            if (player == null)
-            {
-                return;
-            }
-            if (player.Dead)
-            {
-                return;
-            }
             for (int i = 0; i < numPoints; i++)
             {
 
@@ -278,15 +270,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.DebugRender(camera);
 
-            Player player = Scene.Tracker.GetEntity<Player>();
-            if (player == null)
-            {
-                return;
-            }
-            if (player.Dead)
-            {
-                return;
-            }
             for (int i = 0; i < numPoints; i++)
             {
 
@@ -362,7 +345,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             float increment = (float)((player.Position - previousPlayerPos).Length() == 0 ? 1 : Math.Max(0.001, 1 / (player.Position - previousPlayerPos).Length()));
             if (player.Speed != Vector2.Zero)
             {
-                if ((previousPlayerPos - player.Position).Length() <= player.Speed.Length() * Engine.DeltaTime)
+                if ((previousPlayerPos - player.Position).Length() <= Math.Ceiling(player.Speed.Length() * Engine.DeltaTime))
                 {
 
                     for (float i = 0; i <= 1; i += increment)
