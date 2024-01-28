@@ -8,7 +8,8 @@ smwKey.placements = {
     name = "SMW Key",
     data = {
         grabbable = true,
-        spritePath = "objects/ss2024/smwKey/leafkey"
+        spritePath = "objects/ss2024/smwKey/leafkey",
+        optimized = false
     }
 }
 
