@@ -17,11 +17,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public static string startingLevel;
         public static string bossLevel;
         public static string endLevel;
-        public List<string> otherLevels;
+        public static string levelsBeaten;
+        public static List<string> otherLevels;
         public static List<string> remainingLevels;
         public static int Health;
-        public static bool loseHealth = false;
         public static bool inRNGcastle = false;
+        public static bool dying = false;
         TalkComponent Talker;
 
         Image heart;
@@ -46,21 +47,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             base.Add(this.Talker = new TalkComponent(new Rectangle(0, 0, data.Width, data.Height+1), drawAt, new Action<Player>(this.OnTalk), null));
             this.Talker.PlayerMustBeFacing = false;
             Tag = Tags.HUD;
+            Depth = Depths.Above;
         }
 
         float offset = 1;
+        int healthCache;
         public override void Render()
         {
             base.Render();
+            if (!dying) healthCache = Health;
             if (inRNGcastle)
             {
-                string text = (otherLevels.Count - remainingLevels.Count).ToString();
+                string text = levelsBeaten;
                 Vector2 textMeasure = ActiveFont.Measure(text);
                 Vector2 pos = new Vector2(1920 - textMeasure.X, heart.Height + textMeasure.Y + 10);
                 if(offset != 0) ActiveFont.DrawOutline(text, pos, Vector2.One, Vector2.One, Color.Yellow * (Engine.Scene.Paused ? 0.5f : 1f) * offset, 2f, Color.Black *offset);
 
                 pos = new(1920, 10);
-                for (int i = 0; i < Health; i++)
+                for (int i = 0; i < healthCache; i++)
                 {
                     pos.X -= heart.Width;
                     heart.RenderPosition = pos;
@@ -80,10 +84,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
 
             base.Added(scene);
-            if(loseHealth)
+            dying = false;
+
+            if((scene as Level)?.Session?.Level == startingLevel)
             {
-                loseHealth = false;
-                Health--;
+                inRNGcastle = false;
+                Health = 3;
             }
         }
 
@@ -104,15 +110,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             if(rcd != null && rcd.Active && startingLevel != lvl.Session.Level)
             {
-                NextRoom(lvl, lvl.Session.Level, true);
+                dying = true;
+                NextRoom(lvl, lvl.Session.Level, true, Health-1);
             }
             orig(self);
         }
 
-        public static void NextRoom(Level lvl, string ignoredLevel, bool noTeleport = false, bool reduceHealth = true)
+        public static void NextRoom(Level lvl, string ignoredLevel, bool noTeleport = false, int newHealth = -2)
         {
-            inRNGcastle = true;
-            loseHealth = reduceHealth;
+            if (newHealth == -2) newHealth = Health;
             int randomIndex = 0;
             if(remainingLevels.Count > 1)
             {
@@ -122,7 +128,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
 
             string newRoom = bossLevel;
-            if(Health == 0 && reduceHealth)
+            if(newHealth <= 0)
             {
                 newRoom = startingLevel;
                 inRNGcastle = false;
@@ -130,18 +136,34 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 newRoom = remainingLevels[randomIndex];
             }
-            if(!noTeleport)
+            if(newRoom == lvl.Session.Level && newRoom == bossLevel)
             {
-                lvl.OnEndOfFrame += delegate ()
+                Health = newHealth;
+            }
+            else if(!noTeleport)
+            {
+                Player player = lvl.Tracker.GetEntity<Player>();
+                player.StateMachine.State = Player.StDummy;
+                lvl.DoScreenWipe(false, delegate () { }, false);
+                Alarm.Set(player, 0.5f, delegate ()
                 {
-                    lvl.TeleportTo(lvl.Tracker.GetEntity<Player>(), newRoom, Player.IntroTypes.Respawn);
-                };
+                    lvl.OnEndOfFrame += delegate ()
+                    {
+                        Health = newHealth;
+                        lvl.TeleportTo(player, newRoom, Player.IntroTypes.Respawn);
+                        inRNGcastle = true;
+                        levelsBeaten = (otherLevels.Count - remainingLevels.Count).ToString();
+                    };
+                });
+                
             } else
             {
                 lvl.Session.Level = newRoom;
                 lvl.Session.RespawnPoint = new Vector2?(
                     lvl.GetSpawnPoint(new Vector2((float)lvl.Bounds.Left,
                     (float)lvl.Bounds.Top)));
+
+                Health = newHealth;
             }
         }
 
@@ -184,14 +206,12 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             } else if (lvl.Session.Level == startingLevel)
             {
                 remainingLevels = otherLevels;
-                Health = 3;
-                NextRoom(lvl, lvl.Session.Level, false, false);
+                NextRoom(lvl, lvl.Session.Level, false, 3);
             } else
             {
                 string cleared = lvl.Session.Level;
                 remainingLevels.Remove(cleared);
-                Health++;
-                NextRoom(lvl, lvl.Session.Level, false, false);
+                NextRoom(lvl, lvl.Session.Level, false, Health+1);
             }
 
         }
