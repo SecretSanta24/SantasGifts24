@@ -56,7 +56,7 @@ namespace Celeste.Mod.SantasGifts24.Code.States
             {
                 base.Update();
                 if (player != null) this.Position = player.Position;
-                if (pdb != null )
+                if (player?.Dead ?? true && pdb != null)
                 {
                     this.sprite.Visible = false;
                     this.spriteDiag.Visible = true;
@@ -101,33 +101,49 @@ namespace Celeste.Mod.SantasGifts24.Code.States
             }
         }
 
+
+
         public static int StateNumber;
-        private static Player player;
+       // private static Player player;
+
+        public class RocketData : Component
+        {
+            public float maxSpeed = 250;
+            public float timeToMaxSpeed = 0.25f;
+            public float timeToStop = 0.25f;
+
+            public float slowDown = 1000;
+            public float speedUp = 1000;
+            public RocketRenderer rocket;
+
+            public RocketData() : base(true, false) { }
+        }
 
         public static float maxSpeed = 250;
         public static float timeToMaxSpeed = 0.25f;
         public static float timeToStop = 0.25f;
+        public static RocketData data;
 
-        public static float slowDown = 1000;
-        public static float speedUp = 1000;
-        private static RocketRenderer rocket;
         public static int Update()
         {
-            if (player == null) return Player.StNormal;
+            // savestates mess stuff up..
+            Player player = (Engine.Scene as Level).Tracker?.GetEntity<Player>();
+            data = player?.Components?.Get<RocketData>() ?? data;
+            if (player == null || data == null) return Player.StNormal;
 
             Vector2 dir = player.CorrectDashPrecision(player.lastAim);
             if(Input.Aim.Value == Vector2.Zero)
             {
-                player.Speed.X = Calc.Approach(player.Speed.X, 0f, slowDown * Engine.DeltaTime);
-                player.Speed.Y = Calc.Approach(player.Speed.Y, 0f, slowDown * Engine.DeltaTime);
+                player.Speed.X = Calc.Approach(player.Speed.X, 0f, data.slowDown * Engine.DeltaTime);
+                player.Speed.Y = Calc.Approach(player.Speed.Y, 0f, data.slowDown * Engine.DeltaTime);
             } else 
             {
                 Vector2 target = new Vector2(maxSpeed, maxSpeed) * dir;
-                player.Speed.X = Calc.Approach(player.Speed.X, target.X, speedUp * Engine.DeltaTime);
-                player.Speed.Y = Calc.Approach(player.Speed.Y, target.Y, speedUp * Engine.DeltaTime);
+                player.Speed.X = Calc.Approach(player.Speed.X, target.X, data.speedUp * Engine.DeltaTime);
+                player.Speed.Y = Calc.Approach(player.Speed.Y, target.Y, data.speedUp * Engine.DeltaTime);
             }
 
-            rocket.SetDIR(Input.Aim.Value);
+            data.rocket.SetDIR(Input.Aim.Value);
 
             return StateNumber;
         }
@@ -140,22 +156,30 @@ namespace Celeste.Mod.SantasGifts24.Code.States
         public static void Begin()
         {
             Level level = (Engine.Scene as Level);
-            player = level?.Tracker?.GetEntity<Player>();
+            Player player = level?.Tracker?.GetEntity<Player>();
             if (player == null) return;
             player.Sprite.Visible = false;
             player.Hair.Visible = false;
 
-            slowDown = maxSpeed / timeToStop;
-            speedUp = maxSpeed / timeToMaxSpeed;
-            level.Add(rocket = new RocketRenderer(player));
+            player.Add(data = new RocketData());
+
+            data.slowDown = maxSpeed / timeToStop;
+            data.speedUp = maxSpeed / timeToMaxSpeed;
+            level.Add(data.rocket = new RocketRenderer(player));
         }
 
         public static void End()
         {
+            Level level = (Engine.Scene as Level);
+            Player player = level?.Tracker?.GetEntity<Player>();
+            if (player == null) return;
+
             player.Sprite.Visible = true;
             player.Hair.Visible = true;
 
-            rocket?.RemoveSelf();
+            data.rocket?.RemoveSelf();
+            player.Components.Remove(data);
+            data = null;
         }
     }
 }
