@@ -393,7 +393,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     if (liftSpeed.Y < 0f && Speed.Y < 0f)
                     {
                         Speed.Y = 0f;
-                    }jfc
+                    }
                 }
             }
             else if (Hold.ShouldHaveGravity)
