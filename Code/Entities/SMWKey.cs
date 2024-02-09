@@ -234,7 +234,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             */
             //universal checks and rules here
 
-            if (state != State.Despawn && (!optimizedKey && optimizedFirstGrab)) 
+            if (state != State.Despawn) 
                 foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                 {
                     barrier.Collidable = true;
