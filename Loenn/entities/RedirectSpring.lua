@@ -82,9 +82,8 @@ function springLeft.rotate(room, entity, direction)
     return direction > 0
 end
 
-return nil
---return {
---    springUp,
---    springRight,
---    springLeft
---}
+return {
+    springUp,
+    springRight,
+    springLeft
+}

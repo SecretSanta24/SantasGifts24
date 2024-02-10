@@ -25,5 +25,4 @@ function gunnerDude.flip(room, entity, horizontal, vertical)
     return horizontal
 end
 
-return nil
---return gunnerDude
+return gunnerDude
