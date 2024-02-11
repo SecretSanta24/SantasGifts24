@@ -22,5 +22,4 @@ lightDarkTrigger.placements = {
     }
 }
 
-return nil
---return lightDarkTrigger
+return lightDarkTrigger

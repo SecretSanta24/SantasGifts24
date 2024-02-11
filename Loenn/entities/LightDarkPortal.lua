@@ -17,5 +17,4 @@ portal.placements = {
 portal.texture = "objects/ss2024/lightDarkPortal/normal00"
 portal.nodeTexture = "objects/ss2024/lightDarkPortal/dark00"
 
-return nil
---return portal
+return portal

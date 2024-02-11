@@ -10,5 +10,4 @@ lightDarkTilesController.placements = {
     }
 }
 
-return nil
---return lightDarkTilesController
+return lightDarkTilesController
