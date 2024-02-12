@@ -17,7 +17,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public static string startingLevel;
         public static string bossLevel;
         public static string endLevel;
-        public static string levelsBeaten;
+        public static int levelsBeaten;
         public static List<string> otherLevels;
         public static List<string> remainingLevels;
         public static int Health;
@@ -27,6 +27,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         Image heart;
 
+        public static string[] roomsClearedFlags = { "ZeroFlag", "OneFlag", "TwoFlag", "ThreeFlag", "FourFlag", "FiveFlag", "SixFlag", "SevenFlag", "EightFlag" };
+
         public RngcastleDoor(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
             startingLevel = data.Attr("startingLevel", "");
@@ -35,7 +37,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             otherLevels = new List<string>(data.Attr("rooms", "").Split(','));
             string image = data.Attr("heartImage", "checkpoint");
             heart = new Image(GFX.Gui[image]);
-            if(remainingLevels == null)
+
+
+            if (remainingLevels == null)
             {
                 remainingLevels = otherLevels;
             }
@@ -50,7 +54,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Depth = Depths.Above;
         }
 
-        float offset = 1;
+        //float offset = 1;
         int healthCache;
         public override void Render()
         {
@@ -58,12 +62,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if (!dying) healthCache = Health;
             if (inRNGcastle)
             {
-                string text = levelsBeaten;
-                Vector2 textMeasure = ActiveFont.Measure(text);
-                Vector2 pos = new Vector2(1920 - textMeasure.X, heart.Height + textMeasure.Y + 10);
-                if(offset != 0) ActiveFont.DrawOutline(text, pos, Vector2.One, Vector2.One, Color.Yellow * (Engine.Scene.Paused ? 0.5f : 1f) * offset, 2f, Color.Black *offset);
+                //string text = levelsBeaten;
+                //Vector2 textMeasure = ActiveFont.Measure(text);
+                //if(offset != 0) ActiveFont.DrawOutline(text, pos, Vector2.One, Vector2.One, Color.Yellow * (Engine.Scene.Paused ? 0.5f : 1f) * offset, 2f, Color.Black *offset);
 
-                pos = new(1920, 10);
+                Vector2 pos = new(1920, 10);
                 for (int i = 0; i < healthCache; i++)
                 {
                     pos.X -= heart.Width;
@@ -131,11 +134,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             if(newHealth <= 0)
             {
                 newRoom = startingLevel;
-                inRNGcastle = false;
             } else if(remainingLevels.Count != 0)
             {
                 newRoom = remainingLevels[randomIndex];
             }
+
             if(newRoom == lvl.Session.Level && newRoom == bossLevel)
             {
                 Health = newHealth;
@@ -152,7 +155,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         Health = newHealth;
                         lvl.TeleportTo(player, newRoom, Player.IntroTypes.Respawn);
                         inRNGcastle = true;
-                        levelsBeaten = (otherLevels.Count - remainingLevels.Count).ToString();
+                        lvl.Session.SetFlag(roomsClearedFlags[levelsBeaten], false);
+                        levelsBeaten = (otherLevels.Count - remainingLevels.Count);
+                        lvl.Session.SetFlag(roomsClearedFlags[levelsBeaten], false);
+
                     };
                 });
                 
@@ -168,8 +174,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
 
 
-        float wait = 1;
-        float t = 1;
+        //float wait = 1;
+        //float t = 1;
         public override void Update()
         {
             base.Update();
@@ -178,20 +184,24 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 lvl = (Engine.Scene as Level);
                 return;
             }
-            if (wait > 0) wait -= Engine.DeltaTime;
-            if (wait < 0 && wait != -1)
+            if(lvl?.Session?.GetFlag("hasSilver") ?? false)
             {
-                t = 0;
-                wait = -1;
+                Health = Math.Min(Health, 1);
             }
-            if (t < 1)
-            {
-                t += Engine.DeltaTime;
-                offset = 1 - Ease.SineIn(t);
-            } else if (wait == -1)
-            {
-                offset = 0;
-            }
+            //if (wait > 0) wait -= Engine.DeltaTime;
+            //if (wait < 0 && wait != -1)
+            //{
+            //    t = 0;
+            //    wait = -1;
+            //}
+            //if (t < 1)
+            //{
+            //    t += Engine.DeltaTime;
+            //    offset = 1 - Ease.SineIn(t);
+            //} else if (wait == -1)
+           // {
+            //    offset = 0;
+            //}
         }
 
         public void OnTalk(Player player)
