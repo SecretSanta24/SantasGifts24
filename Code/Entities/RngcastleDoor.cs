@@ -157,7 +157,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         inRNGcastle = true;
                         lvl.Session.SetFlag(roomsClearedFlags[levelsBeaten], false);
                         levelsBeaten = (otherLevels.Count - remainingLevels.Count);
-                        lvl.Session.SetFlag(roomsClearedFlags[levelsBeaten], false);
+                        lvl.Session.SetFlag(roomsClearedFlags[levelsBeaten], true);
 
                     };
                 });
