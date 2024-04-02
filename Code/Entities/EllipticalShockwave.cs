@@ -118,7 +118,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
 
-                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
+                if ((v1 * expand + Position - cameraPosition).LengthSquared() > 300000) continue;
                 Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
                 Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
                 float outerRingSize = expand;
@@ -169,7 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             for (int i = 0; i < ellipsePoints.Length; i++)
             {
                 Vector2 v1 = ellipsePoints[(i + 0) % ellipsePoints.Length];
-                //if ((v1 + Position - cameraPosition).LengthSquared() > 600000) continue;
+                if ((v1 * expand + Position - cameraPosition).LengthSquared() > 300000) continue;
                 Vector2 v2 = ellipsePoints[(i + 1) % ellipsePoints.Length];
                 Vector2 v3 = ellipsePoints[(i + 2) % ellipsePoints.Length];
                 float outerRingSize = expand;
@@ -230,9 +230,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.Awake(scene); 
             
-            Player player = Scene.Tracker.GetEntity<Player>();
+            Player player = scene?.Tracker.GetEntity<Player>();
 
-            previousPlayerPos = player.Position;
+            previousPlayerPos = player?.Position ?? Vector2.Zero;
         }
         /// <summary>
         /// 
@@ -257,14 +257,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
 
             Player player = Scene.Tracker.GetEntity<Player>();
-            if (player == null)
-            {
-                return;
-            }
-            if (player.Dead)
-            {
-                return;
-            }
             for (int i = 0; i < numPoints; i++)
             {
 
@@ -278,15 +270,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             base.DebugRender(camera);
 
-            Player player = Scene.Tracker.GetEntity<Player>();
-            if (player == null)
-            {
-                return;
-            }
-            if (player.Dead)
-            {
-                return;
-            }
             for (int i = 0; i < numPoints; i++)
             {
 
@@ -362,7 +345,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             float increment = (float)((player.Position - previousPlayerPos).Length() == 0 ? 1 : Math.Max(0.001, 1 / (player.Position - previousPlayerPos).Length()));
             if (player.Speed != Vector2.Zero)
             {
-                if ((previousPlayerPos - player.Position).Length() <= player.Speed.Length() * Engine.DeltaTime)
+                if ((previousPlayerPos - player.Position).Length() <= Math.Ceiling(player.Speed.Length() * Engine.DeltaTime))
                 {
 
                     for (float i = 0; i <= 1; i += increment)
@@ -465,7 +448,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private bool CheckPlayerMovingInShockwaveDirection(Player play)
         {
             if (play.Position == Position) return false;
-            if (Math.Max(play.Speed.Length(), play.beforeDashSpeed.Length()) <= breakoutSpeed) return false;
+            if (Math.Max(play.Speed.Length(), (play.DashAttacking ? play.beforeDashSpeed.Length() : 0F)) <= breakoutSpeed) return false;
             Vector2 deltaPos = (play.Position - Position);
             deltaPos = new Vector2(deltaPos.X / b, deltaPos.Y / a);
             deltaPos.Normalize();   

@@ -109,9 +109,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             session.Audio.Music.Event = SFX.EventnameByHandle("event:/aurora_aquir_gun");
             session.Audio.Apply(false);
-            level.Add(logic = new Orb(player.Position, "decals/ssc24auroraaquir/logic"));
-            level.Add(reason = new Orb(player.Position, "decals/ssc24auroraaquir/reason"));
-            level.Add(rationale = new Orb(player.Position, "decals/ssc24auroraaquir/rationale"));
+            level.Add(logic = new Orb(player.Position, "decals/SS2024/auroraaquir/logic"));
+            level.Add(reason = new Orb(player.Position, "decals/SS2024/auroraaquir/reason"));
+            level.Add(rationale = new Orb(player.Position, "decals/SS2024/auroraaquir/rationale"));
 
             Vector2 goalLogic = new(1513, -204);
             Vector2 goalReason = new(1606, -204);
@@ -193,7 +193,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             rationale.Position = currDistance.Rotate(goalAngleRationale.ToRad()) + center;
 
             yield return 1f;
-            base.Add(this.obiliskAnimation = new Sprite(GFX.Game, "decals/ssc24auroraaquir/obeliskactivation"));
+            base.Add(this.obiliskAnimation = new Sprite(GFX.Game, "decals/SS2024/auroraaquir/obeliskactivation"));
             this.obiliskAnimation.Add("animate", "", 0.45f);
             bool playing = true;
             this.obiliskAnimation.OnFinish = delegate (string anim)

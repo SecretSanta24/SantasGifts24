@@ -43,7 +43,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private JumpThru keySolid;
 
-        private Vector2 JUMPTHROUGH_OFFSET = new Vector2(-10,-8);
+        private Vector2 JUMPTHROUGH_OFFSET = new Vector2(-10, -8);
         private Collider doorCollider = new Hitbox(20f, 14f, -10f, -12f);
         private float leniencyGrabTimer;
 
@@ -54,6 +54,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
         private State state = State.Ungrabbed;
         private bool grabbable;
+        private bool optimizedKey;
+        private bool optimizedFirstGrab = false;
+        private bool optimizedKeyAtRest = true;
 
         public SMWKey(Vector2 position)
             : base(position)
@@ -66,6 +69,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             grabbable = data.Bool("grabbable", true);
             string spritePath = data.Attr("spritePath", "objects/ss2024/smwKey/leafkey");
+            optimizedKey = data.Bool("optimized", false);
             base.Depth = 100;
             base.Collider = new Hitbox(8f, 10f, -4f, -10f);
             Add(sprite = new Sprite(GFX.Game, ""));
@@ -134,7 +138,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     opennedDoor = true;
                     break;
                 }
-                if(opennedDoor)
+                if (opennedDoor)
                 {
 
                     Scene.Remove(this);
@@ -156,7 +160,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collider tempHolder = Collider;
             Collider = doorCollider;
 
-            foreach(TreeKeyBarrier tkb in Level.Tracker.GetEntities<TreeKeyBarrier>())
+            foreach (TreeKeyBarrier tkb in Level.Tracker.GetEntities<TreeKeyBarrier>())
             {
                 tkb.Collidable = true;
                 if (tkb != null && CollideCheck(tkb))
@@ -217,8 +221,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
             Collider tempHolder = Collider;
-            if (state != State.Despawn) HandleDoors();
-            HandleBarriers();
+            if (state != State.Despawn && !optimizedKey) HandleDoors();
+            if (!optimizedKey) HandleBarriers();
             Collidable = tempCollidableState;
             //keeping here in case this is still a thing
             /*if (player != null)
@@ -230,17 +234,18 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             */
             //universal checks and rules here
 
-            if (state != State.Despawn) foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
-            {
-                barrier.Collidable = true;
-                bool collided = CollideCheck(barrier);
-                barrier.Collidable = false;
-                if (collided)
+            if (state != State.Despawn) 
+                foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                 {
-                    SetState(State.Despawn);
-                    break;
+                    barrier.Collidable = true;
+                    bool collided = CollideCheck(barrier);
+                    barrier.Collidable = false;
+                    if (collided)
+                    {
+                        SetState(State.Despawn);
+                        break;
+                    }
                 }
-            }
 
             previousPosition = Position;
         }
@@ -298,14 +303,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void BufferedUpdate()
         {
-            Player player = Scene.Tracker.GetEntity<Player>(); 
+            Player player = Scene.Tracker.GetEntity<Player>();
             bool tempCollidableState = Collidable;
 
             Collider tempHolder = Collider;
             Collidable = true;
             Collider = Hold?.PickupCollider;
             if (CollideCheck<Player>() && player.Holding == null) SetState(State.Primed);
-            Collider = tempHolder; 
+            Collider = tempHolder;
             Collidable = tempCollidableState;
 
         }
@@ -314,7 +319,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         {
             Player player = Scene.Tracker.GetEntity<Player>();
             prevLiftSpeed = Vector2.Zero;
-
+            optimizedFirstGrab = optimizedKey;
             float f1 = Engine.DeltaTime * Calc.Clamp(player != null ? player.Speed.Length() : Speed.Length(), 1000, float.MaxValue);
             var approach = this.Position + JUMPTHROUGH_OFFSET;
             Collidable = false;
@@ -336,92 +341,95 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void UngrabbedUpdate()
         {
-            Player player = Scene.Tracker.GetEntity<Player>();
 
             bool tempCollidableState = Collidable; //key should be considered 
             Collidable = true;
-
+            var speedMagnitude = Speed.Length();
+            if (speedMagnitude > 0)
+            {
+                optimizedKeyAtRest = false;
+            }
             //keysolid move code
-            float f1 = Engine.DeltaTime * Calc.Clamp(Speed.Length(), 10000, float.MaxValue);
+            float f1 = Engine.DeltaTime * Calc.Clamp(speedMagnitude, 10000, float.MaxValue);
             var approach = this.ExactPosition + JUMPTHROUGH_OFFSET;
-            keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), LiftSpeed.SafeNormalize() * 100);
+            if ((keySolid.Position - approach).LengthSquared() > 0.1F)
+                keySolid.MoveTo(Calc.Approach(keySolid.Position, approach, f1), LiftSpeed.SafeNormalize() * 100);
 
             //teleport catchup code code
-            if ((Position - previousPosition).Length() > Speed.Length() * 3 && Speed.Length() != 0)
+            if ((Position - previousPosition).Length() > speedMagnitude * 3 && speedMagnitude != 0)
             {
                 keySolid.Position = Position + JUMPTHROUGH_OFFSET;
             }
 
 
-            //barrier collide code
-
-            if (false)
+            if (OnGround())
             {
+                float target2 = 0;
+                if (!optimizedKeyAtRest)
+                {
+                    target2 = (!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f));
+
+                    if (speedMagnitude == 0 && target2 == 0) optimizedKeyAtRest = true;
+                }
+                Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
+                Vector2 liftSpeed = base.LiftSpeed;
+                if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
+                {
+                    Speed = prevLiftSpeed;
+                    prevLiftSpeed = Vector2.Zero;
+                    Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
+                    if (Speed.X != 0f && Speed.Y == 0f)
+                    {
+                        Speed.Y = -60f;
+                    }
+                    if (Speed.Y < 0f)
+                    {
+                        noGravityTimer = 0.15f;
+                    }
+                }
+                else
+                {
+                    prevLiftSpeed = liftSpeed;
+                    if (liftSpeed.Y < 0f && Speed.Y < 0f)
+                    {
+                        Speed.Y = 0f;
+                    }
+                }
             }
-            else
+            else if (Hold.ShouldHaveGravity)
             {
-                if (OnGround())
+                float num2 = 300F;
+                if (Speed.Y >= -90F)
                 {
-                    float target2 = ((!OnGround(Position + Vector2.UnitX * 3f)) ? 20f : (OnGround(Position - Vector2.UnitX * 3f) ? 0f : (-20f)));
-                    Speed.X = Calc.Approach(Speed.X, target2, 800f * Engine.DeltaTime);
-                    Vector2 liftSpeed = base.LiftSpeed;
-                    if (liftSpeed == Vector2.Zero && prevLiftSpeed != Vector2.Zero)
-                    {
-                        Speed = prevLiftSpeed;
-                        prevLiftSpeed = Vector2.Zero;
-                        Speed.Y = Math.Min(Speed.Y * 0.6f, 0f);
-                        if (Speed.X != 0f && Speed.Y == 0f)
-                        {
-                            Speed.Y = -60f;
-                        }
-                        if (Speed.Y < 0f)
-                        {
-                            noGravityTimer = 0.15f;
-                        }
-                    }
-                    else
-                    {
-                        prevLiftSpeed = liftSpeed;
-                        if (liftSpeed.Y < 0f && Speed.Y < 0f)
-                        {
-                            Speed.Y = 0f;
-                        }
-                    }
+                    num2 *= 0.5f;
                 }
-                else if (Hold.ShouldHaveGravity)
+                float num3 = (Speed.Y < 0f) ? 80F : 80f;
+                Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
+                if (noGravityTimer > 0f)
                 {
-                    float num2 = 300F;
-                    if (Speed.Y >= -90F)
-                    {
-                        num2 *= 0.5f;
-                    }
-                    float num3 = (Speed.Y < 0f) ? 80F : 80f;
-                    Speed.X = Calc.Approach(Speed.X, 0f, 1.5F * num3 * Engine.DeltaTime);
-                    if (noGravityTimer > 0f)
-                    {
-                        noGravityTimer -= Engine.DeltaTime;
-                    }
-                    else if (Level.Wind.Y < 0f)
-                    {
-                        Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
-                    }
-                    else
-                    {
-                        Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
-                    }
+                    noGravityTimer -= Engine.DeltaTime;
                 }
-                MoveH(Speed.X * Engine.DeltaTime, onCollideH);
-                MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
-
-                if (base.Top > (float)(Level.Bounds.Bottom + 16))
+                else if (Level.Wind.Y < 0f)
                 {
-                    RemoveSelf();
-                    return;
+                    Speed.Y = Calc.Approach(Speed.Y, 0f, num2 * Engine.DeltaTime);
                 }
-
-                if (grabbable) Hold.CheckAgainstColliders();
-
+                else
+                {
+                    Speed.Y = Calc.Approach(Speed.Y, 90F, num2 * Engine.DeltaTime);
+                }
             }
+            MoveH(Speed.X * Engine.DeltaTime, onCollideH);
+            MoveV(Speed.Y * Engine.DeltaTime, onCollideV);
+
+            if (base.Top > (float)(Level.Bounds.Bottom + 16))
+            {
+                RemoveSelf();
+                return;
+            }
+
+            if (grabbable) Hold.CheckAgainstColliders();
+
+
             Collidable = tempCollidableState;
         }
 
@@ -467,7 +475,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     if (Hold?.Holder?.Top > keySolid.Bottom)
                     {
                         SetState(State.Grabbed);
-                    } else
+                    }
+                    else
                     {
                         keySolid.Collidable = false;
                     }
@@ -559,15 +568,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 foreach (SMWKey key in self.Scene.Tracker.GetEntities<SMWKey>())
                 {
-                        if (key.state == State.Primed)
-                        {
-                            key.SetState(State.PostDashLeniency);
-                        }
-                        else
-                        {
-                            key.SetState(State.Ungrabbed);
+                    if (key.state == State.Primed)
+                    {
+                        key.SetState(State.PostDashLeniency);
+                    }
+                    else
+                    {
+                        key.SetState(State.Ungrabbed);
 
-                        }
+                    }
                 }
             }
             else
@@ -632,9 +641,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 float progressIncrement = 1;
                 if (distance > 0) progressIncrement = Math.Max(1 / distance, 0.01F);
                 bool hitBarrier = false;
-                for (float i = 0; i < 1; i+=progressIncrement)
+                for (float i = 0; i < 1; i += progressIncrement)
                 {
-                    Position = Vector2.Lerp(Position, player.Center, i); 
+                    Position = Vector2.Lerp(Position, player.Center, i);
                     foreach (SeekerBarrier barrier in base.Scene.Tracker.GetEntities<SeekerBarrier>())
                     {
                         barrier.Collidable = true;
@@ -693,7 +702,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
-            if(keySolid != null) scene.Remove(keySolid);
+            if (keySolid != null) scene.Remove(keySolid);
         }
 
 
@@ -867,7 +876,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         public void Die()
         {
             SceneAs<Level>().Remove(this);
-            
+
         }
         public override void DebugRender(Camera camera)
         {

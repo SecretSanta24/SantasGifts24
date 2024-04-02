@@ -1,19 +1,10 @@
 ﻿using Celeste.Mod.Entities;
-using Celeste.Mod.SantasGifts24.Triggers;
-using IL.Celeste;
-using IL.MonoMod;
 using Microsoft.Xna.Framework;
-using Mono.Cecil;
 using Monocle;
-using On.Celeste;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography.X509Certificates;
-using static Celeste.MoonGlitchBackgroundTrigger;
 
 namespace Celeste.Mod.SantasGifts24.Code.Entities
 {
@@ -220,7 +211,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     doNotMove = true;
                     Position = (Vector2)forcePosition;
                 }
-                base.Add(shot = new Sprite(GFX.Game, "decals/ssc24auroraaquir/obeliskactivation"));
+                base.Add(shot = new Sprite(GFX.Game, "decals/SS2024/auroraaquir/obeliskactivation"));
                 shot.Add("animate", "", duration / 18f);
                 this.shot.OnFinish = delegate (string anim)
                 {
@@ -235,7 +226,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 shot.Visible = true;
                 Depth = Depths.FGDecals;
 
-                Collider = new Circle(30, 0f, 0f);
+                Collider = new Circle(26, 0f, 0f);
                 Collidable = false;
                 this.player = player;
                 this.linger = lingerFrames;
@@ -274,6 +265,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 image.CenterOrigin();
                 Collider = new Circle(image.Width/2);
                 base.Add(new PlayerCollider(OnPlayer));
+                Tag = Tags.FrozenUpdate;
             }
 
             public void OnPlayer(Player player)
@@ -310,7 +302,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     if (level == null) return;
                     Player player = level.Tracker.GetEntity<Player>();
                     if (player == null) return;
-                    level.Add(Engine.Pooler.Create<Strike>().Init(player, 0.5f, 11, 0.3F));
+                    level.Add(Engine.Pooler.Create<Strike>().Init(player, 1f, 11, 0.3F));
                     return;
                 }
                 if(hit || !trueEvil) health--;
@@ -365,6 +357,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             }
         }
 
+        private bool DEBUG = false;
         public IEnumerator Fight()
         {
             yield return 0;
@@ -376,9 +369,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Boss logic;
             Boss reason;
             Boss rationale;
-            level.Add(logic = new Boss(player.Position, "decals/ssc24auroraaquir/logic"));
-            level.Add(reason = new Boss(player.Position, "decals/ssc24auroraaquir/reason"));
-            level.Add(rationale = new Boss(player.Position, "decals/ssc24auroraaquir/rationale"));
+            level.Add(logic = new Boss(player.Position, "decals/SS2024/auroraaquir/logic"));
+            level.Add(reason = new Boss(player.Position, "decals/SS2024/auroraaquir/reason"));
+            level.Add(rationale = new Boss(player.Position, "decals/SS2024/auroraaquir/rationale"));
 
             List<DustStaticSpinner> spinners = new List<DustStaticSpinner>();
 
@@ -398,6 +391,13 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 level.Add(Engine.Pooler.Create<Bullet>().Init(from, player.Center));
             }
 
+            if(DEBUG)
+            {
+                alreadySeenTheIntro = true;
+                logic.health = 0;
+                reason.health = 0;
+                rationale.health = 0;
+            }
 
             if (!alreadySeenTheIntro)
             {
@@ -449,7 +449,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
 
                 distance = new Vector2(0, -90);
-                for (int i = 0; i <= 12; i++)
+                for (int i = 0; i < 12; i++)
                 {
                     SetPositionBasedOnRotation(rotation);
                     rotation += 10;
@@ -629,7 +629,15 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 yield return 0;
             }
 
-            for (int i = 0; i <=12; i++)
+            if(trueEvil)
+            {
+                foreach(DustStaticSpinner dss in level.Tracker.GetEntities<DustStaticSpinner>()) {
+                    if(!spinners.Contains(dss)) spinners.Add(dss);
+                }
+            }
+
+            Console.WriteLine($"{Math.Floor(spinners.Count / 3f)} {spinners.Count}");
+            for (int i = 0; spinners.Count > 0; i++)
             {
                 for(int j = 0; j < 3; j++)
                 {
@@ -639,7 +647,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     ds.RemoveSelf();
                     spinners.RemoveAt(0);
                 }
-                if (trueEvil) shootStrike(0.3f, 2f, 10);
+                if (trueEvil) shootStrike(0.3f, 3f, 33);
                 if (i < 6) yield return 1f;
                 else yield return 0.5f;
             }
@@ -647,10 +655,19 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             yield return 0.5f;
             shootStrike(500f, 3.018f, 10);
             yield return 3f; 
-            level.OnEndOfFrame += delegate ()
+            if(!trueEvil) level.OnEndOfFrame += delegate ()
+                {
+                    level.TeleportTo(level.Tracker.GetEntity<Player>(), "the_end", Player.IntroTypes.Respawn);
+                };
+            else
             {
-                level.TeleportTo(level.Tracker.GetEntity<Player>(), "the_end", Player.IntroTypes.Respawn);
-            };
+                level.OnEndOfFrame += delegate ()
+                {
+                    level.TeleportTo(level.Tracker.GetEntity<Player>(), "the_end", Player.IntroTypes.Respawn);
+                };
+                //level.Frozen = true;
+
+            }
             yield break;
         }
     }

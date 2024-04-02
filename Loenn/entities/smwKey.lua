@@ -8,7 +8,8 @@ smwKey.placements = {
     name = "SMW Key",
     data = {
         grabbable = true,
-        spritePath = "objects/ss2024/smwKey/leafkey"
+        spritePath = "objects/ss2024/smwKey/leafkey",
+        optimized = false
     }
 }
 
@@ -24,5 +25,5 @@ function smwKey.sprite(room, entity)
     return sprite
 end
 
---return nil
-return smwKey
+return nil
+--return smwKey
