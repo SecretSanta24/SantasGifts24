@@ -309,7 +309,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             Collider tempHolder = Collider;
             Collidable = true;
             Collider = Hold?.PickupCollider;
-            if (CollideCheck<Player>() && player.Holding == null) SetState(State.Primed);
+            if (player != null && CollideCheck<Player>() && player.Holding == null) SetState(State.Primed);
             Collider = tempHolder;
             Collidable = tempCollidableState;
 
@@ -632,7 +632,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private void Pickup(Player player)
         {
-            if (grabbable)
+            if (grabbable && player != null)
             {
                 player.holdCannotDuck = true;
                 keySolid.Collidable = false;
