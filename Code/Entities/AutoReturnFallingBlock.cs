@@ -19,8 +19,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         private float restartDelay;
         private string flagOnReset;
         private string flagOnFall;
+        private string flagOnLand;
         private string flagTrigger;
         private bool resetFlagState;
+        private bool landFlagState;
         private bool fallFlagState;
         private bool invertTriggerFlag;
         private float maxSpeed;
@@ -42,8 +44,11 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             restartDelay = data.Float("resetDelay", 1F);
             flagOnReset = data.Attr("flagOnReset", "");
             flagOnFall = data.Attr("flagOnFall", "");
+            flagOnLand = data.Attr("flagOnLand", "");
             flagTrigger = data.Attr("flagTrigger", "");
+
             resetFlagState = data.Bool("resetFlagState");
+            landFlagState = data.Bool("landFlagState");
             fallFlagState = data.Bool("fallFlagState");
             invertTriggerFlag = !data.Bool("invertFlagTrigger");
             maxSpeed = data.Float("maxSpeed", 160);
@@ -171,7 +176,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
                         yield return null;
                     }
-                    SceneAs<Level>().Session.SetFlag(flagOnFall, fallFlagState); //fall flag
+                    if (flagOnFall != "") SceneAs<Level>().Session.SetFlag(flagOnFall, fallFlagState); //fall flag
                     ImpactSfx();
                     Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
                     SceneAs<Level>().DirectionalShake(Vector2.UnitY, 0.3f);
@@ -186,7 +191,9 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                             SceneAs<Level>().DirectionalShake(Vector2.UnitX, 0.3f);
                             break;
                     }
+
                     StartShaking();
+                    if (flagOnLand != "") SceneAs<Level>().Session.SetFlag(flagOnLand, landFlagState); //land flag
                     LandParticles();
                     yield return 0.2f;
                     StopShaking();
@@ -332,7 +339,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                         yield return null;
                     }
 
-                    SceneAs<Level>().Session.SetFlag(flagOnReset, resetFlagState);
+                    if (flagOnReset != "") SceneAs<Level>().Session.SetFlag(flagOnReset, resetFlagState);
+
                     ReturnSfx();
                     Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
                     switch (orientation)
