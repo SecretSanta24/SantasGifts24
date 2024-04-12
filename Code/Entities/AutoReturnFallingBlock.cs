@@ -50,7 +50,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             resetFlagState = data.Bool("resetFlagState");
             landFlagState = data.Bool("landFlagState");
             fallFlagState = data.Bool("fallFlagState");
-            invertTriggerFlag = !data.Bool("invertFlagTrigger");
+            invertTriggerFlag = data.Bool("invertFlagTrigger"); 
             maxSpeed = data.Float("maxSpeed", 160);
             fallingAcceleration = data.Float("acceleration", 500);
             climbFall = data.Bool("climbFall", false);
@@ -94,7 +94,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 while (!Triggered && !PlayerFallCheck())
                 {
-                    if (flagTrigger != "" && SceneAs<Level>().Session.GetFlag(flagTrigger) ^ invertTriggerFlag)
+                    if (flagTrigger != "" && (SceneAs<Level>().Session.GetFlag(flagTrigger) ^ invertTriggerFlag))
                     {
                         Triggered = true;
                     }
@@ -124,6 +124,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                     }
 
                     StopShaking();
+                    if (flagOnFall != "") SceneAs<Level>().Session.SetFlag(flagOnFall, fallFlagState); //fall flag
                     for (int i = 2; i < Width; i += 4)
                     {
                         if (Scene.CollideCheck<Solid>(TopLeft + new Vector2(i, -2f)))
@@ -176,7 +177,6 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
                         yield return null;
                     }
-                    if (flagOnFall != "") SceneAs<Level>().Session.SetFlag(flagOnFall, fallFlagState); //fall flag
                     ImpactSfx();
                     Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
                     SceneAs<Level>().DirectionalShake(Vector2.UnitY, 0.3f);
