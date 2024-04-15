@@ -101,7 +101,7 @@ namespace Celeste.Mod.NeutronHelper
         public Thalassocardiologist(Vector2 position, bool faceRight, string spritekey)
             : base(position)
         {
-            Depth = 1;
+            Depth = -1;
             base.Collider = new Hitbox(12f, 10f, -6f, -5f);
             Add(new PlayerCollider(OnPlayer, new Hitbox(14f, 12f, -7f, -7f)));
             Add(sprite = GFX.SpriteBank.Create(spritekey));

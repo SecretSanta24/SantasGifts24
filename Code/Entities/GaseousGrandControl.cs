@@ -61,7 +61,6 @@ namespace Celeste.Mod.NeutronHelper
                     RemoveSelf();
                 }
             }
-            Add(new Coroutine(StylegroundRoutine()));
         }
 
         public static void Load()
@@ -120,9 +119,33 @@ namespace Celeste.Mod.NeutronHelper
 
 
                 float lerp = Calc.Clamp(Oxygen, 0f, 500f) / 500f;
+                float lerpInv = 1 - lerp;
 
                 Distort.AnxietyOrigin = new Vector2((player.Center.X - level.Camera.X) / 320f, (player.Center.Y - level.Camera.Y) / 180f);
-                Distort.Anxiety = 1 - lerp;
+                Distort.Anxiety = lerpInv;
+
+
+
+                foreach (Backdrop item in (Scene as Level).Background.GetEach<Backdrop>(StyleTagIn))
+                {
+                    item.ForceVisible = true;
+                    item.FadeAlphaMultiplier = lerpInv;
+                }
+                foreach (Backdrop item in (Scene as Level).Background.GetEach<Backdrop>(StyleTagOut))
+                {
+                    item.ForceVisible = true;
+                    item.FadeAlphaMultiplier = lerp;
+                }
+                foreach (Backdrop item in (Scene as Level).Foreground.GetEach<Backdrop>(StyleTagIn))
+                {
+                    item.ForceVisible = true;
+                    item.FadeAlphaMultiplier = lerpInv;
+                }
+                foreach (Backdrop item in (Scene as Level).Foreground.GetEach<Backdrop>(StyleTagOut))
+                {
+                    item.ForceVisible = true;
+                    item.FadeAlphaMultiplier = lerp;
+                }
 
                 Audio.SetMusicParam(musicParamName, Calc.ClampedMap(lerp, 1, 0, musicParamMin, musicParamMax));
 
@@ -148,37 +171,6 @@ namespace Celeste.Mod.NeutronHelper
         public override void Render()
         {
             base.Render();
-        }
-
-        public IEnumerator StylegroundRoutine()
-        {
-            while (true)
-            {
-                float fade = Calc.Clamp(Oxygen, 0f, 500f) / 500f;
-                float fadeInv = 1 - fade;
-                foreach (Backdrop item in (Scene as Level).Background.GetEach<Backdrop>(StyleTagIn))
-                {
-                    item.ForceVisible = true;
-                    item.FadeAlphaMultiplier = fadeInv;
-                }
-                foreach (Backdrop item in (Scene as Level).Background.GetEach<Backdrop>(StyleTagOut))
-                {
-                    item.ForceVisible = true;
-                    item.FadeAlphaMultiplier = fade;
-                }
-                foreach (Backdrop item in (Scene as Level).Foreground.GetEach<Backdrop>(StyleTagIn))
-                {
-                    item.ForceVisible = true;
-                    item.FadeAlphaMultiplier = fadeInv;
-                }
-                foreach (Backdrop item in (Scene as Level).Foreground.GetEach<Backdrop>(StyleTagOut))
-                {
-                    item.ForceVisible = true;
-                    item.FadeAlphaMultiplier = fade;
-                }
-                yield return null;
-            }
-
         }
     }
 }
