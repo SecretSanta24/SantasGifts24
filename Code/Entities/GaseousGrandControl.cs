@@ -158,16 +158,8 @@ namespace Celeste.Mod.NeutronHelper
                 }
                 
                 level.Session.SetFlag("o2_flag_hcd", !(Oxygen >= 500));
-
             }
-
-
-
-
         }
-
-
-
         public override void Render()
         {
             base.Render();
