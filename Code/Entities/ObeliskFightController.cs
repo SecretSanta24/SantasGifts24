@@ -326,7 +326,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
         }
 
         Level level;
-        static bool alreadySeenTheIntro = false;
+        bool alreadySeenTheIntro = false;
         public ObeliskFightController(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
             trueEvil = data.Bool("trueEvil", false);
@@ -337,6 +337,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             base.Awake(scene);
 
             level = (scene as Level);
+            if (level.Session.GetFlag("already_seen_fight_intro")) alreadySeenTheIntro = true;
             base.Add(new Coroutine(Fight()));
         }
 
@@ -393,7 +394,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
             if(DEBUG)
             {
-                alreadySeenTheIntro = true;
+                alreadySeenTheIntro = true; 
                 logic.health = 0;
                 reason.health = 0;
                 rationale.health = 0;
@@ -465,7 +466,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 rotation = 0;
                 SetPositionBasedOnRotation(rotation);
             }
-            alreadySeenTheIntro = true;
+            level.Session.SetFlag("already_seen_fight_intro", true);
             canShoot = true;
             int logicAttackCounter = 250;
             int reasonAttackCounter = 150;
