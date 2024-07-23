@@ -40,7 +40,6 @@ public static class PenumbraIconFix{
         cursor.Emit(OpCodes.Ldfld, Cu2IconCellField);
         // custom scaling logic
         cursor.EmitDelegate<Func<float, string, float>>((oldScale, icon) => {
-            Logger.Log(LogLevel.Info, "SantasGifts24/PenumbraIconFix", icon);
             if(icon.EndsWith("-SSC-fullscale", StringComparison.Ordinal))
                 return 65f / GFX.Gui[icon].Width;
             return oldScale;
