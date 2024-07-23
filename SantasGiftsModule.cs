@@ -88,6 +88,7 @@ namespace Celeste.Mod.SantasGifts24
             AudioEventReplacerController.Load();
             
             PenumbraIconFix.Load();
+            YsmwTitleSwap.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -130,6 +131,7 @@ namespace Celeste.Mod.SantasGifts24
             SetRespawnFlagStatesTrigger.Unload();
             
             PenumbraIconFix.Unload();
+            YsmwTitleSwap.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }
