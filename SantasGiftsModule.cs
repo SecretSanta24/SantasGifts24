@@ -13,6 +13,7 @@ using Celeste.Mod.NeutronHelper;
 using Celeste.Mod.SantasGifts24.Entities;
 using MonoMod.ModInterop;
 using System.Security.Policy;
+using Celeste.Mod.SantasGifts24.Code.Misc;
 using static Celeste.Mod.SantasGifts24.SantasGiftsModule;
 
 [assembly: IgnoresAccessChecksTo("Celeste")]
@@ -85,6 +86,8 @@ namespace Celeste.Mod.SantasGifts24
             SetRespawnFlagStatesTrigger.Load();
             RngcastleDoor.Load();
             AudioEventReplacerController.Load();
+            
+            PenumbraIconFix.Load();
 
             typeof(FemtoHelperImports).ModInterop();
 
@@ -125,6 +128,8 @@ namespace Celeste.Mod.SantasGifts24
 
             HoldableLiftBoostCancelController.Unload();
             SetRespawnFlagStatesTrigger.Unload();
+            
+            PenumbraIconFix.Unload();
 
             On.Celeste.Player.ctor -= AddCustomStates;
         }

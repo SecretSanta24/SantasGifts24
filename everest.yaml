@@ -7,3 +7,5 @@
   OptionalDependencies:
     - Name: CommunalHelper
       Version: 1.19.0
+    - Name: CollabUtils2
+      Version: 1.0.0
