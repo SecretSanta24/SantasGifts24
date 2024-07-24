@@ -87,6 +87,9 @@ entities.SS2024/RedirectSpringUp.placements.name.redirectSpringUp=Redirect Sprin
 entities.SS2024/RedirectSpringLeft.placements.name.redirectSpringLeft=Redirect Spring (Left)
 entities.SS2024/RedirectSpringRight.placements.name.redirectSpringRight=Redirect Spring (Right)
 
+# Storybook Bell
+entities.SS2024/StorybookBell.placements.name.bell=Storybook Bell
+
 # ---------- Triggers ----------
 
 # Gaseous Trigger
