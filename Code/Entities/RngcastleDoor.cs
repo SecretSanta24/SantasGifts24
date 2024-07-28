@@ -108,13 +108,14 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
 
         private static void PlayerDeadBody_End(On.Celeste.PlayerDeadBody.orig_End orig, PlayerDeadBody self)
         {
-            Level lvl = Engine.Scene as Level;
-            RngcastleDoor rcd = lvl.Tracker.GetEntity<RngcastleDoor>();
+            if(!self.finished) {
+                Level lvl = Engine.Scene as Level;
+                RngcastleDoor rcd = lvl.Tracker.GetEntity<RngcastleDoor>();
 
-            if(rcd != null && rcd.Active && startingLevel != lvl.Session.Level)
-            {
-                dying = true;
-                NextRoom(lvl, lvl.Session.Level, true, Health-1);
+                if (rcd != null && rcd.Active && startingLevel != lvl.Session.Level) {
+                    dying = true;
+                    NextRoom(lvl, lvl.Session.Level, true, Health - 1);
+                }
             }
             orig(self);
         }
@@ -125,9 +126,10 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             int randomIndex = 0;
             if(remainingLevels.Count > 1)
             {
-                do {
-                    randomIndex = Calc.Random.Next(remainingLevels.Count);
-                } while (randomIndex == remainingLevels.FindIndex(r => r == ignoredLevel));
+                randomIndex = Calc.Random.Next(remainingLevels.Count-1);
+                if(randomIndex >= remainingLevels.FindIndex(r => r == ignoredLevel)) {
+                    randomIndex = (randomIndex+1)%remainingLevels.Count;
+                }
             }
 
             string newRoom = bossLevel;
