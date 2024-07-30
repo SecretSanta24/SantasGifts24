@@ -48,8 +48,9 @@ public class CS_StorybookBell : CutsceneEntity{
         p.DummyMaxspeed = false;
         var centre = CutsceneNode.Find("bell_strawberry_target").Position;
         int dirRaw = Math.Sign(centre.X - p.Position.X);
-        p.Facing = (Facings)dirRaw;
-        p.Speed.X = -dirRaw * 300;
+        int dir = dirRaw == 0 ? -1 : 1;
+        p.Facing = (Facings)dir;
+        p.Speed.X = -dir * 300;
         p.Speed.Y = -190;
         bell.swinging = true;
         // 6f
