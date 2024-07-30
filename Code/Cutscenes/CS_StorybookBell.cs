@@ -58,7 +58,7 @@ public class CS_StorybookBell : CutsceneEntity{
         for (int i = 0; i < 4; i++){
             level.Displacement.AddBurst(centre, 1, 1, 220, 0.5f);
             var inst = Audio.Play("event:/game/general/strawberry_get", centre, "colour", 2, "count", 0);
-            inst.setPitch(1.3f + Calc.Random.NextFloat(0.3f));
+            inst.setPitch(1.3f + Calc.Random.NextFloat(0.3f) + i * 0.05f);
             inst.setVolume(0.6f + Calc.Random.NextFloat(0.2f));
             yield return 1.2f;
         }
