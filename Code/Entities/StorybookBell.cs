@@ -13,6 +13,7 @@ public class StorybookBell : Entity{
     public const string DisableFlag = "SSC_storybook_bell_collected";
 
     internal bool disabled, swinging;
+    internal float swingMul;
     private Image bellFront, bellBack, bellClapper;
     private float time = 0;
     
@@ -41,8 +42,8 @@ public class StorybookBell : Entity{
 
         if(swinging){
             float fac = 1 - (time / 52f);
-            float offset = (float)(Math.Sin(time * 1.4f) / 9f) * fac;
-            bellFront.Rotation = bellBack.Rotation = bellClapper.Rotation = (float)Math.Sin(time) * fac / 4f;
+            float offset = swingMul * (float)(Math.Sin(time * 1.35f) / 9f) * fac;
+            bellFront.Rotation = bellBack.Rotation = bellClapper.Rotation = swingMul * (float)Math.Sin(time) * fac / 4f;
             bellFront.Rotation -= offset;
             bellBack.Rotation -= offset;
             bellClapper.Rotation += offset;

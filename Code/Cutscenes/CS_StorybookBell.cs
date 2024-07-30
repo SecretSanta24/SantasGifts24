@@ -48,11 +48,12 @@ public class CS_StorybookBell : CutsceneEntity{
         p.DummyMaxspeed = false;
         var centre = CutsceneNode.Find("bell_strawberry_target").Position;
         int dirRaw = Math.Sign(centre.X - p.Position.X);
-        int dir = dirRaw == 0 ? -1 : 1;
+        int dir = dirRaw == 0 ? -1 : dirRaw;
         p.Facing = (Facings)dir;
         p.Speed.X = -dir * 300;
         p.Speed.Y = -190;
         bell.swinging = true;
+        bell.swingMul = -dir;
         // 6f
         for (int i = 0; i < 4; i++){
             level.Displacement.AddBurst(centre, 1, 1, 220, 0.5f);
