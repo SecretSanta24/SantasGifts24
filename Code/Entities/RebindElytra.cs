@@ -66,6 +66,7 @@ public class RebindElytra : Entity
     private bool closing = false;
     private ButtonBinding ElytraButtonBinding;
     private string currentButtons = "";
+    private string otherButtons = "";
     public RebindElytra() {
         this.level = Engine.Scene as Level;
         Tag = Tags.HUD | Tags.FrozenUpdate;
@@ -88,10 +89,12 @@ public class RebindElytra : Entity
         if(!Input.GuiInputController(Input.PrefixMode.Latest))
         {
             currentButtons = "Current keys: " + String.Join(", ", ElytraButtonBinding.Keys);
+            otherButtons = "Current buttons: " + String.Join(", ", ElytraButtonBinding.Buttons);
         }
         else
         {
             currentButtons = "Current buttons: " + String.Join(", ", ElytraButtonBinding.Buttons);
+            otherButtons = "Current keys: " + String.Join(", ", ElytraButtonBinding.Keys);
         }
 
         this.remappingEase = Calc.Approach(this.remappingEase, 1, Engine.RawDeltaTime * 4f);
@@ -262,6 +265,7 @@ public class RebindElytra : Entity
             //Draw.Rect(-10f, -10f, 1940f, 1100f, Color.Black * 0.95f * Ease.CubeInOut(this.remappingEase));
             ActiveFont.Draw(Dialog.Get("KEY_CONFIG_CHANGING", null), value + new Vector2(0f, -8f), new Vector2(0.5f, 1f), Vector2.One * 0.7f, Color.LightGray * Ease.CubeIn(this.remappingEase));
             ActiveFont.Draw(currentButtons, new Vector2(1920f / 2, 1080f - 100f), new Vector2(0.5f, 1f), Vector2.One * 0.5f, Color.LightGray * Ease.CubeIn(this.remappingEase));
+            ActiveFont.Draw(otherButtons, new Vector2(1920f / 2, 1080f - 100f + ActiveFont.Measure(currentButtons).Y*0.5f), new Vector2(0.5f, 1f), Vector2.One * 0.5f, Color.LightGray * Ease.CubeIn(this.remappingEase));
             ActiveFont.Draw("Deploy Elytra", value + new Vector2(0f, 8f), new Vector2(0.5f, 0f), Vector2.One * 2f, Color.White * Ease.CubeIn(this.remappingEase));
         }
     }
