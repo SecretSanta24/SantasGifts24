@@ -17,9 +17,9 @@ namespace Celeste.Mod.SantasGifts24
 
 
 		//cursed refill
-		public bool playerCursed = false;
-		public bool ignoreDash = false;
-        public bool killPlayerWhenSafe = false;
+		public bool playerCursed { get; set; } = false;
+        public bool ignoreDash { get; set; } = false;
+        public bool killPlayerWhenSafe { get; set; } = false;
 
         // in-map journal
         public List<string> JournalPages { get; set; } = new();
