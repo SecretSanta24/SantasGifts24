@@ -121,16 +121,17 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             On.Celeste.Player.DashEnd += Player_DashEnd;
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.Die += Player_Die;
+            On.Celeste.LevelLoader.LoadingThread += CustomDashInitialize;
         }
-
-        private static void Scene_End(On.Monocle.Scene.orig_End orig, Scene self)
+        private static void CustomDashInitialize(On.Celeste.LevelLoader.orig_LoadingThread orig, LevelLoader self)
         {
+            orig.Invoke(self);
             if (session != null)
             {
                 session.ResetCurse();
             }
-            orig.Invoke(self);
         }
+
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
             //add smoke particles
@@ -168,6 +169,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             On.Celeste.Player.DashEnd -= Player_DashEnd;
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Player.Die -= Player_Die;
+            On.Celeste.LevelLoader.LoadingThread -= CustomDashInitialize;
         }
 
         private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
