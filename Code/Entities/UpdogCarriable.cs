@@ -243,7 +243,7 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
             {
                 while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(80f)))
                 {
-                    Logger.Log(LogLevel.Info, "SS2024/UpdogCarriable", $"doing the things at {cursor.Index} in CIL code for {cursor.Method.FullName}");
+                    //Logger.Log(LogLevel.Debug, "SS2024/UpdogCarriable", $"doing the things at {cursor.Index} in CIL code for {cursor.Method.FullName}");
 
                     cursor.Emit(OpCodes.Ldarg_0);
 
