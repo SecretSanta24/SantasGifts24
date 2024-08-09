@@ -163,6 +163,7 @@ namespace Celeste.Mod.SantasGifts24.Effects
 
         public override void Update(Scene scene)
         {
+            base.Update(scene);
             Level level = scene as Level;
             bool flag = IsVisible(level);
 
