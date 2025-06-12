@@ -39,12 +39,8 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 {
                     while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(1)))
                     {
-                        cursor.Emit(OpCodes.Pop);
                         cursor.Emit(OpCodes.Ldarg_0);
-                        cursor.EmitDelegate((Player player) =>
-                        {
-                            return (player.SceneAs<Level>().Session.GetFlag("SS24Fastfall")) ? 10000F : 1f;
-                        });
+                        cursor.EmitDelegate(OverrideFastFall);
                         break;
                     }
                     break;
@@ -52,5 +48,16 @@ namespace Celeste.Mod.SantasGifts24.Code.Entities
                 break;
             }
         }
+        
+        
+        //This trigger has a port in LylyraHelper.
+        //Both triggers work by setting the condition for the input of the move value to be equal to 10000 instead of the expected value of 1
+        //We don't know which loads first, so both triggers grab the value from the stack and simply pass it back if it has been modified (that is, not equal to 1).
+        //This way both triggers can exist in the same codespace.
+        private static float OverrideFastFall(float f, Player player)
+        {
+            if (f > 1) return f;
+            return player.SceneAs<Level>().Session.GetFlag("SS24Fastfall") ? 10000F : 1f;
+        } 
     }
 }
